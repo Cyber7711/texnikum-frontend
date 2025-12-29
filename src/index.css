@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.grayscale-mode {
+  filter: grayscale(1) contrast(1.2) !important;
+}
