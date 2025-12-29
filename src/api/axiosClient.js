@@ -1,41 +1,36 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
+  // MUHIM: Oxiriga /api qo'shilishi shart, chunki Backend hamma narsani /api/... kutmoqda
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api",
   headers: {
     "Content-Type": "application/json",
-  }, // Serveringiz porti (4000 yoki 5000)
-  withCredentials: true, // Cookie uchun
+  },
+  withCredentials: true,
 });
 
-// 1. REQUEST INTERCEPTOR (So'rov ketishidan oldin ishlaydi)
+// 1. REQUEST INTERCEPTOR
 axiosClient.interceptors.request.use(
   (config) => {
-    // LocalStorage dan tokenni olamiz
     const token = localStorage.getItem("token");
-
-    // Agar token bor bo'lsa, uni Headerga qo'shamiz
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// 2. RESPONSE INTERCEPTOR (Javob kelganda ishlaydi)
+// 2. RESPONSE INTERCEPTOR
 axiosClient.interceptors.response.use(
   (response) => {
-    return response.data; // Faqat data qismini qaytaradi
+    // Agar response.data ichida yana data bo'lsa, o'shani qaytaramiz (Backend formatiga qarab)
+    return response.data;
   },
   (error) => {
-    // Agar token eskigan bo'lsa (401), foydalanuvchini loginga chiqarib yuborish mumkin
     if (error.response && error.response.status === 401) {
-      // localStorage.removeItem('token');
-      // window.location.href = '/login';
+      // Avtorizatsiyadan o'tmagan bo'lsa tokenni tozalash (ixtiyoriy)
+      // localStorage.removeItem("token");
     }
     return Promise.reject(error);
   }
