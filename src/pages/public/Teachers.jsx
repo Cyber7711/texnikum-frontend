@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
-import { Mail, Phone, Star, GraduationCap, Loader2 } from "lucide-react";
-import axiosClient from "../../api/axiosClient";
+import { Mail, Phone, Star, GraduationCap } from "lucide-react";
+import axiosClient from "../../api/axiosClient"; // Yo'lni o'zingizga moslang
 
 const Teachers = () => {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Ma'lumotlarni yuklash
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
         const res = await axiosClient.get("/teachers");
-        const data = res.data.result || res.data.data || res.data;
+        // Backenddan keladigan javob formatiga qarab moslashtiramiz
+        const data = res.data.data || res.data.result || res.data;
         setTeachers(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Xatolik:", err);
@@ -21,105 +23,117 @@ const Teachers = () => {
     fetchTeachers();
   }, []);
 
-  // Rasmni aniqlash funksiyasi
+  // Rasmni aniqlash funksiyasi (Uploadcare UUID yoki UI-Avatars)
   const getImageUrl = (photo, fullname) => {
-    // UUID formatini tekshirish (36 belgili standart UUID)
-    const isUUID = photo && photo.length >= 32 && !photo.includes("/");
-
-    if (isUUID) {
-      // CDN linkini parametrlarsiz tekshirib ko'ring, keyin crop qo'shing
+    // 1. Agar rasm Uploadcare UUID bo'lsa (bo'sh joylarsiz, uzun string)
+    if (photo && !photo.includes("http") && photo.length > 20) {
+      // CDN orqali rasmni 400x400 o'lchamda va qirqib olamiz (smart crop)
       return `https://ucarecdn.com/${photo}/-/scale_crop/400x400/smart/`;
     }
 
-    // Agar bazada to'liq link saqlangan bo'lsa
+    // 2. Agar tayyor link bo'lsa
     if (photo && photo.startsWith("http")) {
       return photo;
     }
 
-    // Rasm bo'lmasa yoki xato bo'lsa UI-Avatars
+    // 3. Rasm bo'lmasa - Ism bosh harflaridan avatar yasash
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
       fullname
-    )}&background=random&color=fff`;
+    )}&background=0D9488&color=fff&size=256`;
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen py-16">
+    <div className="bg-slate-50 min-h-screen py-16">
       <div className="container mx-auto px-4">
+        {/* Sarlavha */}
         <div className="max-w-2xl mx-auto text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight uppercase">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight uppercase">
             Pedagogik Jamoamiz
           </h1>
-          <div className="w-24 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
+          <div className="w-24 h-1.5 bg-emerald-500 mx-auto rounded-full"></div>
+          <p className="mt-4 text-slate-600">
+            Bizning tajribali o'qituvchilarimiz bilan tanishing
+          </p>
         </div>
 
+        {/* Loading Skeleton */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[1, 2, 3, 4].map((n) => (
               <div
                 key={n}
-                className="h-96 bg-gray-200 animate-pulse rounded-3xl"
+                className="h-96 bg-slate-200 animate-pulse rounded-[2rem]"
               ></div>
             ))}
           </div>
         ) : teachers.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            <GraduationCap size={48} className="mx-auto mb-2 opacity-50" />
-            <p>O'qituvchilar ro'yxati hozircha bo'sh.</p>
+          /* Bo'sh holat */
+          <div className="text-center py-20 text-slate-400">
+            <GraduationCap size={64} className="mx-auto mb-4 opacity-50" />
+            <p className="text-xl font-medium">
+              O'qituvchilar ro'yxati hozircha bo'sh.
+            </p>
           </div>
         ) : (
+          /* Asosiy ro'yxat */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {teachers.map((teacher) => (
               <div
                 key={teacher._id}
-                className="bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group"
+                className="bg-white rounded-[2rem] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-slate-100 overflow-hidden group"
               >
-                <div className="h-64 relative overflow-hidden bg-gray-200">
+                {/* Rasm qismi */}
+                <div className="h-64 relative overflow-hidden bg-slate-100">
                   <img
-                    src={getImageUrl(
-                      teacher.photo || teacher.image,
-                      teacher.fullname
-                    )}
+                    src={getImageUrl(teacher.photo, teacher.fullname)}
                     alt={teacher.fullname}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     onError={(e) => {
-                      // Agar rasm 404 bersa, avatarga o'zgartiradi (Loop bo'lmasligi uchun)
-                      if (!e.target.src.includes("ui-avatars")) {
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          teacher.fullname
-                        )}&background=888&color=fff`;
-                      }
+                      e.target.onerror = null;
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        teacher.fullname
+                      )}&background=random`;
                     }}
-                    className="w-12 h-12 rounded-full object-cover"
                   />
+                  {/* Fan nomi ustida */}
                   <div className="absolute bottom-4 left-4">
-                    <span className="bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg">
-                      {teacher.subject?.toUpperCase() || "FAN"}
+                    <span className="bg-emerald-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wider uppercase">
+                      {teacher.subject || "FAN"}
                     </span>
                   </div>
                 </div>
 
+                {/* Ma'lumot qismi */}
                 <div className="p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-blue-600 transition">
+                  <h3 className="text-lg font-bold text-slate-900 mb-1 line-clamp-1 group-hover:text-emerald-600 transition">
                     {teacher.fullname}
                   </h3>
-                  <div className="flex items-center text-gray-500 text-sm mb-5">
+
+                  <div className="flex items-center text-slate-500 text-sm mb-5">
                     <Star
                       size={14}
                       className="text-yellow-400 fill-yellow-400 mr-1.5"
                     />
                     <span className="font-medium">
-                      {teacher.experience} yil tajriba
+                      {teacher.experience
+                        ? `${teacher.experience} yil tajriba`
+                        : "Tajribali mutaxassis"}
                     </span>
                   </div>
+
+                  {/* Aloqa tugmalari */}
                   <div className="flex space-x-2">
                     <a
                       href={`mailto:${teacher.email}`}
-                      className="flex-1 bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-600 py-2 rounded-xl flex justify-center transition border border-gray-100"
+                      className="flex-1 bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 py-2.5 rounded-xl flex justify-center transition border border-slate-100"
+                      title="Email yozish"
                     >
                       <Mail size={18} />
                     </a>
                     <a
                       href={`tel:${teacher.phone}`}
-                      className="flex-1 bg-gray-50 hover:bg-green-50 text-gray-500 hover:text-green-600 py-2 rounded-xl flex justify-center transition border border-gray-100"
+                      className="flex-1 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 py-2.5 rounded-xl flex justify-center transition border border-slate-100"
+                      title="Qo'ng'iroq qilish"
                     >
                       <Phone size={18} />
                     </a>
