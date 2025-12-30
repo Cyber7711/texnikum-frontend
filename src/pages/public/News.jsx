@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import { Calendar, ArrowRight, ImageOff } from "lucide-react";
-import { Link } from "react-router-dom"; // Agar batafsil o'qish sahifasi bo'lsa
+import { Link } from "react-router-dom";
 
 const News = () => {
   const [newsList, setNewsList] = useState([]);
@@ -11,10 +11,11 @@ const News = () => {
     const fetchAllNews = async () => {
       try {
         const res = await axiosClient.get("/news");
-        // Ma'lumot qayerdaligini tekshirish (res.data yoki res.data.data)
-        setNewsList(res.data.data || res.data || []);
+        // Backenddan keladigan ma'lumotni formatlash
+        const data = res.data.data || res.data.result || res.data;
+        setNewsList(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error(error);
+        console.error("Yangiliklarni yuklashda xato:", error);
       } finally {
         setLoading(false);
       }
@@ -22,13 +23,16 @@ const News = () => {
     fetchAllNews();
   }, []);
 
-  // --- UPLOADCARE IMAGE HELPER ---
+  // --- UPLOADCARE IMAGE HELPER (Sizning maxsus domeningiz bilan) ---
   const getImageUrl = (image) => {
     if (!image) return null;
     if (image.includes("http")) return image;
-    // Public uchun katta va sifatli rasm (600x400)
-    // -/progressive/yes/ -> Rasm sekin-asta tiniqlashib ochiladi
-    return `https://ucarecdn.com/${image}/-/preview/800x600/-/quality/smart/-/format/auto/`;
+
+    // Sizda ishlayotgan maxsus domen
+    const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
+
+    // UUID dan keyin slesh (/) bo'lishi va CDN parametrlarining to'g'ri tartibi muhim
+    return `https://${CUSTOM_DOMAIN}/${image}/-/preview/1000x560/-/quality/smart/-/format/auto/`;
   };
 
   return (
@@ -36,7 +40,7 @@ const News = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-black text-slate-800 mb-4 tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-black text-slate-800 mb-4 tracking-tight uppercase">
             So'nggi Yangiliklar
           </h1>
           <div className="w-24 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
@@ -46,7 +50,6 @@ const News = () => {
         </div>
 
         {loading ? (
-          // Skeleton Loading (Foydalanuvchi kutayotganda)
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((n) => (
               <div
@@ -68,7 +71,6 @@ const News = () => {
                 key={news._id}
                 className="flex flex-col bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 overflow-hidden group"
               >
-                {/* Rasm qismi */}
                 <div className="h-56 relative overflow-hidden bg-slate-100">
                   {news.image ? (
                     <img
@@ -79,17 +81,17 @@ const News = () => {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <ImageOff size={48} opacity={0.5} />
+                      <ImageOff size={48} strokeWidth={1} />
                     </div>
                   )}
-                  {/* Sana overlay */}
                   <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-bold text-slate-800 shadow-lg flex items-center gap-2">
                     <Calendar size={14} className="text-blue-600" />
-                    {new Date(news.date).toLocaleDateString()}
+                    {new Date(news.date || news.createdAt).toLocaleDateString(
+                      "uz-UZ"
+                    )}
                   </div>
                 </div>
 
-                {/* Matn qismi */}
                 <div className="p-6 flex flex-col flex-grow">
                   <h3 className="text-xl font-bold text-slate-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
                     {news.title}
@@ -98,9 +100,8 @@ const News = () => {
                     {news.content}
                   </p>
 
-                  {/* Tugma */}
                   <Link
-                    to={`/news/${news._id}`} // Agar alohida sahifa bo'lsa
+                    to={`/news/${news._id}`}
                     className="mt-auto flex items-center text-blue-600 font-bold text-sm uppercase tracking-wider group-hover:translate-x-2 transition-transform"
                   >
                     Batafsil o'qish <ArrowRight size={16} className="ml-2" />
