@@ -1,249 +1,283 @@
-import { useEffect, useState } from "react"; // Reactning "miyasi" va "xotirasi"
-import { Plus, Trash2, Eye, Image as ImageIcon } from "lucide-react"; // Chiroyli iconlar
-import newsApi from "../../api/newsApi"; // Boyagi yozgan "elchi"miz
+import { useEffect, useState } from "react";
+import { Plus, Trash2, ImageIcon, Loader2, Save, X } from "lucide-react";
+import newsApi from "../../api/newsApi"; // Yoki axiosClient
 
 const AdminNews = () => {
-  // --- STATE (XOTIRA) QISMI ---
-
-  // 1. Yangiliklar ro'yxatini saqlash uchun
-  // Boshida bo'sh massiv [] bo'ladi, serverdan kelgach to'ladi.
   const [newsList, setNewsList] = useState([]);
-
-  // 2. Yuklanish holatini bilish uchun (Loading...)
-  // Foydalanuvchi zerikib qolmasligi uchun "aylanayotgan g'ildirak" ko'rsatamiz.
   const [loading, setLoading] = useState(true);
-
-  // 3. Yangilik qo'shish formasi ochiq yoki yopiqligini bilish uchun
   const [showForm, setShowForm] = useState(false);
+  const [btnLoading, setBtnLoading] = useState(false); // Saqlash tugmasi uchun
 
-  // 4. Formaga yozilayotgan ma'lumotlarni vaqtincha saqlash uchun
   const [formData, setFormData] = useState({
-    title: "", // Sarlavha
-    content: "", // Matn
-    image: null, // Rasm fayli (boshida yo'q)
+    title: "",
+    content: "",
+    image: null,
   });
 
-  // --- MANTIQ (FUNKSIYALAR) QISMI ---
+  // --- HELPER: Rasm URL yasovchi ---
+  const getImageUrl = (image, size = "100x100") => {
+    // Agar rasm yo'q bo'lsa
+    if (!image) return null;
+    // Agar rasm allaqachon to'liq link bo'lsa (http...)
+    if (image.includes("http")) return image;
+    // Uploadcare UUID bo'lsa -> CDN link yasaymiz
+    return `https://ucarecdn.com/${image}/-/scale_crop/${size}/center/-/quality/smart/`;
+  };
 
-  // 1. Sahifa ochilishi bilan ishlash (useEffect)
   useEffect(() => {
-    fetchNews(); // Sahifa ochildi -> darrov yangiliklarni olib kel!
+    fetchNews();
   }, []);
 
-  // Serverdan ma'lumot olish funksiyasi
   const fetchNews = async () => {
     try {
-      setLoading(true); // Yuklashni boshladik
-      const res = await newsApi.getAll(); // API ga so'rov ketdi
-      // Backenddan kelgan javob tuzilishiga qarab (res.data.data bo'lishi mumkin)
-      setNewsList(res.data || []);
+      setLoading(true);
+      const res = await newsApi.getAll(); // Yoki axiosClient.get('/news')
+      // Backenddan keladigan strukturaga qarab moslang (res.data.data yoki res.data)
+      setNewsList(res.data.data || res.data || []);
     } catch (error) {
-      console.error("Yangiliklarni olishda xato:", error);
-      alert("Internet yoki Serverda xatolik bor!");
+      console.error("Xatolik:", error);
     } finally {
-      setLoading(false); // Yuklash tugadi (xato bo'lsa ham, o'xshasa ham)
+      setLoading(false);
     }
   };
 
-  // Inputlarga yozganda state'ni o'zgartirish
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // Eski ma'lumotlarni (...formData) saqlab qolgan holda,
-    // faqat o'zgargan poleni yangilaymiz.
     setFormData({ ...formData, [name]: value });
   };
 
-  // Rasmni tanlaganda ishlash
   const handleFileChange = (e) => {
-    // Fayl inputida 'files' massivi bo'ladi. Bizga birinchisi ([0]) kerak.
-    setFormData({ ...formData, image: e.target.files[0] });
+    if (e.target.files && e.target.files[0]) {
+      setFormData({ ...formData, image: e.target.files[0] });
+    }
   };
 
-  // FORM YUBORILGANDA (SUBMIT)
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Sahifa yangilanib ketishini to'xtatamiz (Refresh bo'lmasin)
+    e.preventDefault();
+    setBtnLoading(true);
 
-    // FormData obyekti yaratamiz.
-    // Nega oddiy JSON emas? Chunki Rasm (fayl) bor. JSON faylni tushunmaydi.
     const data = new FormData();
     data.append("title", formData.title);
     data.append("content", formData.content);
     if (formData.image) {
-      data.append("image", formData.image); // Rasmni qo'shamiz
+      // Backenddagi Multer 'image' nomini kutmoqda
+      data.append("image", formData.image);
     }
 
     try {
-      await newsApi.create(data); // Backendga yuboramiz
-      alert("Yangilik muvaffaqiyatli qo'shildi! ✅");
-      setShowForm(false); // Formani yopamiz
-      setFormData({ title: "", content: "", image: null }); // Inputlarni tozalaymiz
-      fetchNews(); // Ro'yxatni yangilaymiz (yangi qo'shilgan ko'rinishi uchun)
+      // Backend o'zi Uploadcarega yuklab, UUID ni bazaga saqlaydi
+      await newsApi.create(data);
+
+      alert("Yangilik muvaffaqiyatli qo'shildi! 🚀");
+      setShowForm(false);
+      setFormData({ title: "", content: "", image: null });
+      fetchNews(); // Ro'yxatni yangilash
     } catch (error) {
       console.error(error);
-      alert("Xatolik! Balki barcha maydonlarni to'ldirmagandirsiz?");
+      alert("Xatolik yuz berdi. Iltimos qayta urinib ko'ring.");
+    } finally {
+      setBtnLoading(false);
     }
   };
 
-  // O'CHIRISH FUNKSIYASI
   const handleDelete = async (id) => {
-    // Birdan o'chirib yubormasdan, so'raymiz
     if (window.confirm("Rostdan ham o'chirmoqchimisiz?")) {
       try {
-        await newsApi.delete(id); // Backenddan o'chdi
-        // Frontenddagi ro'yxatdan ham olib tashlaymiz (Serverga qayta so'rov yubormaslik uchun)
-        setNewsList(newsList.filter((item) => item._id !== id));
+        await newsApi.delete(id);
+        setNewsList((prev) => prev.filter((item) => item._id !== id));
       } catch (error) {
-        alert("O'chirishda xatolik bo'ldi!");
+        alert("O'chirishda xatolik!");
       }
     }
   };
 
-  // --- KO'RINISH (JSX) QISMI ---
   return (
-    <div>
-      {/* Tepa qism: Sarlavha va Tugma */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Yangiliklar Boshqaruvi
-        </h1>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">
+            Yangiliklar Boshqaruvi
+          </h1>
+          <p className="text-sm text-gray-500">
+            Saytdagi barcha maqolalar ro'yxati
+          </p>
+        </div>
         <button
-          onClick={() => setShowForm(!showForm)} // Bosganda forma ochiladi/yopiladi
-          className="bg-tatu-blue text-white px-4 py-2 rounded flex items-center hover:bg-blue-800 transition"
+          onClick={() => setShowForm(!showForm)}
+          className={`flex items-center px-5 py-2.5 rounded-xl font-bold transition shadow-lg ${
+            showForm
+              ? "bg-red-50 text-red-600 hover:bg-red-100"
+              : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-300"
+          }`}
         >
-          <Plus size={18} className="mr-2" />
-          Yangi qo'shish
+          {showForm ? (
+            <X size={20} className="mr-2" />
+          ) : (
+            <Plus size={20} className="mr-2" />
+          )}
+          {showForm ? "Bekor qilish" : "Yangilik qo'shish"}
         </button>
       </div>
 
-      {/* QO'SHISH FORMASI (Faqat showForm=true bo'lsa ko'rinadi) */}
+      {/* FORM */}
       {showForm && (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8 border border-gray-200">
-          <h2 className="text-lg font-bold mb-4">Yangi maqola yaratish</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4">
-              {/* Sarlavha Input */}
+        <div className="bg-white p-8 rounded-2xl shadow-xl mb-8 border border-gray-100 animate-in fade-in slide-in-from-top-5">
+          <h2 className="text-xl font-bold mb-6 text-gray-800">
+            Yangi maqola yaratish
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Sarlavha
+              </label>
               <input
                 type="text"
                 name="title"
-                placeholder="Yangilik sarlavhasi (masalan: Yangi bino ochildi)"
-                className="border p-2 rounded w-full focus:ring-2 focus:ring-tatu-blue outline-none"
+                placeholder="Yangilik mavzusi..."
+                className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
                 value={formData.title}
                 onChange={handleInputChange}
                 required
               />
+            </div>
 
-              {/* Matn Input (Textarea) */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Matn
+              </label>
               <textarea
                 name="content"
                 placeholder="Batafsil ma'lumot..."
-                rows="4"
-                className="border p-2 rounded w-full focus:ring-2 focus:ring-tatu-blue outline-none"
+                rows="5"
+                className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
                 value={formData.content}
                 onChange={handleInputChange}
                 required
               ></textarea>
+            </div>
 
-              {/* Rasm Input */}
-              <div className="border border-dashed border-gray-400 p-4 rounded text-center cursor-pointer hover:bg-gray-50">
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Rasm yuklash
+              </label>
+              <div className="border-2 border-dashed border-gray-300 p-6 rounded-xl text-center hover:bg-blue-50 hover:border-blue-400 transition cursor-pointer relative">
                 <input
                   type="file"
                   onChange={handleFileChange}
-                  accept="image/*" // Faqat rasmlarni qabul qiladi
-                  className="w-full"
+                  accept="image/*"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Faqat JPG, PNG formatlar
-                </p>
+                <div className="flex flex-col items-center justify-center text-gray-500">
+                  <ImageIcon size={32} className="mb-2" />
+                  <span className="text-sm font-medium">
+                    {formData.image
+                      ? formData.image.name
+                      : "Rasmni tanlash uchun bosing"}
+                  </span>
+                  <span className="text-xs text-gray-400 mt-1">
+                    JPG, PNG (Max 5MB)
+                  </span>
+                </div>
               </div>
-
-              {/* Saqlash tugmasi */}
-              <button
-                type="submit"
-                className="bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700"
-              >
-                SAQLASH
-              </button>
             </div>
+
+            <button
+              type="submit"
+              disabled={btnLoading}
+              className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold hover:bg-blue-700 transition flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {btnLoading ? (
+                <Loader2 className="animate-spin mr-2" />
+              ) : (
+                <Save className="mr-2" size={20} />
+              )}
+              {btnLoading ? "Yuklanmoqda..." : "SAQLASH"}
+            </button>
           </form>
         </div>
       )}
 
-      {/* JADVAL QISMI (List) */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Rasm
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Sarlavha
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Sana
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Amallar
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {loading ? (
-              // Agar yuklanayotgan bo'lsa
+      {/* LIST TABLE */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <td colSpan="4" className="text-center py-10">
-                  Yuklanmoqda...
-                </td>
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Rasm
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Ma'lumot
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Sana
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Amal
+                </th>
               </tr>
-            ) : newsList.length === 0 ? (
-              // Agar yangilik bo'lmasa
-              <tr>
-                <td colSpan="4" className="text-center py-10 text-gray-500">
-                  Hozircha yangiliklar yo'q
-                </td>
-              </tr>
-            ) : (
-              // Agar ma'lumot bor bo'lsa, map qilib aylanamiz
-              newsList.map((item) => (
-                <tr key={item._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {item.image ? (
-                      // Agar rasm bo'lsa (backend statik papkasidan)
-                      <img
-                        src={`http://localhost:4000${item.image}`}
-                        alt="news"
-                        className="h-10 w-10 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 bg-gray-200 rounded flex items-center justify-center">
-                        <ImageIcon size={16} className="text-gray-500" />
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      {item.title}
-                    </div>
-                    <div className="text-sm text-gray-500 truncate w-64">
-                      {item.content}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {new Date(item.date).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleDelete(item._id)}
-                      className="text-red-600 hover:text-red-900 ml-4"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                <tr>
+                  <td colSpan="4" className="py-20 text-center text-gray-500">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-blue-500" />
+                    Yuklanmoqda...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : newsList.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="py-20 text-center text-gray-400">
+                    Hozircha yangiliklar mavjud emas.
+                  </td>
+                </tr>
+              ) : (
+                newsList.map((item) => (
+                  <tr
+                    key={item._id}
+                    className="hover:bg-blue-50/30 transition group"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="h-14 w-14 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100 flex items-center justify-center">
+                        {item.image ? (
+                          <img
+                            // BU YERDA UPLOADCARE URL ISHLATILYAPTI
+                            src={getImageUrl(item.image, "150x150")}
+                            alt="news"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <ImageIcon size={20} className="text-gray-400" />
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-bold text-gray-900 line-clamp-1">
+                        {item.title}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        {item.content}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 font-mono">
+                      {new Date(item.date).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition"
+                        title="O'chirish"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

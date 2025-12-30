@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react"; // <--- BU QATORNI QO'SHDIK
+import { useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import PageLoader from "./components/ui/PageLoader";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Layoutlar
+// Sahifalar
 import MainLayout from "./components/layout/MainLayout";
 import AdminLayout from "./pages/admin/AdminLayout";
 import RequireAuth from "./components/auth/RequireAuth";
 
-// Public Sahifalar (Barcha importlar joyida)
+// Public Sahifalar
 import Home from "./pages/public/Home";
 import Login from "./pages/public/Login";
 import News from "./pages/public/News";
@@ -17,8 +17,10 @@ import PublicTeachers from "./pages/public/Teachers";
 import Apply from "./pages/public/Apply";
 import Documents from "./pages/public/Documents";
 import InfoPortal from "./pages/public/InfoPortal";
+import Admission from "./pages/public/Admission";
+import NotFound from "./pages//NotFound"; // <--- 1. NOTFOUND IMPORT QILINDI
 
-// Admin Sahifalar (Barcha importlar joyida)
+// Admin Sahifalar
 import DashboardHome from "./pages/admin/DashboardHome";
 import AdminNews from "./pages/admin/AddNews";
 import AdminStats from "./pages/admin/AdminStats";
@@ -31,27 +33,26 @@ function App() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const location = useLocation();
 
-  // Birinchi marta kirgandagi loader
+  // Scrollni tepaga qaytarish (Yangi qo'shimcha: UX uchun muhim)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   useEffect(() => {
     const timer = setTimeout(() => setIsPageLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
 
-  // Sahifa almashishini boshqarish
   useEffect(() => {
-    // URL o'zgarganda Loaderni bir zumga yoqamiz
     setIsPageLoading(true);
-
     const timer = setTimeout(() => {
       setIsPageLoading(false);
-    }, 600); // Bu vaqt sahifa render bo'lishi uchun yetarli
-
+    }, 600);
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
   return (
     <>
-      {/* 1. Global Loader AnimatePresence ichida */}
       <AnimatePresence mode="wait">
         {isPageLoading && (
           <motion.div
@@ -67,12 +68,11 @@ function App() {
         )}
       </AnimatePresence>
 
-      {/* 2. Sahifa komponentlari */}
       <motion.div
         key={location.pathname}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }} // Loader ko'rinib turganda orqada yuklanadi
+        transition={{ duration: 0.4, delay: 0.2 }}
       >
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<MainLayout />}>
@@ -81,13 +81,16 @@ function App() {
             <Route path="news/:id" element={<NewsDetail />} />
             <Route path="teachers" element={<PublicTeachers />} />
             <Route path="documents" element={<Documents />} />
-            <Route path="/info" element={<InfoPortal />} />
+            <Route path="info" element={<InfoPortal />} />
+            <Route path="qabul" element={<Admission />} />
+
+            {/* 2. PUBLIC NOTFOUND - Noto'g'ri URL yozilsa MainLayout ichida chiqadi */}
+            <Route path="*" element={<NotFound />} />
           </Route>
 
           <Route path="/login" element={<Login />} />
           <Route path="/apply" element={<Apply />} />
 
-          {/* 2. PROTECTED ADMIN ROUTES */}
           <Route element={<RequireAuth />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<DashboardHome />} />
@@ -97,8 +100,14 @@ function App() {
               <Route path="documents" element={<AdminDocuments />} />
               <Route path="applicants" element={<AdminApplicants />} />
               <Route path="quicklinks" element={<AdminQuickLinks />} />
+
+              {/* 3. ADMIN NOTFOUND - Admin panel ichida xato yo'l yozilsa */}
+              <Route path="*" element={<NotFound />} />
             </Route>
           </Route>
+
+          {/* 4. GLOBAL NOTFOUND - Mutlaqo begona URL'lar uchun */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
     </>
