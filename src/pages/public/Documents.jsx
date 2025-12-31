@@ -5,22 +5,24 @@ import {
   Search,
   Download,
   File,
-  ChevronRight,
   Calendar,
   Loader2,
 } from "lucide-react";
+import { useTranslation } from "react-i18next"; // i18n hook
 
-// Fayl ikonkasini aniqlash uchun yordamchi funksiya
-const getFileIcon = (type) => {
-  if (type === "pdf") return <FileText className="text-red-500" size={24} />;
-  if (type.includes("doc"))
+const getFileIcon = (type = "") => {
+  const fileType = type.toLowerCase();
+  if (fileType.includes("pdf"))
+    return <FileText className="text-red-500" size={24} />;
+  if (fileType.includes("doc"))
     return <FileText className="text-blue-500" size={24} />;
-  if (type.includes("xls"))
+  if (fileType.includes("xls"))
     return <FileText className="text-green-500" size={24} />;
   return <File className="text-gray-500" size={24} />;
 };
 
 const Documents = () => {
+  const { t, i18n } = useTranslation();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -40,16 +42,14 @@ const Documents = () => {
     fetchDocs();
   }, []);
 
-  // Kategoriyalar ro'yxati
   const categories = [
-    { id: "all", label: "Barchasi" },
-    { id: "nizom", label: "Nizomlar" },
-    { id: "qaror", label: "Qarorlar" },
-    { id: "buyruq", label: "Buyruqlar" },
-    { id: "metodik", label: "Metodik qo'llanmalar" },
+    { id: "all", label: t("doc_cat_all") },
+    { id: "nizom", label: t("doc_cat_nizom") },
+    { id: "qaror", label: t("doc_cat_qaror") },
+    { id: "buyruq", label: t("doc_cat_buyruq") },
+    { id: "metodik", label: t("doc_cat_metodik") },
   ];
 
-  // Filtrlash
   const filteredDocs = documents.filter((doc) => {
     const matchesCategory =
       activeCategory === "all" || doc.category === activeCategory;
@@ -59,43 +59,38 @@ const Documents = () => {
     return matchesCategory && matchesSearch;
   });
 
-  // Fayl hajmini chiroyli formatlash (MB, KB)
-  const formatSize = (bytes) => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  // Fayl URL manzili (Uploadcare UUID bo'lsa CDN linkini qaytaradi)
+  const getFileUrl = (fileId) => {
+    if (!fileId) return "#";
+    if (fileId.startsWith("http")) return fileId;
+    return `https://5nezpc68d1.ucarecd.net/${fileId}/-/inline/yes/`;
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen py-10">
+    <div className="bg-gray-50 min-h-screen py-16">
       <div className="container mx-auto px-6">
-        {/* Sarlavha */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 uppercase">
-            Me'yoriy Hujjatlar
+        {/* Header Section */}
+        <div className="text-center mb-16">
+          <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 uppercase tracking-tight">
+            {t("doc_page_title")}
           </h1>
-          <div className="w-24 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
-          <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-            Universitet faoliyatiga oid barcha rasmiy nizomlar, qarorlar va
-            buyruqlar bilan shu yerda tanishishingiz va yuklab olishingiz
-            mumkin.
+          <div className="w-24 h-2 bg-emerald-500 mx-auto rounded-full"></div>
+          <p className="text-gray-600 mt-6 max-w-2xl mx-auto font-medium leading-relaxed">
+            {t("doc_page_subtitle")}
           </p>
         </div>
 
-        {/* Qidiruv va Tablar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
-          {/* Tablar (Kategoriyalar) */}
-          <div className="flex flex-wrap gap-2 justify-center">
+        {/* Filters & Search */}
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-8 mb-12">
+          <div className="flex flex-wrap gap-3 justify-center">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+                className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${
                   activeCategory === cat.id
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105"
-                    : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                    ? "bg-emerald-600 text-white shadow-xl shadow-emerald-200 scale-105"
+                    : "bg-white text-gray-500 hover:bg-gray-100 border border-gray-100"
                 }`}
               >
                 {cat.label}
@@ -103,74 +98,83 @@ const Documents = () => {
             ))}
           </div>
 
-          {/* Qidiruv */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+          <div className="relative w-full md:w-96">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
+            />
             <input
               type="text"
-              placeholder="Hujjat nomini qidirish..."
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition"
+              placeholder={t("doc_search_placeholder")}
+              className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-100 bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-medium shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Hujjatlar Ro'yxati */}
+        {/* Content */}
         {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="animate-spin text-blue-600" size={40} />
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
+            <Loader2 className="animate-spin text-emerald-600" size={48} />
+            <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">
+              {t("loading")}
+            </span>
           </div>
         ) : filteredDocs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredDocs.map((doc) => (
               <div
                 key={doc._id}
-                className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group flex flex-col h-full"
+                className="bg-white p-8 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:shadow-emerald-900/5 transition-all duration-500 border border-gray-100 group flex flex-col h-full"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="p-3 bg-gray-50 rounded-xl group-hover:bg-blue-50 transition-colors">
-                    {getFileIcon(doc.fileType)}
+                <div className="flex justify-between items-start mb-6">
+                  <div className="p-4 bg-gray-50 rounded-2xl group-hover:bg-emerald-50 transition-colors duration-500">
+                    {getFileIcon(doc.fileType || "pdf")}
                   </div>
-                  <span className="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold uppercase rounded-lg">
-                    {doc.fileType.toUpperCase()}
+                  <span className="px-4 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-full">
+                    {doc.fileType || "PDF"}
                   </span>
                 </div>
 
-                <h3 className="text-lg font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                <h3 className="text-xl font-black text-gray-800 mb-4 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-tight">
                   {doc.title}
                 </h3>
 
-                <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-sm text-gray-500">
+                <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
                   <div className="flex items-center gap-2">
-                    <Calendar size={14} />
-                    <span>{new Date(doc.createdAt).toLocaleDateString()}</span>
+                    <Calendar size={14} className="text-emerald-500" />
+                    <span>
+                      {new Date(doc.createdAt).toLocaleDateString(
+                        i18n.language === "en"
+                          ? "en-US"
+                          : i18n.language === "ru"
+                          ? "ru-RU"
+                          : "uz-UZ"
+                      )}
+                    </span>
                   </div>
-                  <span>{formatSize(doc.fileSize)}</span>
                 </div>
 
-                {/* Yuklab olish tugmasi */}
                 <a
-                  href={`http://localhost:4000${doc.file}`} // Backend URLni to'g'irlang
+                  href={getFileUrl(doc.file)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-4 w-full bg-gray-50 hover:bg-blue-600 hover:text-white text-gray-700 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all group-hover:shadow-md"
+                  className="mt-6 w-full bg-emerald-600 text-white font-black text-xs uppercase tracking-[0.2em] py-4 rounded-2xl flex items-center justify-center gap-3 transition-all hover:bg-emerald-700 shadow-lg shadow-emerald-200 active:scale-95"
                 >
-                  <Download size={18} /> Yuklab olish
+                  <Download size={18} /> {t("doc_download_btn")}
                 </a>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-            <div className="inline-flex p-4 bg-gray-50 rounded-full mb-4">
-              <FileText className="text-gray-300" size={48} />
-            </div>
-            <h3 className="text-xl font-bold text-gray-800">
-              Hujjatlar topilmadi
+          <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-gray-100">
+            <FileText className="mx-auto text-gray-200 mb-6" size={64} />
+            <h3 className="text-2xl font-black text-gray-800 uppercase tracking-tight">
+              {t("doc_not_found_title")}
             </h3>
-            <p className="text-gray-500 mt-2">
-              Boshqa kategoriya yoki qidiruv so'zini sinab ko'ring.
+            <p className="text-gray-400 mt-2 font-medium">
+              {t("doc_not_found_desc")}
             </p>
           </div>
         )}

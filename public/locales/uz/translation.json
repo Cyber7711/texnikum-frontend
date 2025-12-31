@@ -126,5 +126,16 @@
   "apply_footer_text": "Hujjat topshirish orqali texnikum qoidalariga rozilik bildirasiz",
   "dir_computer_eng": "Kompyuter injiniringi",
   "dir_security": "Axborot xavfsizligi",
-  "dir_economy": "Iqtisodiyot"
+  "dir_economy": "Iqtisodiyot",
+  "doc_page_title": "Me'yoriy Hujjatlar",
+  "doc_page_subtitle": "Texnikum faoliyatiga oid barcha rasmiy nizomlar, qarorlar va buyruqlar bilan shu yerda tanishishingiz va yuklab olishingiz mumkin.",
+  "doc_cat_all": "Barchasi",
+  "doc_cat_nizom": "Nizomlar",
+  "doc_cat_qaror": "Qarorlar",
+  "doc_cat_buyruq": "Buyruqlar",
+  "doc_cat_metodik": "Metodik qo'llanmalar",
+  "doc_search_placeholder": "Hujjat nomini qidirish...",
+  "doc_download_btn": "Yuklab olish",
+  "doc_not_found_title": "Hujjatlar topilmadi",
+  "doc_not_found_desc": "Boshqa kategoriya yoki qidiruv so'zini sinab ko'ring."
 }

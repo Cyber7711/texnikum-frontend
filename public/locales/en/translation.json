@@ -126,5 +126,16 @@
   "apply_footer_text": "By submitting an application, you agree to the technical school rules",
   "dir_computer_eng": "Computer Engineering",
   "dir_security": "Information Security",
-  "dir_economy": "Economics"
+  "dir_economy": "Economics",
+  "doc_page_title": "Regulatory Documents",
+  "doc_page_subtitle": "Here you can find and download all official regulations, decisions, and orders regarding the technical school activities.",
+  "doc_cat_all": "All",
+  "doc_cat_nizom": "Regulations",
+  "doc_cat_qaror": "Decisions",
+  "doc_cat_buyruq": "Orders",
+  "doc_cat_metodik": "Methodological Guides",
+  "doc_search_placeholder": "Search documents...",
+  "doc_download_btn": "Download",
+  "doc_not_found_title": "Documents not found",
+  "doc_not_found_desc": "Try another category or search term."
 }
