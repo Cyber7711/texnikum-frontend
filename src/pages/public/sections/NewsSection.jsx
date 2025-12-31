@@ -6,13 +6,13 @@ import NewsCard from "../../../components/ui/NewsCard";
 const NewsSection = ({ newsList }) => {
   const { t } = useTranslation();
 
-  // Xavfsizlik uchun massiv ekanligini yana bir bor tekshiramiz
+  // Massiv ekanligini qat'iy tekshiramiz
   const data = Array.isArray(newsList) ? newsList : [];
 
   return (
     <section className="py-24 bg-white relative z-30 -mt-12 rounded-t-[3rem] md:rounded-t-[5rem] shadow-[0_-20px_40px_-15px_rgba(0,0,0,0.1)]">
       <div className="container mx-auto px-6">
-        {/* Sarlavha qismi */}
+        {/* Header qismi */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
           <div>
             <span className="text-emerald-600 font-bold uppercase tracking-[0.2em] text-xs mb-3 block flex items-center gap-2">
@@ -41,7 +41,7 @@ const NewsSection = ({ newsList }) => {
           </Link>
         </div>
 
-        {/* Ma'lumotlarni ko'rsatish mantiqi */}
+        {/* Ma'lumotlarni ko'rsatish */}
         {data.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {data.slice(0, 3).map((news) => (
@@ -49,8 +49,8 @@ const NewsSection = ({ newsList }) => {
             ))}
           </div>
         ) : (
-          /* Ma'lumot bo'sh bo'lganda chiqadigan qism */
-          <div className="col-span-full py-20 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-100">
+          /* Ma'lumot bo'sh bo'lganda chiqadigan oddiy xabar */
+          <div className="col-span-full py-20 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
             <p className="text-slate-400 font-bold text-lg uppercase tracking-widest">
               {t("no_news_available")}
             </p>
