@@ -19,27 +19,24 @@ const AdminDocuments = () => {
   const [showModal, setShowModal] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
+  // Form holati
   const [formData, setFormData] = useState({
     title: "",
     category: "nizom",
-    fileUrl: "",
-    fileType: "pdf", // Default
+    fileUrl: "", // Bu yerda faqat UUID string saqlanadi
+    fileType: "pdf",
     fileSize: 0,
   });
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      // axiosClient o'zi /api qo'shadi, shuning uchun faqat /doc yozamiz
       const res = await axiosClient.get("/doc");
-
-      // Sizning axios interceptoringiz response.data ni qaytaradi.
-      // Backend { success: true, data: [...] } qaytaradi.
-      // Shuning uchun res.data kerakli massiv bo'ladi.
-      const docList = res.data || res.result || [];
+      // axiosClient interceptor res.data ni qaytaradi
+      const docList = res.data || [];
       setDocuments(Array.isArray(docList) ? docList : []);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch error:", err);
       toast.error("Hujjatlarni yuklashda xatolik!");
     } finally {
       setLoading(false);
@@ -53,24 +50,31 @@ const AdminDocuments = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.fileUrl) return toast.error("Fayl hali yuklanmadi!");
-    if (!formData.title.trim()) return toast.error("Sarlavhani kiriting!");
+    // 1. Qattiq tekshiruv (Validation)
+    if (!formData.fileUrl || typeof formData.fileUrl !== "string") {
+      return toast.error("Fayl hali yuklanmadi yoki xato yuklandi!");
+    }
+    if (!formData.title.trim()) {
+      return toast.error("Hujjat sarlavhasini kiriting!");
+    }
 
     setSubmitLoading(true);
     try {
       const payload = {
         title: formData.title,
         category: formData.category,
-        file: formData.fileUrl, // UUID
+        file: formData.fileUrl, // Aniq UUID string
         fileType: formData.fileType,
         fileSize: formData.fileSize,
       };
 
-      // POST so'rovi: /api/doc
+      // Backend so'rovi
       await axiosClient.post("/doc", payload);
 
-      toast.success("Hujjat muvaffaqiyatli saqlandi");
+      toast.success("Hujjat muvaffaqiyatli saqlandi!");
       setShowModal(false);
+
+      // Formani tozalash
       setFormData({
         title: "",
         category: "nizom",
@@ -78,13 +82,12 @@ const AdminDocuments = () => {
         fileType: "pdf",
         fileSize: 0,
       });
-      fetchData();
+
+      fetchData(); // Ro'yxatni yangilash
     } catch (err) {
-      console.error("Error:", err);
-      // Agar backenddan xato kelsa, uni ko'rsatamiz
-      const errorMsg =
-        err.response?.data?.message || err.message || "Saqlashda xatolik";
-      toast.error(errorMsg);
+      console.error("Submit error:", err);
+      const msg = err.response?.data?.message || "Saqlashda xatolik yuz berdi";
+      toast.error(msg);
     } finally {
       setSubmitLoading(false);
     }
@@ -94,7 +97,7 @@ const AdminDocuments = () => {
     if (window.confirm("Hujjatni o'chirishni xohlaysizmi?")) {
       try {
         await axiosClient.delete(`/doc/${id}`);
-        toast.success("O'chirildi");
+        toast.success("Muvaffaqiyatli o'chirildi");
         fetchData();
       } catch (err) {
         toast.error("O'chirishda xatolik");
@@ -103,18 +106,19 @@ const AdminDocuments = () => {
   };
 
   const filteredDocs = documents.filter((doc) =>
-    doc.title.toLowerCase().includes(searchTerm.toLowerCase())
+    doc.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
             Hujjatlar boshqaruvi
           </h1>
           <p className="text-sm text-gray-500 font-medium">
-            Nizomlar va me'yoriy hujjatlar
+            Tizimdagi barcha me'yoriy hujjatlarni boshqarish
           </p>
         </div>
         <button
@@ -125,21 +129,21 @@ const AdminDocuments = () => {
         </button>
       </div>
 
-      {/* Qidiruv va Jadval qismi o'zgarishsiz qoladi... */}
+      {/* Search */}
       <div className="bg-white p-4 rounded-2xl shadow-sm mb-6 flex items-center gap-3 border border-gray-100">
         <Search className="text-gray-400" size={20} />
         <input
           type="text"
-          placeholder="Qidirish..."
+          placeholder="Hujjat sarlavhasi bo'yicha qidirish..."
           className="flex-1 outline-none text-gray-700 font-medium"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      {/* Jadval */}
+      {/* Table */}
       <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
-        <table className="w-full text-left">
+        <table className="w-full text-left border-collapse">
           <thead className="bg-gray-50/50 border-b border-gray-100">
             <tr>
               <th className="px-6 py-4 text-[11px] font-black text-gray-400 uppercase tracking-widest">
@@ -172,7 +176,7 @@ const AdminDocuments = () => {
                   colSpan="4"
                   className="py-20 text-center text-gray-400 font-medium"
                 >
-                  Hujjatlar topilmadi
+                  Hujjatlar mavjud emas
                 </td>
               </tr>
             ) : (
@@ -181,14 +185,12 @@ const AdminDocuments = () => {
                   key={doc._id}
                   className="hover:bg-gray-50/50 transition-colors group"
                 >
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 font-bold text-gray-700">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-red-50 text-red-500 rounded-xl">
                         <FileText size={20} />
                       </div>
-                      <span className="font-bold text-gray-700">
-                        {doc.title}
-                      </span>
+                      {doc.title}
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -200,14 +202,12 @@ const AdminDocuments = () => {
                     {new Date(doc.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => deleteDoc(doc._id)}
-                        className="p-2.5 text-gray-400 hover:bg-white hover:text-red-600 hover:shadow-md rounded-xl transition-all"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => deleteDoc(doc._id)}
+                      className="p-2.5 text-gray-400 hover:bg-white hover:text-red-600 hover:shadow-md rounded-xl transition-all"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -216,16 +216,17 @@ const AdminDocuments = () => {
         </table>
       </div>
 
-      {/* MODAL */}
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4">
           <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl animate-in fade-in zoom-in duration-300 relative">
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
             >
-              <X size={20} className="text-gray-400" />
+              <X size={20} />
             </button>
+
             <h2 className="text-2xl font-black mb-8 text-gray-800 uppercase tracking-tight">
               Yangi hujjat
             </h2>
@@ -238,6 +239,7 @@ const AdminDocuments = () => {
                 <input
                   type="text"
                   required
+                  placeholder="Hujjat nomini kiriting..."
                   className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 outline-none focus:border-emerald-500 focus:bg-white transition-all font-medium"
                   value={formData.title}
                   onChange={(e) =>
@@ -264,26 +266,25 @@ const AdminDocuments = () => {
                 </select>
               </div>
 
-              <div className="space-y-2">
+              <div>
                 <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
-                  Fayl (PDF/DOC)
+                  Fayl yuklash (PDF/DOC)
                 </label>
                 <div className="upload-wrapper">
                   <Widget
-                    publicKey="YOUR_PUBLIC_KEY"
+                    publicKey="YOUR_PUBLIC_KEY" // <--- O'zingizni kalitingizni shu yerga qo'ying
                     id="file"
+                    // onChange o'rniga file.done ishlatish tavsiya etiladi
                     onChange={(file) => {
                       if (file) {
                         file.done((info) => {
-                          setFormData({
-                            ...formData,
-                            fileUrl: info.uuid,
-                            fileType: info.name
-                              ? info.name.split(".").pop()
-                              : "pdf",
+                          setFormData((prev) => ({
+                            ...prev,
+                            fileUrl: info.uuid, // Faqat UUID stringni olamiz
+                            fileType: info.name?.split(".").pop() || "pdf",
                             fileSize: info.size,
-                          });
-                          toast.success("Fayl tayyor!");
+                          }));
+                          toast.success("Fayl muvaffaqiyatli yuklandi!");
                         });
                       }
                     }}
@@ -307,7 +308,11 @@ const AdminDocuments = () => {
                   disabled={submitLoading || !formData.fileUrl}
                   className="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {submitLoading ? "Saqlanmoqda..." : "Saqlash"}
+                  {submitLoading ? (
+                    <Loader2 className="animate-spin mx-auto" size={20} />
+                  ) : (
+                    "Saqlash"
+                  )}
                 </button>
               </div>
             </form>
@@ -315,7 +320,6 @@ const AdminDocuments = () => {
         </div>
       )}
 
-      {/* Widget Style */}
       <style jsx>{`
         .upload-wrapper :global(.uploadcare--widget__button_type_open) {
           background-color: #f9fafb;
@@ -325,10 +329,6 @@ const AdminDocuments = () => {
           border-radius: 16px;
           width: 100%;
           font-weight: 600;
-        }
-        .upload-wrapper :global(.uploadcare--widget__button_type_open:hover) {
-          background-color: #f3f4f6;
-          color: #10b981;
         }
       `}</style>
     </div>
