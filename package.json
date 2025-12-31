@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@uploadcare/react-widget": "^3.0.0",
     "axios": "^1.13.2",
     "framer-motion": "^12.23.26",
     "i18next": "^25.7.3",
