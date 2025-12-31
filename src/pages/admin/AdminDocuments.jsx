@@ -49,13 +49,14 @@ const AdminDocuments = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Payload being sent:", payload); // BU YERDA file: "[uuid]" bo'lishi kerak, file: {} emas!
-    // 1. Qattiq tekshiruv (Validation)
+
+    // MUHIM: Yuborishdan oldin logda ko'ramiz
+    console.log("Yuborilayotgan fileUrl:", formData.fileUrl);
+
     if (!formData.fileUrl || typeof formData.fileUrl !== "string") {
-      return toast.error("Fayl hali yuklanmadi yoki xato yuklandi!");
-    }
-    if (!formData.title.trim()) {
-      return toast.error("Hujjat sarlavhasini kiriting!");
+      return toast.error(
+        "Fayl hali to'liq yuklanmadi. Iltimos, bir oz kuting."
+      );
     }
 
     setSubmitLoading(true);
@@ -63,18 +64,15 @@ const AdminDocuments = () => {
       const payload = {
         title: formData.title,
         category: formData.category,
-        file: formData.fileUrl, // Aniq UUID string
+        file: formData.fileUrl, // BU YERDA FAQAT STRING BO'LISHI SHART
         fileType: formData.fileType,
         fileSize: formData.fileSize,
       };
 
-      // Backend so'rovi
       await axiosClient.post("/doc", payload);
 
-      toast.success("Hujjat muvaffaqiyatli saqlandi!");
+      toast.success("Hujjat saqlandi!");
       setShowModal(false);
-
-      // Formani tozalash
       setFormData({
         title: "",
         category: "nizom",
@@ -82,11 +80,9 @@ const AdminDocuments = () => {
         fileType: "pdf",
         fileSize: 0,
       });
-
-      fetchData(); // Ro'yxatni yangilash
+      fetchData();
     } catch (err) {
-      console.error("Submit error:", err);
-      const msg = err.response?.data?.message || "Saqlashda xatolik yuz berdi";
+      const msg = err.response?.data?.message || "Saqlashda xatolik";
       toast.error(msg);
     } finally {
       setSubmitLoading(false);
