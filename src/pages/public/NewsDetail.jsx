@@ -1,95 +1,193 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Calendar, ArrowLeft, User, Loader2 } from "lucide-react";
-import { useTranslation } from "react-i18next"; // i18n
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  Calendar,
+  Clock,
+  ArrowLeft,
+  Share2,
+  ChevronRight,
+  ImageOff,
+  Loader2,
+  Facebook,
+  Send,
+} from "lucide-react";
+import { useTranslation } from "react-i18next"; // i18n import
 import axiosClient from "../../api/axiosClient";
 
-const SERVER_URL = "http://localhost:4000";
+const SERVER_URL = "http://localhost:4000"; // Sizning serveringiz
 
 const NewsDetail = () => {
   const { id } = useParams();
-  const { t, i18n } = useTranslation(); // i18n chaqirildi
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation(); // i18n hooks
   const [news, setNews] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Rasmni o'z serveringizdan olish uchun helper
+  const getImageUrl = (image) => {
+    if (!image) return null;
+    if (image.startsWith("http")) return image;
+    return `${SERVER_URL}${image}`;
+  };
+
   useEffect(() => {
-    const fetchNews = async () => {
+    const fetchNewsDetail = async () => {
       try {
         setLoading(true);
         const res = await axiosClient.get(`/news/${id}`);
-        // Ma'lumotni xavfsiz qabul qilish
-        const actualData = res.data?.data || res.data || res;
-        setNews(actualData);
-      } catch (error) {
-        console.error("Xatolik:", error);
+        // Backend ma'lumotni qaysi formatda qaytarishiga qarab:
+        const data = res.data.data || res.data.result || res.data;
+        setNews(data);
+      } catch (err) {
+        console.error("Yangilikni yuklashda xato:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchNews();
-    window.scrollTo(0, 0); // Sahifa ochilganda tepaga qaytarish
+    fetchNewsDetail();
+    window.scrollTo(0, 0);
   }, [id]);
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin text-emerald-600" size={48} />
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-emerald-600 animate-spin" />
       </div>
     );
+  }
 
-  if (!news)
+  if (!news) {
     return (
-      <div className="text-center py-20 text-red-500 font-bold">
-        {t("news_not_found")}
+      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
+        <h2 className="text-2xl font-bold text-slate-800">
+          {t("news_not_found")}
+        </h2>
+        <Link
+          to="/news"
+          className="text-emerald-600 font-bold flex items-center gap-2"
+        >
+          <ArrowLeft size={20} /> {t("back_to_all_news")}
+        </Link>
       </div>
     );
-
-  const imageUrl = news.image ? `${SERVER_URL}${news.image}` : null;
+  }
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-20">
-      <div className="h-64 md:h-96 w-full bg-[#0a1128] relative overflow-hidden">
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt={news.title}
-            className="w-full h-full object-cover opacity-60"
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
-
-        <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 text-white container mx-auto">
-          <Link
-            to="/"
-            className="text-emerald-400 hover:text-white flex items-center mb-4 transition font-bold"
-          >
-            <ArrowLeft size={20} className="mr-2" /> {t("go_back")}
-          </Link>
-          <h1 className="text-3xl md:text-5xl font-black leading-tight mb-4 tracking-tight">
-            {news.title}
-          </h1>
-
-          <div className="flex flex-wrap gap-6 text-sm md:text-base text-gray-300">
-            <span className="flex items-center font-medium">
-              <Calendar size={18} className="mr-2 text-emerald-400" />
-              {new Date(news.createdAt).toLocaleDateString(
-                i18n.language === "uz"
-                  ? "uz-UZ"
-                  : i18n.language === "ru"
-                  ? "ru-RU"
-                  : "en-US"
-              )}
-            </span>
-            <span className="flex items-center font-medium">
-              <User size={18} className="mr-2 text-emerald-400" /> Admin
+    <div className="bg-white min-h-screen pb-20">
+      {/* 1. BREADCRUMBS */}
+      <div className="bg-slate-50 border-b border-slate-100 py-4 mb-8">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
+            <Link to="/" className="hover:text-emerald-600 transition">
+              {t("home")}
+            </Link>
+            <ChevronRight size={14} />
+            <Link to="/news" className="hover:text-emerald-600 transition">
+              {t("news")}
+            </Link>
+            <ChevronRight size={14} />
+            <span className="text-slate-800 truncate max-w-[200px] md:max-w-md">
+              {news.title}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 -mt-10 relative z-10">
-        <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-xl text-lg text-slate-700 leading-relaxed whitespace-pre-wrap border border-slate-100">
-          {news.content}
+      <div className="container mx-auto px-6">
+        <div className="max-w-4xl mx-auto">
+          {/* 2. SARLAVHA */}
+          <header className="mb-8">
+            <h1 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-6 tracking-tight">
+              {news.title}
+            </h1>
+
+            <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-slate-100">
+              <div className="flex items-center gap-6 text-sm text-slate-500 font-bold">
+                <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg">
+                  <Calendar size={16} />
+                  {new Date(news.date || news.createdAt).toLocaleDateString(
+                    i18n.language === "en"
+                      ? "en-US"
+                      : i18n.language === "ru"
+                      ? "ru-RU"
+                      : "uz-UZ",
+                    { year: "numeric", month: "long", day: "numeric" }
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock size={16} /> {t("reading_time")}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest mr-2">
+                  {t("share")}:
+                </span>
+                <button className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-emerald-500 hover:text-white transition-all">
+                  <Send size={18} />
+                </button>
+                <button className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-blue-600 hover:text-white transition-all">
+                  <Facebook size={18} />
+                </button>
+                <button className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-emerald-400 hover:text-white transition-all">
+                  <Share2 size={18} />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* 3. ASOSIY RASM (Sizning Serverdan oladi) */}
+          <div className="relative rounded-[2rem] overflow-hidden mb-10 shadow-2xl shadow-slate-200 aspect-video bg-slate-100">
+            {news.image ? (
+              <img
+                src={getImageUrl(news.image)}
+                alt={news.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                <ImageOff size={64} strokeWidth={1} />
+                <span className="mt-4 font-medium">
+                  {t("no_image_attached")}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 4. MATN */}
+          <article className="prose prose-lg prose-slate max-w-none">
+            {news.content?.split("\n").map(
+              (paragraph, index) =>
+                paragraph && (
+                  <p
+                    key={index}
+                    className="text-slate-700 leading-relaxed mb-6 text-lg md:text-xl font-normal whitespace-pre-line"
+                  >
+                    {paragraph}
+                  </p>
+                )
+            )}
+          </article>
+
+          {/* 5. FOOTER */}
+          <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-slate-500 font-bold hover:text-emerald-600 transition group"
+            >
+              <ArrowLeft
+                size={20}
+                className="group-hover:-translate-x-2 transition-transform"
+              />
+              {t("go_back")}
+            </button>
+
+            <div className="flex items-center gap-4">
+              <span className="text-slate-400 text-sm italic">
+                {t("source_info")}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
