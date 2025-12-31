@@ -5,29 +5,35 @@ import { useTranslation } from "react-i18next";
 const NewsCard = ({ news }) => {
   const { t, i18n } = useTranslation();
 
-  // Server manzili (rasm uchun)
-  const SERVER_URL = "http://localhost:4000";
+  // --- UPLOADCARE IMAGE HELPER (Sizning kodingiz asosida) ---
+  const getImageUrl = (image) => {
+    if (!image) return null;
+    if (image.includes("http")) return image;
 
-  // Rasm URL manzili
-  const imageUrl = news.image
-    ? news.image.startsWith("http")
-      ? news.image
-      : `${SERVER_URL}${news.image}`
-    : null;
+    const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
+    // Card uchun rasm hajmini biroz kichikroq (800x600) qilish tezlikni oshiradi
+    return `https://${CUSTOM_DOMAIN}/${image}/-/preview/800x600/-/quality/best/-/format/auto/-/progressive/yes/`;
+  };
+
+  const imageUrl = getImageUrl(news.image);
 
   return (
     <div className="group bg-white rounded-[2rem] overflow-hidden border border-slate-100 hover:shadow-2xl hover:shadow-emerald-900/10 transition-all duration-500 flex flex-col h-full">
       {/* Rasm qismi */}
-      <div className="relative h-60 overflow-hidden">
+      <div className="relative h-60 overflow-hidden bg-slate-100">
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={news.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            onError={(e) => {
+              e.target.src =
+                "https://via.placeholder.com/800x600?text=No+Image";
+            }}
           />
         ) : (
-          <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300">
-            {/* Rasm bo'lmasa bo'sh joy */}
+          <div className="w-full h-full flex items-center justify-center text-slate-300 italic text-xs">
+            {t("no_image_attached")}
           </div>
         )}
         <div className="absolute top-4 left-4">
@@ -41,12 +47,13 @@ const NewsCard = ({ news }) => {
       <div className="p-8 flex flex-col flex-grow">
         <div className="flex items-center gap-2 text-slate-400 text-xs font-bold mb-4">
           <Calendar size={14} className="text-emerald-500" />
-          {new Date(news.createdAt).toLocaleDateString(
+          {new Date(news.createdAt || news.date).toLocaleDateString(
             i18n.language === "en"
               ? "en-US"
               : i18n.language === "ru"
               ? "ru-RU"
-              : "uz-UZ"
+              : "uz-UZ",
+            { year: "numeric", month: "long", day: "numeric" }
           )}
         </div>
 
