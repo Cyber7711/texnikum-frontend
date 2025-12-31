@@ -49,7 +49,7 @@ const AdminDocuments = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log("Payload being sent:", payload); // BU YERDA file: "[uuid]" bo'lishi kerak, file: {} emas!
     // 1. Qattiq tekshiruv (Validation)
     if (!formData.fileUrl || typeof formData.fileUrl !== "string") {
       return toast.error("Fayl hali yuklanmadi yoki xato yuklandi!");
