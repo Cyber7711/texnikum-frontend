@@ -11,21 +11,26 @@ import {
   Facebook,
   Send,
 } from "lucide-react";
-import { useTranslation } from "react-i18next"; // 1. i18n hook
+import { useTranslation } from "react-i18next"; // i18n
 import axiosClient from "../../api/axiosClient";
 
 const NewsDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation(); // 2. t funksiyasi va i18n obyekti
+  const { t, i18n } = useTranslation(); // t va i18n obyekti
   const [news, setNews] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // --- UPLOADCARE IMAGE HELPER (Kafolatlangan variant) ---
   const getImageUrl = (image) => {
     if (!image) return null;
     if (image.includes("http")) return image;
+
     const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
-    return `https://${CUSTOM_DOMAIN}/${image}/-/preview/1200x800/-/quality/best/-/format/auto/-/progressive/yes/`;
+    // Ba'zida image ID oxirida slesh bilan kelishi mumkin, shuni tozalaymiz
+    const cleanId = image.replace(/^\/+|\/+$/g, "");
+
+    return `https://${CUSTOM_DOMAIN}/${cleanId}/-/preview/1200x800/-/quality/best/-/format/auto/-/progressive/yes/`;
   };
 
   useEffect(() => {
@@ -92,17 +97,15 @@ const NewsDetail = () => {
 
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
-          {/* 2. SARLAVHA VA META */}
+          {/* 2. HEADER */}
           <header className="mb-8">
             <h1 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-6 tracking-tight">
               {news.title}
             </h1>
-
             <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-slate-100">
               <div className="flex items-center gap-6 text-sm text-slate-500 font-bold">
                 <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg">
                   <Calendar size={16} />
-                  {/* Sanani tanlangan tilga qarab formatlash */}
                   {new Date(news.date || news.createdAt).toLocaleDateString(
                     i18n.language === "en"
                       ? "en-US"
@@ -116,7 +119,6 @@ const NewsDetail = () => {
                   <Clock size={16} /> {t("reading_time")}
                 </div>
               </div>
-
               <div className="flex items-center gap-3">
                 <span className="text-xs font-black text-slate-400 uppercase tracking-widest mr-2">
                   {t("share")}:
@@ -134,16 +136,22 @@ const NewsDetail = () => {
             </div>
           </header>
 
-          {/* 3. ASOSIY RASM */}
-          <div className="relative rounded-[2rem] overflow-hidden mb-10 shadow-2xl shadow-slate-200 aspect-video bg-slate-100">
+          {/* 3. ASOSIY RASM - Joylashish kafolatlangan */}
+          <div className="relative rounded-[2rem] overflow-hidden mb-10 shadow-2xl shadow-slate-200 aspect-video bg-slate-200">
             {news.image ? (
               <img
                 src={getImageUrl(news.image)}
                 alt={news.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover block"
+                onLoad={() => console.log("Rasm yuklandi!")}
+                onError={(e) => {
+                  console.error("Rasm yuklanmadi!");
+                  e.target.src =
+                    "https://via.placeholder.com/1200x800?text=Rasm+topilmadi";
+                }}
               />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
                 <ImageOff size={64} strokeWidth={1} />
                 <span className="mt-4 font-medium">
                   {t("no_image_attached")}
@@ -152,16 +160,16 @@ const NewsDetail = () => {
             )}
           </div>
 
-          {/* 4. YANGILIK MATNI */}
+          {/* 4. MATN */}
           <article className="prose prose-lg prose-slate max-w-none">
             {news.content?.split("\n").map(
-              (paragraph, index) =>
-                paragraph && (
+              (p, i) =>
+                p && (
                   <p
-                    key={index}
+                    key={i}
                     className="text-slate-700 leading-relaxed mb-6 text-lg md:text-xl font-normal whitespace-pre-line"
                   >
-                    {paragraph}
+                    {p}
                   </p>
                 )
             )}
@@ -179,12 +187,9 @@ const NewsDetail = () => {
               />
               {t("go_back")}
             </button>
-
-            <div className="flex items-center gap-4">
-              <span className="text-slate-400 text-sm italic">
-                {t("source_info")}
-              </span>
-            </div>
+            <span className="text-slate-400 text-sm italic">
+              {t("source_info")}
+            </span>
           </div>
         </div>
       </div>
