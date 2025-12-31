@@ -268,21 +268,23 @@ const AdminDocuments = () => {
                 </label>
                 <div className="upload-wrapper">
                   <Widget
-                    publicKey="YOUR_PUBLIC_KEY" // <--- O'zingizni kalitingizni shu yerga qo'ying
+                    publicKey="55f750b33c09e3e7f41e"
                     id="file"
-                    // onChange o'rniga file.done ishlatish tavsiya etiladi
-                    onChange={(file) => {
-                      if (file) {
-                        file.done((info) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            fileUrl: info.uuid, // Faqat UUID stringni olamiz
-                            fileType: info.name?.split(".").pop() || "pdf",
-                            fileSize: info.size,
-                          }));
-                          toast.success("Fayl muvaffaqiyatli yuklandi!");
-                        });
-                      }
+                    // onFileSelect ishlatish aniqroq natija beradi
+                    onFileSelect={(file) => {
+                      if (!file) return;
+
+                      file.done((info) => {
+                        console.log("Uploadcare muvaffaqiyatli:", info.uuid);
+
+                        // Form ma'lumotlarini yangilash
+                        setFormData((prev) => ({
+                          ...prev,
+                          fileUrl: String(info.uuid), // UUID ni string sifatida saqlaymiz
+                          fileType: info.name?.split(".").pop() || "pdf",
+                          fileSize: info.size || 0,
+                        }));
+                      });
                     }}
                     tabs="file url"
                     clearable
