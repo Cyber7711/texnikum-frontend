@@ -10,25 +10,28 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next"; // i18n hook
 
 const Apply = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     fullname: "",
     phone: "+998",
-    direction: "Dasturiy injiniring",
+    direction: "", // Boshlang'ich qiymat bo'sh, useEffect yoki t() bilan sozladi
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  // Yo'nalishlarni tarjima kalitlari orqali shakllantiramiz
   const directions = [
-    "Dasturiy injiniring",
-    "Kompyuter injiniringi",
-    "Axborot xavfsizligi",
-    "Logistika",
-    "Buxgalteriya",
-    "Iqtisodiyot",
-    "Bank ishi",
+    { key: "dir_software", label: t("dir_software") },
+    { key: "dir_computer_eng", label: t("dir_computer_eng") },
+    { key: "dir_security", label: t("dir_security") },
+    { key: "dir_logistics", label: t("dir_logistics") },
+    { key: "dir_accounting", label: t("dir_accounting") },
+    { key: "dir_economy", label: t("dir_economy") },
+    { key: "dir_banking", label: t("dir_banking") },
   ];
 
   const handlePhoneChange = (e) => {
@@ -49,11 +52,11 @@ const Apply = () => {
 
   const validateForm = () => {
     if (formData.fullname.trim().length < 5) {
-      setError("Iltimos, to'liq ism-sharifingizni kiriting");
+      setError(t("apply_error_name"));
       return false;
     }
     if (formData.phone.replace(/\s/g, "").length < 13) {
-      setError("Telefon raqami to'liq kiritilmagan");
+      setError(t("apply_error_phone"));
       return false;
     }
     return true;
@@ -68,15 +71,14 @@ const Apply = () => {
       const payload = {
         ...formData,
         phone: formData.phone.replace(/\s/g, ""),
+        // Agar backend faqat bitta tilni tushunsa, labelni yuboramiz
+        direction: formData.direction || directions[0].label,
       };
 
       await axiosClient.post("/applicant", payload);
       setSuccess(true);
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Xatolik yuz berdi. Internetni tekshiring."
-      );
+      setError(err.response?.data?.message || t("apply_error_server"));
     } finally {
       setLoading(false);
     }
@@ -90,17 +92,16 @@ const Apply = () => {
             <CheckCircle className="w-12 h-12 text-green-500" />
           </div>
           <h2 className="text-3xl font-black text-gray-900 mb-4 uppercase">
-            Muvaffaqiyatli!
+            {t("apply_success_title")}
           </h2>
           <p className="text-gray-600 mb-8 font-medium">
-            Arizangiz qabul qilindi. Qabul komissiyasi operatorlari tez orada
-            siz bilan bog'lanishadi.
+            {t("apply_success_desc")}
           </p>
           <Link
             to="/"
             className="inline-flex items-center gap-2 bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
           >
-            <ArrowLeft size={20} /> BOSH SAHIFA
+            <ArrowLeft size={20} /> {t("nav_home")}
           </Link>
         </div>
       </div>
@@ -109,34 +110,33 @@ const Apply = () => {
 
   return (
     <div className="min-h-screen bg-[#0f172a] relative overflow-hidden py-16 px-4 flex items-center justify-center">
-      {/* Dizayn uchun dekorativ blur doiralar */}
       <div className="absolute top-[-10%] left-[-10%] w-80 h-80 bg-blue-600/20 rounded-full blur-[100px]"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-80 h-80 bg-purple-600/20 rounded-full blur-[100px]"></div>
 
       <div className="bg-white/95 backdrop-blur-md p-8 md:p-12 rounded-[3rem] shadow-2xl max-w-xl w-full relative z-10 border border-white/20">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight">
-            Onlayn Hujjat Topshirish
+            {t("apply_title")}
           </h1>
           <p className="text-gray-500 mt-2 font-medium">
-            Kelajagingizni biz bilan quring
+            {t("apply_subtitle")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm font-bold border border-red-100 animate-shake">
+            <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm font-bold border border-red-100">
               {error}
             </div>
           )}
 
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-xs font-black text-gray-500 uppercase ml-1">
-              <User size={14} /> To'liq Ism-sharifingiz
+              <User size={14} /> {t("apply_fullname_label")}
             </label>
             <input
               required
-              placeholder="Masalan: Alisher Fayzullaev"
+              placeholder={t("apply_fullname_placeholder")}
               className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium"
               value={formData.fullname}
               onChange={(e) =>
@@ -147,7 +147,7 @@ const Apply = () => {
 
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-xs font-black text-gray-500 uppercase ml-1">
-              <Phone size={14} /> Aloqa uchun telefon
+              <Phone size={14} /> {t("apply_phone_label")}
             </label>
             <input
               type="text"
@@ -160,7 +160,7 @@ const Apply = () => {
 
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-xs font-black text-gray-500 uppercase ml-1">
-              <BookOpen size={14} /> Tanlangan yo'nalish
+              <BookOpen size={14} /> {t("apply_direction_label")}
             </label>
             <select
               className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 focus:border-blue-500 outline-none transition-all font-medium appearance-none cursor-pointer"
@@ -169,9 +169,12 @@ const Apply = () => {
                 setFormData({ ...formData, direction: e.target.value })
               }
             >
+              <option value="" disabled>
+                {t("apply_direction_placeholder")}
+              </option>
               {directions.map((dir) => (
-                <option key={dir} value={dir}>
-                  {dir}
+                <option key={dir.key} value={dir.label}>
+                  {dir.label}
                 </option>
               ))}
             </select>
@@ -187,12 +190,12 @@ const Apply = () => {
               ) : (
                 <Send size={20} />
               )}
-              {loading ? "YUBORILMOQDA..." : "ARIZANI YUBORISH"}
+              {loading ? t("apply_btn_sending") : t("apply_btn_submit")}
             </button>
           </div>
 
           <p className="text-[10px] text-gray-400 text-center uppercase tracking-widest mt-4">
-            Hujjat topshirish orqali texnikum qoidalariga rozilik bildirasiz
+            {t("apply_footer_text")}
           </p>
         </form>
       </div>

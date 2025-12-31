@@ -1,89 +1,195 @@
-import { Calendar, ArrowRight, ImageOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  Calendar,
+  Clock,
+  ArrowLeft,
+  Share2,
+  ChevronRight,
+  ImageOff,
+  Loader2,
+  Facebook,
+  Send,
+} from "lucide-react";
+import { useTranslation } from "react-i18next"; // 1. i18n hook
+import axiosClient from "../../api/axiosClient";
 
-const NewsCard = ({ news }) => {
-  // --- UPLOADCARE IMAGE HELPER (Sizning domeningiz bilan) ---
+const NewsDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation(); // 2. t funksiyasi va i18n obyekti
+  const [news, setNews] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const getImageUrl = (image) => {
-    // 1. Agar rasm bo'lmasa
     if (!image) return null;
-
-    // 2. Agar tayyor http link bo'lsa (tashqi manbalar uchun)
     if (image.includes("http")) return image;
-
-    // 3. Sizda ishlayotgan Uploadcare maxsus domini
     const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
-
-    // UUID orqali URL yasash (Optimization qo'shildi)
-    // -/preview/600x400/ -> Sifatni tushirmagan holda hajmini optimallashtiradi
-    return `https://${CUSTOM_DOMAIN}/${image}/-/preview/600x400/-/quality/smart/-/format/auto/`;
+    return `https://${CUSTOM_DOMAIN}/${image}/-/preview/1200x800/-/quality/best/-/format/auto/-/progressive/yes/`;
   };
 
-  const finalImageUrl = getImageUrl(news.image);
+  useEffect(() => {
+    const fetchNewsDetail = async () => {
+      try {
+        setLoading(true);
+        const res = await axiosClient.get(`/news/${id}`);
+        const data = res.data.data || res.data.result || res.data;
+        setNews(data);
+      } catch (err) {
+        console.error("Yangilikni yuklashda xato:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNewsDetail();
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-emerald-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!news) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
+        <h2 className="text-2xl font-bold text-slate-800">
+          {t("news_not_found")}
+        </h2>
+        <Link
+          to="/news"
+          className="text-emerald-600 font-bold flex items-center gap-2"
+        >
+          <ArrowLeft size={20} /> {t("back_to_all_news")}
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 flex flex-col h-full border border-slate-100 group relative">
-      {/* Rasm qismi */}
-      <div className="relative h-60 overflow-hidden bg-slate-100">
-        {finalImageUrl ? (
-          <img
-            src={finalImageUrl}
-            alt={news.title}
-            className="w-full h-full object-cover transform group-hover:scale-110 transition duration-700 ease-out"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
-            <ImageOff size={48} strokeWidth={1} />
-            <span className="text-xs mt-2 font-medium">Tasvir mavjud emas</span>
+    <div className="bg-white min-h-screen pb-20">
+      {/* 1. BREADCRUMBS */}
+      <div className="bg-slate-50 border-b border-slate-100 py-4 mb-8">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
+            <Link to="/" className="hover:text-emerald-600 transition">
+              {t("home")}
+            </Link>
+            <ChevronRight size={14} />
+            <Link to="/news" className="hover:text-emerald-600 transition">
+              {t("news")}
+            </Link>
+            <ChevronRight size={14} />
+            <span className="text-slate-800 truncate max-w-[200px] md:max-w-md">
+              {news.title}
+            </span>
           </div>
-        )}
-
-        {/* Badge (Yashil Agro Style) */}
-        <div className="absolute top-4 left-4 bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-lg uppercase tracking-widest border border-white/20 z-10">
-          Yangilik
         </div>
       </div>
 
-      {/* Matn qismi */}
-      <div className="p-7 flex flex-col flex-grow relative">
-        {/* Orqa fon bezagi (Hoverda ko'rinadi) */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="container mx-auto px-6">
+        <div className="max-w-4xl mx-auto">
+          {/* 2. SARLAVHA VA META */}
+          <header className="mb-8">
+            <h1 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-6 tracking-tight">
+              {news.title}
+            </h1>
 
-        {/* Sana */}
-        <div className="flex items-center text-emerald-600 font-bold text-xs mb-4 z-10">
-          <Calendar size={15} className="mr-2" />
-          {new Date(news.createdAt || news.date).toLocaleDateString("uz-UZ", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
+            <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-slate-100">
+              <div className="flex items-center gap-6 text-sm text-slate-500 font-bold">
+                <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg">
+                  <Calendar size={16} />
+                  {/* Sanani tanlangan tilga qarab formatlash */}
+                  {new Date(news.date || news.createdAt).toLocaleDateString(
+                    i18n.language === "en"
+                      ? "en-US"
+                      : i18n.language === "ru"
+                      ? "ru-RU"
+                      : "uz-UZ",
+                    { year: "numeric", month: "long", day: "numeric" }
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock size={16} /> {t("reading_time")}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest mr-2">
+                  {t("share")}:
+                </span>
+                <button className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-emerald-500 hover:text-white transition-all">
+                  <Send size={18} />
+                </button>
+                <button className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-blue-600 hover:text-white transition-all">
+                  <Facebook size={18} />
+                </button>
+                <button className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-emerald-400 hover:text-white transition-all">
+                  <Share2 size={18} />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* 3. ASOSIY RASM */}
+          <div className="relative rounded-[2rem] overflow-hidden mb-10 shadow-2xl shadow-slate-200 aspect-video bg-slate-100">
+            {news.image ? (
+              <img
+                src={getImageUrl(news.image)}
+                alt={news.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                <ImageOff size={64} strokeWidth={1} />
+                <span className="mt-4 font-medium">
+                  {t("no_image_attached")}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 4. YANGILIK MATNI */}
+          <article className="prose prose-lg prose-slate max-w-none">
+            {news.content?.split("\n").map(
+              (paragraph, index) =>
+                paragraph && (
+                  <p
+                    key={index}
+                    className="text-slate-700 leading-relaxed mb-6 text-lg md:text-xl font-normal whitespace-pre-line"
+                  >
+                    {paragraph}
+                  </p>
+                )
+            )}
+          </article>
+
+          {/* 5. FOOTER */}
+          <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-slate-500 font-bold hover:text-emerald-600 transition group"
+            >
+              <ArrowLeft
+                size={20}
+                className="group-hover:-translate-x-2 transition-transform"
+              />
+              {t("go_back")}
+            </button>
+
+            <div className="flex items-center gap-4">
+              <span className="text-slate-400 text-sm italic">
+                {t("source_info")}
+              </span>
+            </div>
+          </div>
         </div>
-
-        {/* Sarlavha */}
-        <h3 className="text-xl font-extrabold text-slate-800 mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors duration-300 z-10 leading-tight">
-          {news.title}
-        </h3>
-
-        {/* Qisqacha mazmuni */}
-        <p className="text-slate-500 text-sm mb-6 line-clamp-3 flex-grow z-10 leading-relaxed">
-          {news.content}
-        </p>
-
-        {/* Tugma */}
-        <Link
-          to={`/news/${news._id}`}
-          className="inline-flex items-center text-emerald-600 font-black text-xs uppercase tracking-wider group/btn z-10"
-        >
-          <span className="border-b-2 border-transparent group-hover/btn:border-emerald-600 transition-all pb-1">
-            Batafsil o'qish
-          </span>
-          <ArrowRight
-            size={16}
-            className="ml-2 transform group-hover/btn:translate-x-2 transition-transform duration-300"
-          />
-        </Link>
       </div>
     </div>
   );
 };
 
-export default NewsCard;
+export default NewsDetail;

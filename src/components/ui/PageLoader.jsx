@@ -1,6 +1,9 @@
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next"; // i18n import qilindi
 
 const PageLoader = () => {
+  const { t } = useTranslation(); // Tarjima funksiyasi chaqirildi
+
   return (
     <div className="fixed inset-0 z-[9999] bg-[#0a1128] flex flex-col items-center justify-center">
       {/* Markaziy animatsiya */}
@@ -20,7 +23,7 @@ const PageLoader = () => {
       {/* Yuklanish matni */}
       <div className="mt-8 flex flex-col items-center">
         <h2 className="text-gray-400 text-xs font-bold uppercase tracking-[0.5em] animate-pulse">
-          Yuklanmoqda
+          {t("loading")} {/* "Yuklanmoqda" so'zi tarjimaga ulandi */}
         </h2>
         <div className="flex gap-1 mt-2">
           <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>

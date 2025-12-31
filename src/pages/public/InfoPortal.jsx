@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   HelpCircle,
@@ -12,70 +12,46 @@ import {
   Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next"; // i18n hook
 import PageWrapper from "../../components/layout/PageWrapper";
 
 const InfoPortal = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "faq";
 
-  // Guruhlarni aniqlaymiz
   const studentTabs = ["lms", "finance", "career"];
   const isStudentGroup = studentTabs.includes(activeTab);
 
   const tabs = [
-    { id: "faq", label: "FAQ", icon: <HelpCircle size={18} />, group: "abi" },
+    { id: "faq", label: t("info_faq_tab"), icon: <HelpCircle size={18} /> },
     {
       id: "directions",
-      label: "Yo'nalishlar",
+      label: t("info_directions_tab"),
       icon: <GraduationCap size={18} />,
-      group: "abi",
     },
-    {
-      id: "docs",
-      label: "Nizomlar",
-      icon: <FileText size={18} />,
-      group: "abi",
-    },
-    {
-      id: "lms",
-      label: "LMS Portal",
-      icon: <Monitor size={18} />,
-      group: "talaba",
-    },
+    { id: "docs", label: t("info_docs_tab"), icon: <FileText size={18} /> },
+    { id: "lms", label: t("info_lms_tab"), icon: <Monitor size={18} /> },
     {
       id: "finance",
-      label: "Moliya",
+      label: t("info_finance_tab"),
       icon: <CreditCard size={18} />,
-      group: "talaba",
     },
     {
       id: "career",
-      label: "Karyera",
+      label: t("info_career_tab"),
       icon: <Briefcase size={18} />,
-      group: "talaba",
     },
   ];
 
-  // Ranglar sxemasi guruhga qarab
   const themeClass = isStudentGroup
-    ? {
-        bg: "bg-amber-600",
-        text: "text-amber-600",
-        lightBg: "bg-amber-50",
-        border: "border-amber-100",
-      }
-    : {
-        bg: "bg-blue-600",
-        text: "text-blue-600",
-        lightBg: "bg-blue-50",
-        border: "border-blue-100",
-      };
+    ? { text: "text-amber-600", bg: "bg-amber-600", border: "border-amber-100" }
+    : { text: "text-blue-600", bg: "bg-blue-600", border: "border-blue-100" };
 
   return (
     <PageWrapper>
       <div className="min-h-screen bg-gray-50 py-16">
         <div className="container mx-auto px-6">
-          {/* Sahifa Sarlavhasi (Dinamik) */}
           <div className="text-center mb-12">
             <motion.h1
               key={isStudentGroup}
@@ -83,17 +59,18 @@ const InfoPortal = () => {
               animate={{ opacity: 1, y: 0 }}
               className="text-3xl md:text-5xl font-black text-slate-900 uppercase tracking-tight"
             >
-              {isStudentGroup ? "Talabalar" : "Abituriyentlar"}{" "}
-              <span className={themeClass.text}>Markazi</span>
+              {isStudentGroup
+                ? t("info_students_title")
+                : t("info_applicants_title")}{" "}
+              <span className={themeClass.text}>{t("center")}</span>
             </motion.h1>
             <p className="text-gray-500 mt-4 font-medium uppercase tracking-widest text-xs">
               {isStudentGroup
-                ? "Akademik faoliyat va resurslar"
-                : "Qabul jarayoni va ma'lumotlar"}
+                ? t("info_students_sub")
+                : t("info_applicants_sub")}
             </p>
           </div>
 
-          {/* Tablar Menyusi */}
           <div className="flex flex-wrap justify-center gap-3 mb-10">
             {tabs.map((tab) => (
               <button
@@ -110,7 +87,6 @@ const InfoPortal = () => {
             ))}
           </div>
 
-          {/* Kontent Konteyneri */}
           <div
             className={`max-w-4xl mx-auto bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border ${themeClass.border}`}
           >
@@ -120,30 +96,32 @@ const InfoPortal = () => {
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.3 }}
               >
-                {activeTab === "faq" && <FAQContent />}
-                {activeTab === "directions" && <DirectionsContent />}
-                {activeTab === "docs" && <DocsContent />}
+                {activeTab === "faq" && <FAQContent t={t} />}
+                {activeTab === "directions" && <DirectionsContent t={t} />}
+                {activeTab === "docs" && <DocsContent t={t} />}
                 {activeTab === "lms" && (
                   <PlaceholderContent
-                    title="LMS Platforma"
+                    title={t("info_lms_tab")}
                     icon={<Monitor size={48} />}
                     color={themeClass.text}
+                    t={t}
                   />
                 )}
                 {activeTab === "finance" && (
                   <PlaceholderContent
-                    title="Stipendiyalar"
+                    title={t("info_finance_tab")}
                     icon={<CreditCard size={48} />}
                     color={themeClass.text}
+                    t={t}
                   />
                 )}
                 {activeTab === "career" && (
                   <PlaceholderContent
-                    title="Karyera"
+                    title={t("info_career_tab")}
                     icon={<Briefcase size={48} />}
                     color={themeClass.text}
+                    t={t}
                   />
                 )}
               </motion.div>
@@ -155,24 +133,18 @@ const InfoPortal = () => {
   );
 };
 
-// --- YORDAMCHI KONTENT KOMPONENTLARI ---
+// --- YORDAMCHI KOMPONENTLAR TARJIMALAR BILAN ---
 
-const FAQContent = () => {
+const FAQContent = ({ t }) => {
   const [open, setOpen] = useState(null);
   const data = [
-    {
-      q: "Hujjatlar qabul qilish muddati?",
-      a: "Qabul odatda 15-iyundan 25-avgustgacha davom etadi.",
-    },
-    {
-      q: "Sirtqi bo'lim mavjudmi?",
-      a: "Ha, deyarli barcha yo'nalishlarda sirtqi ta'lim shakli mavjud.",
-    },
+    { q: t("faq_q1"), a: t("faq_a1") },
+    { q: t("faq_q2"), a: t("faq_a2") },
   ];
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-black mb-8 text-slate-800">
-        KO'P BERILADIGAN SAVOLLAR
+      <h2 className="text-2xl font-black mb-8 text-slate-800 uppercase">
+        {t("info_faq_title")}
       </h2>
       {data.map((item, i) => (
         <div key={i} className="border-b border-gray-100 pb-4">
@@ -196,118 +168,72 @@ const FAQContent = () => {
   );
 };
 
-const DirectionsContent = () => (
+const DirectionsContent = ({ t }) => (
   <div>
-    <h2 className="text-2xl font-black mb-8 text-slate-800">YO'NALISHLAR</h2>
+    <h2 className="text-2xl font-black mb-8 text-slate-800 uppercase">
+      {t("info_directions_title")}
+    </h2>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {["Dasturiy injiniring", "Buxgalteriya", "Logistika", "Bank ishi"].map(
-        (d) => (
-          <div
-            key={d}
-            className="p-4 bg-gray-50 rounded-2xl font-bold text-slate-700 flex items-center gap-3"
-          >
-            <div className="w-2.5 h-2.5 bg-blue-600 rounded-full" /> {d}
-          </div>
-        )
-      )}
+      {[
+        t("dir_software"),
+        t("dir_accounting"),
+        t("dir_logistics"),
+        t("dir_banking"),
+      ].map((d) => (
+        <div
+          key={d}
+          className="p-4 bg-gray-50 rounded-2xl font-bold text-slate-700 flex items-center gap-3"
+        >
+          <div className="w-2.5 h-2.5 bg-blue-600 rounded-full" /> {d}
+        </div>
+      ))}
     </div>
   </div>
 );
 
-const DocsContent = () => {
+const DocsContent = ({ t }) => {
   const documents = [
-    { id: 1, name: "Politexnikum Ustavi", size: "1.2 MB", type: "PDF" },
-    {
-      id: 2,
-      name: "Qabul qilish tartibi va nizomi (2025/2026)",
-      size: "850 KB",
-      type: "PDF",
-    },
-    {
-      id: 3,
-      name: "Talabalar odob-axloq kodeksi",
-      size: "450 KB",
-      type: "DOCX",
-    },
-    {
-      id: 4,
-      name: "Stipendiya ajratish tartibi to'g'risida nizom",
-      size: "620 KB",
-      type: "PDF",
-    },
-    { id: 5, name: "Ichki tartib-qoidalar", size: "1.1 MB", type: "PDF" },
+    { id: 1, name: t("doc_charter"), size: "1.2 MB", type: "PDF" },
+    { id: 2, name: t("doc_admission_rules"), size: "850 KB", type: "PDF" },
+    { id: 3, name: t("doc_ethics"), size: "450 KB", type: "DOCX" },
   ];
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
-          Me'yoriy <span className="text-blue-600">Hujjatlar</span>
-        </h2>
-        <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full uppercase">
-          Jami: {documents.length} ta
-        </span>
-      </div>
-
+      <h2 className="text-2xl font-black text-slate-800 uppercase">
+        {t("info_docs_tab")}
+      </h2>
       <div className="grid gap-4">
         {documents.map((doc) => (
           <div
             key={doc.id}
-            className="group flex items-center justify-between p-5 bg-gray-50 rounded-2xl border border-transparent hover:border-blue-200 hover:bg-blue-50/50 transition-all duration-300"
+            className="flex items-center justify-between p-5 bg-gray-50 rounded-2xl hover:bg-blue-50 transition-all"
           >
             <div className="flex items-center gap-5">
-              <div className="p-3 bg-white rounded-xl text-blue-600 shadow-sm group-hover:scale-110 transition-transform">
-                <FileTextIcon size={24} />
-              </div>
+              <FileTextIcon className="text-blue-600" size={24} />
               <div>
-                <h4 className="font-bold text-slate-700 group-hover:text-blue-700 transition-colors">
-                  {doc.name}
-                </h4>
-                <div className="flex gap-3 mt-1">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    {doc.type}
-                  </span>
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    {doc.size}
-                  </span>
-                </div>
+                <h4 className="font-bold text-slate-700">{doc.name}</h4>
+                <span className="text-[10px] text-gray-400 font-bold uppercase">
+                  {doc.type} | {doc.size}
+                </span>
               </div>
             </div>
-
-            <button
-              className="flex items-center gap-2 px-5 py-2.5 bg-white text-blue-600 rounded-xl font-bold text-sm shadow-sm border border-gray-100 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all active:scale-95"
-              onClick={() => window.open("#", "_blank")} // Fayl yo'li qo'yiladi
-            >
-              <Download size={16} />
-              <span>YUKLASH</span>
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-xl font-bold text-sm border hover:bg-blue-600 hover:text-white transition-all">
+              <Download size={16} /> {t("download")}
             </button>
           </div>
         ))}
-      </div>
-
-      {/* Ma'lumot: Agar kerakli hujjat topilmasa */}
-      <div className="mt-10 p-6 bg-slate-900 rounded-3xl flex items-center gap-5">
-        <div className="p-3 bg-blue-600/20 text-blue-400 rounded-2xl">
-          <HelpCircle size={24} />
-        </div>
-        <p className="text-sm text-gray-300 italic leading-relaxed">
-          Siz qidirayotgan hujjat ro'yxatda mavjud bo'lmasa, iltimos texnikum
-          qabul bo'limiga murojaat qiling.
-        </p>
       </div>
     </div>
   );
 };
 
-const PlaceholderContent = ({ title, icon, color, desc }) => (
+const PlaceholderContent = ({ title, icon, color, t }) => (
   <div className="text-center py-10 flex flex-col items-center">
     <div className={`${color} mb-6 opacity-20`}>{icon}</div>
     <h2 className="text-2xl font-black text-slate-800 uppercase mb-2">
       {title}
     </h2>
-    <p className="text-gray-400">
-      Ushbu bo'lim ma'lumotlari tez orada yangilanadi.
-    </p>
+    <p className="text-gray-400">{t("coming_soon_desc")}</p>
   </div>
 );
 

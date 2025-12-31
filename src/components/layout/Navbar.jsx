@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { Menu, X, User } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next"; // 1. i18n hookini import qilamiz
 
 const Navbar = () => {
+  const { t } = useTranslation(); // 2. t funksiyasini chaqiramiz
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -11,38 +13,39 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-20">
           <Link to="/" className="flex items-center space-x-3">
             <div className="bg-white p-2 rounded-full">
-              <span className="text-tatu-blue font-bold text-xl">TEX</span>
+              <span className="text-[#0a1128] font-bold text-xl">TEX</span>
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-lg leading-none uppercase">
-                Texnikum
+                {t("navbar_brand_name")}
               </span>
               <span className="text-xs text-blue-200 uppercase tracking-widest">
-                Axborot Tizimi
+                {t("navbar_brand_sub")}
               </span>
             </div>
           </Link>
 
+          {/* Desktop Menyu */}
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium uppercase">
-            <Link to="/" className="hover:text-tatu-gold transition">
-              Asosiy
+            <Link to="/" className="hover:text-emerald-400 transition">
+              {t("nav_home")}
             </Link>
-            <Link to="/news" className="hover:text-tatu-gold transition">
-              Yangiliklar
+            <Link to="/news" className="hover:text-emerald-400 transition">
+              {t("nav_news")}
             </Link>
-            <Link to="/teachers" className="hover:text-tatu-gold transition">
-              O'qituvchilar
+            <Link to="/teachers" className="hover:text-emerald-400 transition">
+              {t("nav_teachers")}
             </Link>
-            <Link to="/documents" className="hover:text-tatu-gold transition">
-              Hujjatlar
+            <Link to="/documents" className="hover:text-emerald-400 transition">
+              {t("nav_documents")}
             </Link>
 
             <Link
               to="/login"
-              className="flex items-center bg-white text-tatu-blue px-4 py-2 rounded font-bold hover:bg-tatu-gold hover:text-white transition"
+              className="flex items-center bg-white text-[#0a1128] px-4 py-2 rounded font-bold hover:bg-emerald-500 hover:text-white transition"
             >
               <User className="w-4 h-4 mr-2" />
-              Kirish
+              {t("nav_login")}
             </Link>
           </div>
 
@@ -54,22 +57,43 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* Mobile Menyu */}
       {isOpen && (
-        <div className="md:hidden bg-tatu-dark pb-4">
-          <Link to="/" className="block px-4 py-2 hover:bg-white/10">
-            Asosiy
+        <div className="md:hidden bg-[#0d1633] pb-4 animate-in slide-in-from-top duration-300">
+          <Link
+            to="/"
+            onClick={() => setIsOpen(false)}
+            className="block px-4 py-3 hover:bg-white/10"
+          >
+            {t("nav_home")}
           </Link>
-          <Link to="/news" className="block px-4 py-2 hover:bg-white/10">
-            Yangiliklar
+          <Link
+            to="/news"
+            onClick={() => setIsOpen(false)}
+            className="block px-4 py-3 hover:bg-white/10"
+          >
+            {t("nav_news")}
           </Link>
-          <Link to="/teachers" className="block px-4 py-2 hover:bg-white/10">
-            O'qituvchilar
+          <Link
+            to="/teachers"
+            onClick={() => setIsOpen(false)}
+            className="block px-4 py-3 hover:bg-white/10"
+          >
+            {t("nav_teachers")}
+          </Link>
+          <Link
+            to="/documents"
+            onClick={() => setIsOpen(false)}
+            className="block px-4 py-3 hover:bg-white/10"
+          >
+            {t("nav_documents")}
           </Link>
           <Link
             to="/login"
-            className="block px-4 py-2 bg-tatu-gold text-center mt-2 mx-4 rounded"
+            onClick={() => setIsOpen(false)}
+            className="block px-4 py-2 bg-emerald-600 text-center mt-2 mx-4 rounded font-bold"
           >
-            Kirish
+            {t("nav_login")}
           </Link>
         </div>
       )}

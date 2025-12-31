@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
-import { Mail, Phone, Star, GraduationCap, ImageOff } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  Star,
+  GraduationCap,
+  ImageOff,
+  Loader2,
+} from "lucide-react";
+import { useTranslation } from "react-i18next"; // i18n import
 import axiosClient from "../../api/axiosClient";
 
 const Teachers = () => {
+  const { t, i18n } = useTranslation();
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,35 +30,30 @@ const Teachers = () => {
     fetchTeachers();
   }, []);
 
-  // --- UPLOADCARE URL (Sizning domeningiz bilan) ---
   const getImageUrl = (photo, fullname) => {
     const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
     if (photo && !photo.includes("http") && photo.length > 20) {
-      // Sifatli preview
       return `https://${CUSTOM_DOMAIN}/${photo}/-/scale_crop/600x600/smart/-/quality/smart/-/format/auto/`;
     }
     if (photo && photo.startsWith("http")) return photo;
-
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
       fullname
     )}&background=10b981&color=fff&size=512`;
   };
 
   return (
-    <div className="bg-white min-h-screen py-20 font-sans">
+    <div className="bg-white min-h-screen py-20">
       <div className="container mx-auto px-4">
+        {/* HEADER */}
         <div className="max-w-3xl mx-auto text-center mb-16">
           <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest">
-            Pedagogik Jamoa
+            {t("pedagogical_team_badge")}
           </span>
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 mt-4 mb-6 tracking-tight">
-            O'qituvchilarimiz
+            {t("our_teachers_title")}
           </h1>
           <div className="w-24 h-1.5 bg-emerald-500 mx-auto rounded-full mb-6"></div>
-          <p className="text-slate-500 text-lg">
-            Kelajak mutaxassislarini tayyorlayotgan tajribali ustozlar bilan
-            tanishing.
-          </p>
+          <p className="text-slate-500 text-lg">{t("teachers_subtitle")}</p>
         </div>
 
         {loading ? (
@@ -64,7 +68,7 @@ const Teachers = () => {
         ) : teachers.length === 0 ? (
           <div className="text-center py-24 text-slate-400 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
             <GraduationCap size={80} className="mx-auto mb-6 opacity-20" />
-            <p className="text-2xl font-bold">Ma'lumotlar topilmadi</p>
+            <p className="text-2xl font-bold">{t("no_teachers_found")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -73,6 +77,7 @@ const Teachers = () => {
                 key={teacher._id}
                 className="bg-white rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 border border-slate-100 overflow-hidden group"
               >
+                {/* IMAGE AREA */}
                 <div className="h-72 relative overflow-hidden bg-slate-50">
                   <img
                     src={getImageUrl(teacher.photo, teacher.fullname)}
@@ -82,7 +87,8 @@ const Teachers = () => {
                   />
                   <div className="absolute bottom-4 left-4">
                     <span className="bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-bold px-4 py-2 rounded-xl shadow-xl uppercase tracking-widest border border-emerald-400/20">
-                      {teacher.subject || "MUTAXASSIS"}
+                      {/* Fanni tarjima qilish yoki bazadagi qiymatni ko'rsatish */}
+                      {teacher.subject}
                     </span>
                   </div>
                 </div>
@@ -97,7 +103,7 @@ const Teachers = () => {
                       className="text-amber-400 fill-amber-400 mr-2"
                     />
                     <span className="font-semibold">
-                      {teacher.experience || "5+"} yil tajriba
+                      {teacher.experience} {t("years_experience")}
                     </span>
                   </div>
 

@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import { Calendar, ArrowRight, ImageOff } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next"; // 1. useTranslation import qilindi
 
 const News = () => {
+  const { t } = useTranslation(); // 2. t funksiyasi chaqirildi
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,7 +13,6 @@ const News = () => {
     const fetchAllNews = async () => {
       try {
         const res = await axiosClient.get("/news");
-        // Backenddan keladigan ma'lumotni formatlash
         const data = res.data.data || res.data.result || res.data;
         setNewsList(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -23,15 +24,10 @@ const News = () => {
     fetchAllNews();
   }, []);
 
-  // --- UPLOADCARE IMAGE HELPER (Sizning maxsus domeningiz bilan) ---
   const getImageUrl = (image) => {
     if (!image) return null;
     if (image.includes("http")) return image;
-
-    // Sizda ishlayotgan maxsus domen
     const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
-
-    // UUID dan keyin slesh (/) bo'lishi va CDN parametrlarining to'g'ri tartibi muhim
     return `https://${CUSTOM_DOMAIN}/${image}/-/preview/1000x560/-/quality/smart/-/format/auto/`;
   };
 
@@ -41,11 +37,11 @@ const News = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-black text-slate-800 mb-4 tracking-tight uppercase">
-            So'nggi Yangiliklar
+            {t("all_news_title")} {/* 3. Sarlavha tarjimasi */}
           </h1>
-          <div className="w-24 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
+          <div className="w-24 h-1.5 bg-emerald-600 mx-auto rounded-full"></div>
           <p className="mt-4 text-slate-500 text-lg">
-            Texnikum hayotidagi eng muhim voqea va hodisalar
+            {t("news_subtitle")} {/* 4. Subtitle tarjimasi */}
           </p>
         </div>
 
@@ -61,7 +57,7 @@ const News = () => {
         ) : newsList.length === 0 ? (
           <div className="text-center py-20 bg-slate-50 rounded-3xl">
             <p className="text-slate-400 text-xl font-medium">
-              Hozircha yangiliklar yo'q.
+              {t("no_news_available")} {/* 5. Bo'sh holat tarjimasi */}
             </p>
           </div>
         ) : (
@@ -85,7 +81,7 @@ const News = () => {
                     </div>
                   )}
                   <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-bold text-slate-800 shadow-lg flex items-center gap-2">
-                    <Calendar size={14} className="text-blue-600" />
+                    <Calendar size={14} className="text-emerald-600" />
                     {new Date(news.date || news.createdAt).toLocaleDateString(
                       "uz-UZ"
                     )}
@@ -93,7 +89,7 @@ const News = () => {
                 </div>
 
                 <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-slate-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-xl font-bold text-slate-800 mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors">
                     {news.title}
                   </h3>
                   <p className="text-slate-500 text-sm line-clamp-3 mb-6 flex-grow">
@@ -102,9 +98,9 @@ const News = () => {
 
                   <Link
                     to={`/news/${news._id}`}
-                    className="mt-auto flex items-center text-blue-600 font-bold text-sm uppercase tracking-wider group-hover:translate-x-2 transition-transform"
+                    className="mt-auto flex items-center text-emerald-600 font-bold text-sm uppercase tracking-wider group-hover:translate-x-2 transition-transform"
                   >
-                    Batafsil o'qish <ArrowRight size={16} className="ml-2" />
+                    {t("read_more")} <ArrowRight size={16} className="ml-2" />
                   </Link>
                 </div>
               </article>

@@ -1,12 +1,14 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 // Swiper stillarini import qilish
 import "swiper/css";
 import "swiper/css/navigation";
 
 const Partners = () => {
+  const { t } = useTranslation();
+
   const partners = [
     {
       name: "Oliy Ta'lim Vazirligi",
@@ -29,10 +31,6 @@ const Partners = () => {
       logo: "https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg",
     },
     {
-      name: "EPAM",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Epam_Systems_logo.svg",
-    },
-    {
       name: "Google",
       logo: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
     },
@@ -42,9 +40,8 @@ const Partners = () => {
     <div className="py-12 bg-white border-y border-gray-50">
       <div className="container mx-auto px-6 relative group">
         <h2 className="text-xl font-bold text-center text-gray-800 mb-10 uppercase tracking-[0.2em]">
-          Bizning Hamkorlar
+          {t("our_partners")}
         </h2>
-
         {/* Swiper Karusel */}
         <div className="relative flex items-center">
           {/* Chap strelka */}
