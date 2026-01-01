@@ -42,25 +42,25 @@ const AdminDocuments = () => {
     fetchData();
   }, []);
 
-  // Hujjatni saqlash
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedFile) return toast.error("Iltimos, fayl tanlang!");
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("category", category);
-    formData.append("file", selectedFile);
+    const data = new FormData();
+    data.append("title", title);
+    data.append("category", category);
+    data.append("file", selectedFile);
 
     setSubmitLoading(true);
     try {
-      await axiosClient.post("/doc", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      await axiosClient.post("/doc", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
-      toast.success("Hujjat muvaffaqiyatli yuklandi!");
+      toast.success("Hujjat yuklandi!");
       setShowModal(false);
-      resetForm();
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || "Xatolik yuz berdi");
