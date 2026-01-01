@@ -46,6 +46,8 @@ const AdminDocuments = () => {
     e.preventDefault();
     if (!selectedFile) return toast.error("Iltimos, fayl tanlang!");
 
+    console.log(selectedFile);
+
     const data = new FormData();
     data.append("title", title);
     data.append("category", category);
