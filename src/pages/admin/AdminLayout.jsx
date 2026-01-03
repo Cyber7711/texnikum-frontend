@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -8,166 +9,150 @@ import {
   BarChart3,
   LogOut,
   FileQuestion,
-  Leaf, // Logo uchun
   ChevronRight,
+  Menu, // Mobil menyu uchun
+  X, // Yopish uchun
 } from "lucide-react";
+import Logo from "../../components/Logo";
 
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobil sidebar holati
 
   const menuItems = [
-    {
-      path: "/admin",
-      name: "Dashboard",
-      icon: <LayoutDashboard size={18} />,
-    },
+    { path: "/admin", name: "Dashboard", icon: <LayoutDashboard size={18} /> },
     {
       path: "/admin/applicants",
-      name: "Arizalar (Qabul)",
+      name: "Arizalar",
       icon: <FileQuestion size={18} />,
     },
-    {
-      path: "/admin/news",
-      name: "Yangiliklar",
-      icon: <Newspaper size={18} />,
-    },
+    { path: "/admin/news", name: "Yangiliklar", icon: <Newspaper size={18} /> },
     {
       path: "/admin/teachers",
       name: "O'qituvchilar",
       icon: <Users size={18} />,
     },
     {
-      path: "/admin/statistics",
-      name: "Statistika",
-      icon: <BarChart3 size={18} />,
-    },
-    {
       path: "/admin/documents",
       name: "Hujjatlar",
       icon: <FileText size={18} />,
-    },
-    {
-      path: "/admin/quicklinks",
-      name: "Tezkor havolalar",
-      icon: <Link2 size={18} />,
     },
   ];
 
   const handleLogout = () => {
     if (window.confirm("Tizimdan chiqmoqchimisiz?")) {
       localStorage.removeItem("token");
-      navigate("/login");
+      navigate("/");
     }
   };
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">
-      {/* SIDEBAR */}
-      <aside className="w-72 bg-[#0f172a] text-white flex flex-col shadow-2xl z-20 border-r border-emerald-900/20">
+    <div className="flex h-screen bg-[#f8fafc] overflow-hidden relative">
+      {/* 1. MOBIL OVERLAY (Sidebar ochiqligida orqa fonni qorong'u qilish) */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* 2. SIDEBAR */}
+      <aside
+        className={`
+        fixed lg:static inset-y-0 left-0 z-40 w-72 bg-[#0f172a] text-white flex flex-col shadow-2xl transition-transform duration-300 border-r border-emerald-900/10
+        ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }
+      `}
+      >
         {/* Logo qismi */}
-        <div className="p-6 border-b border-slate-800/50 flex items-center gap-3 bg-[#0a1128]">
-          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Leaf className="text-[#0f172a] w-6 h-6" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-lg font-black tracking-tighter leading-none">
-              ADMIN <span className="text-emerald-400">PANEL</span>
-            </h1>
-            <span className="text-[10px] text-emerald-200/40 uppercase tracking-widest mt-1">
-              v1.0.2 Beta
-            </span>
-          </div>
+        <div className="p-6 h-24 border-b border-slate-800/50 flex items-center justify-between bg-[#0a1128]">
+          <Logo />
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden p-2 text-slate-400"
+          >
+            <X size={24} />
+          </button>
         </div>
 
-        {/* Menu Navigatsiya */}
-        <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1.5 custom-scrollbar">
-          <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">
-            Asosiy Menyu
-          </p>
+        {/* Menu */}
+        <nav className="flex-1 overflow-y-auto py-8 px-4 space-y-2">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 group ${
+                onClick={() => setIsSidebarOpen(false)} // Bosilganda yopish
+                className={`flex items-center justify-between px-4 py-4 rounded-2xl transition-all ${
                   isActive
-                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 translate-x-1"
-                    : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                    : "text-slate-400 hover:bg-slate-800/40"
                 }`}
               >
                 <div className="flex items-center space-x-3">
                   <span
-                    className={`${
-                      isActive
-                        ? "text-white"
-                        : "text-emerald-500/70 group-hover:text-emerald-400"
-                    } transition-colors`}
+                    className={isActive ? "text-white" : "text-emerald-500"}
                   >
                     {item.icon}
                   </span>
-                  <span className="font-semibold text-[14px]">{item.name}</span>
+                  <span className="text-sm font-bold">{item.name}</span>
                 </div>
-                {isActive && <ChevronRight size={14} className="opacity-50" />}
+                {isActive && <ChevronRight size={14} />}
               </Link>
             );
           })}
         </nav>
 
-        {/* Logout qismi */}
-        <div className="p-4 border-t border-slate-800/50 bg-[#0a1128]/50">
+        {/* Logout */}
+        <div className="p-6 border-t border-slate-800/50">
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-3 px-4 py-3.5 w-full text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all duration-300 font-bold text-sm group"
+            className="flex items-center justify-center space-x-3 px-4 py-4 w-full bg-rose-500/5 text-rose-500 border border-rose-500/20 rounded-2xl font-bold text-sm"
           >
-            <LogOut
-              size={18}
-              className="group-hover:-translate-x-1 transition-transform"
-            />
-            <span>Tizimdan chiqish</span>
+            <LogOut size={18} />
+            <span>Chiqish</span>
           </button>
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
-        {/* Header */}
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 z-10 sticky top-0">
+      {/* 3. MAIN CONTENT */}
+      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        {/* Header (Mobil uchun tugma qo'shilgan) */}
+        <header className="h-20 lg:h-24 bg-white/80 backdrop-blur-xl border-b border-slate-200 flex items-center justify-between px-4 lg:px-10 z-10">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">
+            {/* MOBIL HAMBURGER TUGMASI */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 bg-slate-100 rounded-xl text-slate-600"
+            >
+              <Menu size={24} />
+            </button>
+            <h2 className="text-lg lg:text-2xl font-black text-slate-800 tracking-tight truncate">
               {menuItems.find((m) => m.path === location.pathname)?.name ||
                 "Boshqaruv"}
             </h2>
           </div>
 
-          <div className="flex items-center space-x-6">
-            <div className="h-8 w-[1px] bg-slate-200 hidden md:block"></div>
-            <div className="flex items-center gap-4">
-              <div className="text-right hidden md:block">
-                <div className="text-sm font-bold text-slate-800 leading-none">
-                  Super Admin
-                </div>
-                <div className="text-[11px] text-emerald-600 font-medium mt-1 uppercase tracking-wider">
-                  Online
-                </div>
-              </div>
-              <div className="relative group cursor-pointer">
-                <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-emerald-600 font-black border-2 border-white shadow-sm group-hover:border-emerald-500 transition-all duration-300 overflow-hidden">
-                  <img
-                    src="https://ui-avatars.com/api/?name=Admin&background=10b981&color=fff"
-                    alt="Avatar"
-                  />
-                </div>
-                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
-              </div>
+          {/* User Info (Mobil uchun qisqartirilgan) */}
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:block text-right text-xs font-bold text-slate-400 uppercase">
+              Admin
+            </div>
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center overflow-hidden">
+              <img
+                src="https://ui-avatars.com/api/?name=Admin&background=0a1128&color=10b981"
+                alt="avatar"
+              />
             </div>
           </div>
         </header>
 
-        {/* Sahifa mazmuni */}
-        <section className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500">
+        {/* Content Area */}
+        <section className="flex-1 overflow-y-auto p-4 lg:p-10 bg-[#f8fafc]">
+          <div className="max-w-full lg:max-w-[1400px] mx-auto">
             <Outlet />
           </div>
         </section>

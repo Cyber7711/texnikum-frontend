@@ -10,20 +10,19 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // i18n hook
+import { useTranslation } from "react-i18next";
 
 const Apply = () => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     fullname: "",
     phone: "+998",
-    direction: "", // Boshlang'ich qiymat bo'sh, useEffect yoki t() bilan sozladi
+    direction: "",
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  // Yo'nalishlarni tarjima kalitlari orqali shakllantiramiz
   const directions = [
     { key: "dir_software", label: t("dir_software") },
     { key: "dir_computer_eng", label: t("dir_computer_eng") },
@@ -71,7 +70,7 @@ const Apply = () => {
       const payload = {
         ...formData,
         phone: formData.phone.replace(/\s/g, ""),
-        // Agar backend faqat bitta tilni tushunsa, labelni yuboramiz
+
         direction: formData.direction || directions[0].label,
       };
 
