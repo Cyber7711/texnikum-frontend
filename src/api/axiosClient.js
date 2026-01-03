@@ -1,38 +1,33 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  // MUHIM: Oxiriga /api qo'shilishi shart, chunki Backend hamma narsani /api/... kutmoqda
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api",
+  // MUHIM: .env dagi manzilga "/api" ni shu yerda qo'shamiz
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
 });
 
-// 1. REQUEST INTERCEPTOR
-axiosClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Interceptorlar (Tokenni avtomatik qo'shish uchun)
+axiosClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-// 2. RESPONSE INTERCEPTOR
+// Xatolarni tutish
 axiosClient.interceptors.response.use(
   (response) => {
-    // Agar response.data ichida yana data bo'lsa, o'shani qaytaramiz (Backend formatiga qarab)
-    return response.data;
+    return response;
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Avtorizatsiyadan o'tmagan bo'lsa tokenni tozalash (ixtiyoriy)
-      // localStorage.removeItem("token");
+      localStorage.removeItem("token");
+      // window.location.href = '/login'; // Kerak bo'lsa yoqib qo'ying
     }
-    return Promise.reject(error);
+    throw error;
   }
 );
 

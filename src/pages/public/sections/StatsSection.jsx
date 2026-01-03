@@ -1,7 +1,7 @@
 import React from "react";
 import CountUp from "react-countup";
 import { Library, Users, BookOpen, Handshake } from "lucide-react";
-import { useTranslation } from "react-i18next"; // 1. i18n hook
+import { useTranslation } from "react-i18next";
 
 const StatsSection = ({ stats, bgImage }) => {
   const { t } = useTranslation(); // 2. t funksiyasini chaqiramiz
@@ -14,7 +14,7 @@ const StatsSection = ({ stats, bgImage }) => {
 
   const statItems = [
     {
-      label: t("stats_directions"), // "Yo'nalishlar"
+      label: t("stats_directions"),
       value: 12,
       icon: <Library size={28} />,
     },

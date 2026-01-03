@@ -137,5 +137,7 @@
   "doc_search_placeholder": "Hujjat nomini qidirish...",
   "doc_download_btn": "Yuklab olish",
   "doc_not_found_title": "Hujjatlar topilmadi",
-  "doc_not_found_desc": "Boshqa kategoriya yoki qidiruv so'zini sinab ko'ring."
+  "doc_not_found_desc": "Boshqa kategoriya yoki qidiruv so'zini sinab ko'ring.",
+  "apply_already_title": "Ariza allaqachon yuborilgan",
+  "apply_already_desc": "Ushbu qurilma yoki telefon raqami orqali ariza qabul qilingan. Ma'lumotlaringiz mutaxassislarimiz tomonidan ko'rib chiqilmoqda. Tez orada siz bilan bog'lanamiz."
 }
