@@ -45,18 +45,29 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [teachersRes, newsRes] = await Promise.all([
+        // Barcha ma'lumotlarni parallel ravishda olamiz
+        const [teachersRes, newsRes, appsRes, docsRes] = await Promise.all([
           axiosClient.get("/teachers"),
           axiosClient.get("/news"),
+          axiosClient.get("/applicant"), // Arizalar endpointi
+          axiosClient.get("/doc"), // Hujjatlar endpointi
         ]);
 
-        setStats((prev) => ({
-          ...prev,
-          teachers: teachersRes.data.data?.length || 0,
-          news: newsRes.data.data?.length || 0,
-        }));
+        // Backend javoblarini tekshirib, array uzunligini olamiz
+        const getLen = (res) =>
+          res.data.data?.length ||
+          res.data.result?.length ||
+          res.data?.length ||
+          0;
+
+        setStats({
+          teachers: getLen(teachersRes),
+          news: getLen(newsRes),
+          applicants: getLen(appsRes), // Endi bu dinamik!
+          documents: getLen(docsRes), // Endi bu ham dinamik!
+        });
       } catch (err) {
-        console.error("Dashboard error", err);
+        console.error("Dashboard yuklashda xatolik:", err);
       } finally {
         setLoading(false);
       }
