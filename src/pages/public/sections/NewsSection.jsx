@@ -4,111 +4,118 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import NewsCard from "../../../components/ui/NewsCard";
 
-// Skeleton Loader komponenti (Ma'lumot kelguncha ko'rsatiladi)
+// Skeleton Loader - Ma'lumot yuklanguncha chiroyli blok ko'rsatib turadi
 const NewsSkeleton = () => (
-  <div className="bg-slate-50 rounded-[2.5rem] p-6 animate-pulse h-[450px] flex flex-col justify-between">
-    <div className="w-full h-56 bg-slate-200 rounded-[2rem] mb-6"></div>
-    <div className="space-y-4">
-      <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+  <div className="bg-slate-50 rounded-[3rem] p-6 animate-pulse h-[500px] flex flex-col">
+    <div className="w-full h-64 bg-slate-200 rounded-[2.5rem] mb-6"></div>
+    <div className="space-y-4 px-2">
+      <div className="h-3 bg-slate-200 rounded w-1/4"></div>
       <div className="h-8 bg-slate-200 rounded w-full"></div>
       <div className="h-20 bg-slate-200 rounded w-full"></div>
     </div>
-    <div className="h-10 bg-slate-200 rounded-full w-1/2 mt-4"></div>
+    <div className="mt-auto h-10 bg-slate-200 rounded-full w-1/3 mx-2 mb-2"></div>
   </div>
 );
 
 const NewsSection = ({ newsList, loading }) => {
   const { t } = useTranslation();
+
+  // newsList massiv ekanligini va ichi bo'sh emasligini tekshiramiz
   const data = Array.isArray(newsList) ? newsList : [];
 
-  // Animatsiya variantlari
+  // Animatsiya variantlari (Stagger effect - birin ketin chiqishi uchun)
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.15 },
+      transition: { staggerChildren: 0.2 },
     },
   };
 
   return (
-    <section className="py-24 bg-white relative z-30 -mt-16 md:-mt-24 rounded-t-[4rem] md:rounded-t-[6rem] shadow-[0_-30px_60px_-15px_rgba(0,0,0,0.08)]">
-      {/* Dekorativ element - fon uchun xira nur */}
-      <div className="absolute top-40 right-0 w-96 h-96 bg-emerald-50 blur-[120px] rounded-full -z-10 opacity-60"></div>
+    <section className="py-32 bg-white relative z-30 -mt-20 md:-mt-28 rounded-t-[5rem] shadow-[0_-40px_80px_-20px_rgba(0,0,0,0.1)]">
+      {/* Orqa fon bezagi */}
+      <div className="absolute top-60 right-0 w-[500px] h-[500px] bg-emerald-500/[0.03] blur-[120px] rounded-full -z-10 pointer-events-none"></div>
 
       <div className="container mx-auto px-6">
-        {/* Header qismi */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
+        {/* HEADER QISMI */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 gap-10">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="max-w-2xl"
+            className="max-w-2xl text-center md:text-left mx-auto md:mx-0"
           >
-            <span className="inline-flex items-center gap-3 text-emerald-600 font-black uppercase tracking-[0.3em] text-[10px] mb-4 bg-emerald-50 px-4 py-2 rounded-full italic">
-              <Newspaper size={14} />
-              {t("latest_events") || "So'nggi voqealar"}
+            <span className="inline-flex items-center gap-3 text-emerald-600 font-black uppercase tracking-[0.4em] text-[10px] mb-6 bg-emerald-50 px-5 py-2.5 rounded-full italic border border-emerald-100/50">
+              <Newspaper size={14} className="animate-bounce" />
+              {t("latest_events") || "SO'NGGI VOQEALAR"}
             </span>
-            <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter leading-[0.9] italic uppercase">
-              {t("technical_news_title_1")}{" "}
-              <span className="text-emerald-500 not-italic">
-                {t("technical_news_title_2")}
+            <h2 className="text-4xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.85] italic uppercase">
+              {t("technical_news_title_1") || "TEXNIKUM"}{" "}
+              <span className="text-emerald-500 not-italic block md:inline">
+                {t("technical_news_title_2") || "YANGILIKLARI"}
               </span>
             </h2>
+            <div className="w-24 h-2 bg-emerald-500 mt-8 rounded-full hidden md:block"></div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
+            className="w-full md:w-auto"
           >
             <Link
               to="/news"
-              className="group flex items-center gap-4 px-8 py-4 rounded-2xl bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all duration-500 shadow-xl shadow-slate-900/10 italic"
+              className="group flex items-center justify-center gap-5 px-10 py-5 rounded-[2rem] bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest hover:bg-emerald-600 transition-all duration-500 shadow-2xl shadow-slate-900/20 italic w-full md:w-auto"
             >
-              {t("see_all") || "Barcha yangiliklar"}
-              <ArrowRight
-                size={18}
-                className="group-hover:translate-x-2 transition-transform duration-300"
-              />
+              {t("see_all") || "BARCHA YANGILIKLAR"}
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:translate-x-2 transition-transform duration-500">
+                <ArrowRight size={18} />
+              </div>
             </Link>
           </motion.div>
         </div>
 
-        {/* Ma'lumotlarni ko'rsatish mantiqi */}
+        {/* MANTIQIY KO'RSATISH QISMI */}
         {loading ? (
-          /* 1. Yuklanayotgan holat (Skeleton) */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          /* 1. Yuklanayotgan holat */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             <NewsSkeleton />
             <NewsSkeleton />
             <NewsSkeleton />
           </div>
         ) : data.length > 0 ? (
-          /* 2. Ma'lumot bor holat (Staggered Animation) */
+          /* 2. Ma'lumot bor holat (NewsCard chaqirilishi) */
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
           >
             {data.slice(0, 3).map((news, index) => (
-              <NewsCard key={news._id || news.id} item={news} index={index} />
+              /* DIQQAT: item={news} emas, news={news} deb uzatamiz! */
+              <NewsCard
+                key={news?._id || news?.id || index}
+                news={news}
+                index={index}
+              />
             ))}
           </motion.div>
         ) : (
-          /* 3. Bo'sh holat (Empty State) */
+          /* 3. Bo'sh holat */
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="py-32 text-center bg-slate-50 rounded-[4rem] border-4 border-dashed border-slate-100 flex flex-col items-center justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="py-32 text-center bg-slate-50/50 rounded-[4rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center"
           >
-            <div className="p-8 bg-white rounded-full shadow-inner mb-6 text-slate-200">
-              <LayoutGrid size={64} />
+            <div className="w-24 h-24 bg-white rounded-full shadow-2xl flex items-center justify-center mb-8 text-slate-300">
+              <LayoutGrid size={40} strokeWidth={1.5} />
             </div>
-            <p className="text-slate-400 font-black text-xs uppercase tracking-[0.4em]">
+            <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest italic">
               {t("no_news_available") || "Hozircha yangiliklar yo'q"}
-            </p>
+            </h3>
           </motion.div>
         )}
       </div>
