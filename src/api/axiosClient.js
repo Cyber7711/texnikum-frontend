@@ -2,7 +2,7 @@ import axios from "axios";
 
 const axiosClient = axios.create({
   // MUHIM: .env dagi manzilga "/api" ni shu yerda qo'shamiz
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  baseURL: `${import.meta.env.VITE_API_URL}`,
   headers: {
     "Content-Type": "application/json",
   },

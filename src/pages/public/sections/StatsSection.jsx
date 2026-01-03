@@ -4,8 +4,9 @@ import { Library, Users, BookOpen, Handshake } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const StatsSection = ({ stats, bgImage }) => {
-  const { t } = useTranslation(); // 2. t funksiyasini chaqiramiz
+  const { t } = useTranslation();
 
+  // Agar stats null yoki undefined bo'lsa, xavfsiz obyekt yaratamiz
   const safeStats = {
     students: stats?.students || 0,
     teachers: stats?.teachers || 0,
@@ -15,22 +16,22 @@ const StatsSection = ({ stats, bgImage }) => {
   const statItems = [
     {
       label: t("stats_directions"),
-      value: 12,
+      value: 12, // Static raqam
       icon: <Library size={28} />,
     },
     {
-      label: t("stats_students"), // "Talabalar"
+      label: t("stats_students"),
       value: safeStats.students,
       icon: <Users size={28} />,
     },
     {
-      label: t("stats_teachers"), // "Ustozlar"
+      label: t("stats_teachers"),
       value: safeStats.teachers,
       icon: <BookOpen size={28} />,
     },
     {
-      label: t("stats_partners"), // "Hamkorlar"
-      value: 8,
+      label: t("stats_partners"),
+      value: 8, // Static raqam
       icon: <Handshake size={28} />,
     },
   ];
@@ -51,9 +52,10 @@ const StatsSection = ({ stats, bgImage }) => {
               </div>
 
               <div className="text-3xl md:text-5xl font-black text-white">
+                {/* Agar qiymat 0 bo'lsa yoki yuklanayotgan bo'lsa, shunchaki 0 ko'rsatish */}
                 <CountUp
                   start={0}
-                  end={Number(item.value)}
+                  end={item.value ? Number(item.value) : 0}
                   duration={3}
                   separator=" "
                   enableScrollSpy={true}
