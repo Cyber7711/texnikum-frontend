@@ -8,7 +8,8 @@ import {
   Mail,
   Clock,
 } from "lucide-react";
-import { useTranslation } from "react-i18next"; // i18n hook
+import { useTranslation } from "react-i18next";
+import Logo from "../Logo";
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -21,7 +22,9 @@ const Footer = () => {
           <div className="flex flex-col items-center justify-center text-center space-y-4">
             <div className="flex flex-col items-center">
               <div className="bg-white p-4 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                <span className="text-[#0a1128] font-black text-xl">TEX</span>
+                <span className="text-[#0a1128] font-black text-xl">
+                  <Logo />
+                </span>
               </div>
               <h3 className="text-sm font-bold leading-tight uppercase tracking-widest text-blue-400">
                 {t("footer_school_name")}
