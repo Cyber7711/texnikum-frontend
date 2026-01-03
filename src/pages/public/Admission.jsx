@@ -1,24 +1,27 @@
+import { motion } from "framer-motion";
 import {
   Calendar,
   CheckCircle2,
-  FileText,
   GraduationCap,
   ArrowRight,
   Phone,
   Download,
   AlertCircle,
+  Clock,
+  ExternalLink,
+  ShieldCheck,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Admission = () => {
-  // Bu ma'lumotlarni shu yerni o'zidan o'zgartirasiz (Yilda 1 marta)
+  const { t } = useTranslation();
+
   const ADMISSION_INFO = {
     year: "2025-2026",
     startDate: "20 Iyun",
     endDate: "25 Avgust",
     phone: "+998 71 123 45 67",
-    telegramBot: "https://t.me/texnikum_qabul_bot", // Ariza topshirish uchun
-    myGov: "https://my.gov.uz/uz/service/...", // Yoki my.gov.uz linki
+    myGov: "https://my.gov.uz",
   };
 
   const DIRECTIONS = [
@@ -65,237 +68,277 @@ const Admission = () => {
   ];
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-20 font-sans">
-      {/* 1. HERO BANNER */}
-      <div className="bg-[#0f172a] text-white relative overflow-hidden py-20 lg:py-28">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
+    <div className="bg-white min-h-screen pb-20 font-sans overflow-x-hidden">
+      {/* 1. HERO BANNER - Modern Skew & Glow */}
+      <section className="relative bg-[#0a1128] pt-32 pb-40 overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -mr-40 -mt-40 animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -ml-20 -mb-20"></div>
 
         <div className="container mx-auto px-6 relative z-10 text-center">
-          <span className="inline-block py-1 px-3 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-sm font-bold uppercase tracking-wider mb-4 animate-pulse">
-            Qabul Jarayoni Boshlandi
-          </span>
-          <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight leading-tight">
-            {ADMISSION_INFO.year} o'quv yili uchun <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">
-              Qabul Davom Etmoqda
-            </span>
-          </h1>
-          <p className="text-slate-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light">
-            Kelajagingizni biz bilan quring. Zamonaviy kasblar va
-            Agro-texnologiyalar olamiga xush kelibsiz!
-          </p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] mb-8"
+          >
+            <ShieldCheck size={14} /> Qabul {ADMISSION_INFO.year}
+          </motion.div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <motion.h1
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-8xl font-black text-white mb-8 tracking-tighter leading-[0.9] uppercase italic"
+          >
+            Kelajagingizni <br />
+            <span className="text-emerald-500 not-italic">
+              Biz bilan quring
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-slate-400 text-lg md:text-2xl max-w-3xl mx-auto mb-12 font-medium leading-relaxed"
+          >
+            Zamonaviy texnologiyalar va Agro-soha mutaxassisligi bo'yicha
+            hujjatlar qabuli davom etmoqda.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-6"
+          >
             <a
               href="/apply"
-              target="_blank"
-              className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 transition-all flex items-center gap-2"
+              className="w-full sm:w-auto px-12 py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[2rem] font-black text-xs uppercase tracking-widest transition-all shadow-2xl shadow-emerald-900/40 flex items-center justify-center gap-3 active:scale-95 italic"
             >
-              Hujjat topshirish <ArrowRight size={20} />
+              Hujjat topshirish <ArrowRight size={18} />
             </a>
             <a
               href="#directions"
-              className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-xl font-bold transition-all"
+              className="w-full sm:w-auto px-12 py-5 bg-white/5 hover:bg-white/10 text-white border border-white/10 backdrop-blur-md rounded-[2rem] font-black text-xs uppercase tracking-widest transition-all italic"
             >
-              Yo'nalishlar bilan tanishish
+              Yo'nalishlar
             </a>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </section>
 
-      {/* 2. MUHIM SANALAR (Cards) */}
-      <div className="container mx-auto px-6 -mt-10 relative z-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <InfoCard
-            icon={<Calendar size={32} />}
-            title="Qabul Boshlanishi"
+      {/* 2. IMPORTANT INFO CARDS */}
+      <div className="container mx-auto px-6 -mt-20 relative z-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
+          <StatCard
+            icon={<Calendar />}
+            label="Boshlanish"
             value={ADMISSION_INFO.startDate}
-            desc="Hujjatlar qabuli start oladi"
-            color="bg-blue-500"
+            color="emerald"
+            delay={0.1}
           />
-          <InfoCard
-            icon={<AlertCircle size={32} />}
-            title="Qabul Tugashi"
+          <StatCard
+            icon={<Clock />}
+            label="Tugash"
             value={ADMISSION_INFO.endDate}
-            desc="So'nggi muddatni o'tkazib yubormang"
-            color="bg-red-500"
+            color="rose"
+            delay={0.2}
           />
-          <InfoCard
-            icon={<Phone size={32} />}
-            title="Aloqa Markazi"
+          <StatCard
+            icon={<Phone />}
+            label="Aloqa"
             value={ADMISSION_INFO.phone}
-            desc="Dushanba - Shanba (09:00 - 18:00)"
-            color="bg-emerald-500"
+            color="blue"
+            delay={0.3}
           />
         </div>
       </div>
 
-      {/* 3. YO'NALISHLAR (Grid) */}
-      <div id="directions" className="container mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-slate-800 mb-4">
-            Mavjud Yo'nalishlar
+      {/* 3. DIRECTIONS SECTION */}
+      <section id="directions" className="container mx-auto px-6 py-32">
+        <div className="flex flex-col items-center text-center mb-20">
+          <span className="text-emerald-600 font-black text-[10px] uppercase tracking-[0.4em] mb-4">
+            Mutaxassisliklar
+          </span>
+          <h2 className="text-4xl md:text-6xl font-black text-slate-900 uppercase italic tracking-tighter">
+            Mavjud <span className="text-emerald-500">Yo'nalishlar</span>
           </h2>
-          <div className="w-20 h-1.5 bg-emerald-500 mx-auto rounded-full"></div>
+          <div className="w-24 h-2 bg-slate-900 mt-6 rounded-full"></div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {DIRECTIONS.map((item) => (
-            <div
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {DIRECTIONS.map((item, idx) => (
+            <motion.div
               key={item.id}
-              className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              viewport={{ once: true }}
+              className="group bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500"
             >
-              <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-emerald-50 transition-colors">
-                <GraduationCap
-                  className="text-slate-600 group-hover:text-emerald-600"
-                  size={24}
-                />
+              <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-inner">
+                <GraduationCap size={32} />
               </div>
-              <h3 className="text-lg font-bold text-slate-800 mb-2 leading-tight min-h-[50px]">
+              <h3 className="text-xl font-black text-slate-900 mb-4 leading-tight italic uppercase group-hover:text-emerald-600">
                 {item.title}
               </h3>
-              <p className="text-xs text-slate-400 font-mono mb-4">
-                Kod: {item.code}
-              </p>
 
-              <div className="space-y-2 text-sm text-slate-600">
-                <div className="flex justify-between border-b border-slate-100 pb-2">
-                  <span>Kvota:</span>
-                  <span className="font-bold text-emerald-600">
-                    {item.quota} ta
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-slate-100 pb-2">
-                  <span>Til:</span>
-                  <span className="font-bold">{item.lang}</span>
-                </div>
-                <div className="flex justify-between pt-1">
-                  <span>Kontrakt:</span>
-                  <span className="font-bold text-blue-600">
-                    {item.contract}
-                  </span>
-                </div>
+              <div className="space-y-4 pt-4 border-t border-slate-50">
+                <DataRow label="Kvota" value={`${item.quota} ta`} bold />
+                <DataRow label="Til" value={item.lang} />
+                <DataRow label="Kontrakt" value={item.contract} highlight />
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* 4. HUJJATLAR VA TARTIB */}
-      <div className="bg-white py-20 border-y border-slate-200">
+      {/* 4. DOCUMENTS & PROCESS - Split Layout */}
+      <section className="bg-slate-900 py-32 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+          <div className="absolute top-10 left-10 w-64 h-64 bg-emerald-500 rounded-full blur-[100px]"></div>
+        </div>
+
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Hujjatlar ro'yxati */}
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800 mb-6">
-                Talab Etiladigan Hujjatlar
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-start">
+            {/* Documents List */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-10"
+            >
+              <h2 className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter">
+                Talab Etiladigan <br />
+                <span className="text-emerald-500">Hujjatlar</span>
               </h2>
-              <p className="text-slate-500 mb-8">
-                Qabul komissiyasiga quyidagi hujjatlarning asl nusxasi va
-                elektron shakli (PDF) taqdim etilishi shart.
-              </p>
-              <ul className="space-y-4">
+              <div className="space-y-4">
                 {DOCUMENTS.map((doc, index) => (
-                  <li
+                  <motion.div
                     key={index}
-                    className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100"
+                    whileHover={{ x: 10 }}
+                    className="flex items-center gap-5 bg-white/5 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 group transition-all"
                   >
-                    <CheckCircle2
-                      className="text-emerald-500 flex-shrink-0 mt-0.5"
-                      size={20}
-                    />
-                    <span className="text-slate-700 font-medium">{doc}</span>
-                  </li>
+                    <div className="bg-emerald-500/20 text-emerald-400 p-3 rounded-2xl group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                      <CheckCircle2 size={24} />
+                    </div>
+                    <span className="text-slate-300 font-bold text-sm tracking-wide">
+                      {doc}
+                    </span>
+                  </motion.div>
                 ))}
-              </ul>
-              <div className="mt-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
-                <AlertCircle className="text-blue-600 flex-shrink-0 mt-1" />
-                <p className="text-sm text-blue-800">
-                  Eslatma: Hujjatlar <strong>my.gov.uz</strong> portali orqali
-                  yoki bevosita texnikum binosida qabul qilinadi.
-                </p>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Qabul jarayoni (Step) */}
-            <div className="relative">
-              {/* Background dekoratsiya */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-blue-500/5 rounded-3xl transform rotate-3"></div>
-
-              <div className="relative bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
-                <h3 className="text-2xl font-bold text-slate-800 mb-8">
-                  Qabul Jarayoni
-                </h3>
-                <div className="space-y-8">
-                  <StepItem
-                    number="01"
-                    title="Ariza topshirish"
-                    desc="Online yoki offline shaklda hujjatlarni taqdim eting."
-                  />
-                  <StepItem
-                    number="02"
-                    title="Imtihon / Suhbat"
-                    desc="Belgilangan sanada kirish imtihonlarida qatnashing."
-                  />
-                  <StepItem
-                    number="03"
-                    title="Natijalar"
-                    desc="Mandat natijalari e'lon qilinishini kuting."
-                  />
-                  <StepItem
-                    number="04"
-                    title="Shartnoma"
-                    desc="Qabul qilinganlik to'g'risida shartnoma imzolang."
-                  />
-                </div>
-
-                <a
-                  href={ADMISSION_INFO.myGov}
-                  target="_blank"
-                  className="mt-8 w-full py-4 bg-slate-900 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition"
-                >
-                  <Download size={20} />
-                  Nizomni Yuklab Olish (PDF)
-                </a>
+            {/* Process Steps */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-[4rem] p-10 md:p-16 shadow-2xl relative"
+            >
+              <div className="absolute top-10 right-10 text-slate-100 hidden md:block">
+                <ExternalLink size={120} />
               </div>
-            </div>
+              <h3 className="text-3xl font-black text-slate-900 mb-12 uppercase italic tracking-tighter">
+                Qabul <span className="text-emerald-500">Bosqichlari</span>
+              </h3>
+
+              <div className="space-y-12">
+                <StepItem
+                  num="01"
+                  title="Ariza topshirish"
+                  desc="Online (my.gov.uz) yoki texnikum binosida."
+                />
+                <StepItem
+                  num="02"
+                  title="Imtihon jarayoni"
+                  desc="Davlat test markazi tomonidan o'tkaziladi."
+                />
+                <StepItem
+                  num="03"
+                  title="Natijalar (Mandat)"
+                  desc="Belgilangan sanada natijalarni tekshiring."
+                />
+                <StepItem
+                  num="04"
+                  title="Talabalikka qabul"
+                  desc="Shartnoma to'lovini amalga oshiring."
+                />
+              </div>
+
+              <button className="w-full mt-12 py-5 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] hover:bg-emerald-600 transition-all flex items-center justify-center gap-3 italic">
+                <Download size={18} /> Nizomni Yuklab Olish (PDF)
+              </button>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
 
-// --- Yordamchi Komponentlar ---
-const InfoCard = ({ icon, title, value, desc, color }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 flex items-center gap-5">
+// --- SUB-COMPONENTS ---
+
+const StatCard = ({ icon, label, value, color, delay }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-50 flex items-center gap-6 group hover:scale-105 transition-all duration-500"
+  >
     <div
-      className={`w-14 h-14 ${color} rounded-2xl flex items-center justify-center text-white shadow-lg shadow-slate-200`}
+      className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl transition-transform group-hover:rotate-12 ${
+        color === "emerald"
+          ? "bg-emerald-500 shadow-emerald-200"
+          : color === "rose"
+          ? "bg-rose-500 shadow-rose-200"
+          : "bg-blue-500 shadow-blue-200"
+      }`}
     >
       {icon}
     </div>
     <div>
-      <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">
-        {title}
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+        {label}
       </p>
-      <h4 className="text-xl font-black text-slate-800 mt-1">{value}</h4>
-      <p className="text-xs text-slate-500 mt-1">{desc}</p>
+      <h4 className="text-2xl font-black text-slate-800 tracking-tighter">
+        {value}
+      </h4>
     </div>
+  </motion.div>
+);
+
+const DataRow = ({ label, value, bold, highlight }) => (
+  <div className="flex justify-between items-center text-xs">
+    <span className="text-slate-400 font-bold uppercase tracking-widest">
+      {label}
+    </span>
+    <span
+      className={`tracking-tight ${
+        bold ? "font-black text-slate-800" : "font-bold text-slate-600"
+      } ${highlight ? "text-emerald-600" : ""}`}
+    >
+      {value}
+    </span>
   </div>
 );
 
-const StepItem = ({ number, title, desc }) => (
-  <div className="flex gap-4">
+const StepItem = ({ num, title, desc }) => (
+  <div className="flex gap-6 group">
     <div className="flex flex-col items-center">
-      <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-lg">
-        {number}
+      <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white font-black flex items-center justify-center text-lg group-hover:bg-emerald-500 transition-colors">
+        {num}
       </div>
-      <div className="w-0.5 h-full bg-slate-100 mt-2 last:hidden"></div>
+      <div className="w-1 h-full bg-slate-100 my-2 rounded-full"></div>
     </div>
-    <div className="pb-8">
-      <h4 className="font-bold text-slate-800 text-lg">{title}</h4>
-      <p className="text-slate-500 text-sm mt-1">{desc}</p>
+    <div className="pb-4">
+      <h4 className="font-black text-slate-800 text-lg uppercase italic tracking-tight mb-1">
+        {title}
+      </h4>
+      <p className="text-slate-500 text-sm font-medium leading-relaxed">
+        {desc}
+      </p>
     </div>
   </div>
 );

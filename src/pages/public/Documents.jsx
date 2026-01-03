@@ -7,18 +7,22 @@ import {
   File,
   Calendar,
   Loader2,
+  Filter,
+  ArrowRight,
+  ShieldCheck,
 } from "lucide-react";
-import { useTranslation } from "react-i18next"; // i18n hook
+import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const getFileIcon = (type = "") => {
   const fileType = type.toLowerCase();
   if (fileType.includes("pdf"))
-    return <FileText className="text-red-500" size={24} />;
+    return <FileText className="text-rose-500" size={28} />;
   if (fileType.includes("doc"))
-    return <FileText className="text-blue-500" size={24} />;
+    return <FileText className="text-blue-500" size={28} />;
   if (fileType.includes("xls"))
-    return <FileText className="text-green-500" size={24} />;
-  return <File className="text-gray-500" size={24} />;
+    return <FileText className="text-emerald-500" size={28} />;
+  return <File className="text-slate-400" size={28} />;
 };
 
 const Documents = () => {
@@ -32,9 +36,10 @@ const Documents = () => {
     const fetchDocs = async () => {
       try {
         const res = await axiosClient.get("/doc");
-        setDocuments(res.data.data || res.data);
+        const data = res.data?.data || res.data;
+        setDocuments(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Hujjatlarni yuklashda xatolik:", err);
+        console.error("Xatolik:", err);
       } finally {
         setLoading(false);
       }
@@ -43,23 +48,24 @@ const Documents = () => {
   }, []);
 
   const categories = [
-    { id: "all", label: t("doc_cat_all") },
-    { id: "nizom", label: t("doc_cat_nizom") },
-    { id: "qaror", label: t("doc_cat_qaror") },
-    { id: "buyruq", label: t("doc_cat_buyruq") },
-    { id: "metodik", label: t("doc_cat_metodik") },
+    { id: "all", label: t("doc_cat_all") || "Barchasi" },
+    { id: "nizom", label: t("doc_cat_nizom") || "Nizomlar" },
+    { id: "qaror", label: t("doc_cat_qaror") || "Qarorlar" },
+    { id: "buyruq", label: t("doc_cat_buyruq") || "Buyruqlar" },
+    { id: "metodik", label: t("doc_cat_metodik") || "Metodik" },
   ];
 
-  const filteredDocs = documents.filter((doc) => {
-    const matchesCategory =
-      activeCategory === "all" || doc.category === activeCategory;
-    const matchesSearch = doc.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredDocs = Array.isArray(documents)
+    ? documents.filter((doc) => {
+        const matchesCategory =
+          activeCategory === "all" || doc.category === activeCategory;
+        const matchesSearch = doc.title
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        return matchesCategory && matchesSearch;
+      })
+    : [];
 
-  // Fayl URL manzili (Uploadcare UUID bo'lsa CDN linkini qaytaradi)
   const getFileUrl = (fileId) => {
     if (!fileId) return "#";
     if (fileId.startsWith("http")) return fileId;
@@ -67,116 +73,159 @@ const Documents = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen py-16">
-      <div className="container mx-auto px-6">
-        {/* Header Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 uppercase tracking-tight">
-            {t("doc_page_title")}
-          </h1>
-          <div className="w-24 h-2 bg-emerald-500 mx-auto rounded-full"></div>
-          <p className="text-gray-600 mt-6 max-w-2xl mx-auto font-medium leading-relaxed">
-            {t("doc_page_subtitle")}
-          </p>
+    <div className="bg-[#fafbfc] min-h-screen pb-32">
+      {/* 1. Header Section - Dynamic Background */}
+      <div className="bg-[#0a1128] pt-32 pb-40 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[100px] rounded-full -mr-40 -mt-40"></div>
+        <div className="container mx-auto px-6 relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] mb-8"
+          >
+            <ShieldCheck size={14} />{" "}
+            {t("doc_badge") || "Rasmiy hujjatlar ombori"}
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-4xl md:text-7xl font-black text-white mb-6 uppercase italic tracking-tighter"
+          >
+            {t("doc_page_title") || "Hujjatlar"}{" "}
+            <span className="text-emerald-500 not-italic">Bazasi</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-slate-400 max-w-2xl mx-auto font-medium text-lg md:text-xl"
+          >
+            {t("doc_page_subtitle") ||
+              "Texnikum faoliyatiga doir barcha me'yoriy va o'quv hujjatlarini yuklab oling."}
+          </motion.p>
         </div>
+      </div>
 
-        {/* Filters & Search */}
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-8 mb-12">
-          <div className="flex flex-wrap gap-3 justify-center">
+      {/* 2. Controls Section (Sticky Search & Filter) */}
+      <div className="container mx-auto px-6 -mt-12 relative z-20">
+        <div className="bg-white p-4 md:p-6 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-wrap gap-2 flex-1">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${
+                className={`px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
                   activeCategory === cat.id
-                    ? "bg-emerald-600 text-white shadow-xl shadow-emerald-200 scale-105"
-                    : "bg-white text-gray-500 hover:bg-gray-100 border border-gray-100"
+                    ? "bg-emerald-600 text-white shadow-xl shadow-emerald-200"
+                    : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100"
                 }`}
               >
+                {activeCategory === cat.id && <Filter size={12} />}
                 {cat.label}
               </button>
             ))}
           </div>
 
-          <div className="relative w-full md:w-96">
+          <div className="relative w-full lg:w-96 group">
             <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors"
               size={20}
             />
             <input
               type="text"
-              placeholder={t("doc_search_placeholder")}
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-100 bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-medium shadow-sm"
+              placeholder={t("doc_search_placeholder") || "Qidirish..."}
+              className="w-full pl-14 pr-6 py-4 rounded-2xl border-2 border-slate-50 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none transition-all font-bold text-slate-700 shadow-inner"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
+      </div>
 
-        {/* Content */}
+      {/* 3. Grid Section */}
+      <div className="container mx-auto px-6 mt-16">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <Loader2 className="animate-spin text-emerald-600" size={48} />
-            <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">
-              {t("loading")}
-            </span>
-          </div>
-        ) : filteredDocs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredDocs.map((doc) => (
-              <div
-                key={doc._id}
-                className="bg-white p-8 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:shadow-emerald-900/5 transition-all duration-500 border border-gray-100 group flex flex-col h-full"
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <div className="p-4 bg-gray-50 rounded-2xl group-hover:bg-emerald-50 transition-colors duration-500">
-                    {getFileIcon(doc.fileType || "pdf")}
-                  </div>
-                  <span className="px-4 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-full">
-                    {doc.fileType || "PDF"}
-                  </span>
-                </div>
-
-                <h3 className="text-xl font-black text-gray-800 mb-4 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-tight">
-                  {doc.title}
-                </h3>
-
-                <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={14} className="text-emerald-500" />
-                    <span>
-                      {new Date(doc.createdAt).toLocaleDateString(
-                        i18n.language === "en"
-                          ? "en-US"
-                          : i18n.language === "ru"
-                          ? "ru-RU"
-                          : "uz-UZ"
-                      )}
-                    </span>
-                  </div>
-                </div>
-
-                <a
-                  href={getFileUrl(doc.file)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 w-full bg-emerald-600 text-white font-black text-xs uppercase tracking-[0.2em] py-4 rounded-2xl flex items-center justify-center gap-3 transition-all hover:bg-emerald-700 shadow-lg shadow-emerald-200 active:scale-95"
-                >
-                  <Download size={18} /> {t("doc_download_btn")}
-                </a>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-gray-100">
-            <FileText className="mx-auto text-gray-200 mb-6" size={64} />
-            <h3 className="text-2xl font-black text-gray-800 uppercase tracking-tight">
-              {t("doc_not_found_title")}
-            </h3>
-            <p className="text-gray-400 mt-2 font-medium">
-              {t("doc_not_found_desc")}
+          <div className="py-40 text-center">
+            <Loader2
+              className="animate-spin text-emerald-600 mx-auto"
+              size={56}
+            />
+            <p className="mt-4 text-slate-400 font-black uppercase tracking-[0.3em] text-xs">
+              Ma'lumotlar yuklanmoqda...
             </p>
           </div>
+        ) : (
+          <motion.div
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
+          >
+            <AnimatePresence>
+              {filteredDocs.map((doc, idx) => (
+                <motion.div
+                  layout
+                  key={doc._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="group bg-white p-8 rounded-[3rem] shadow-sm hover:shadow-2xl transition-all duration-500 border border-slate-100 flex flex-col h-full relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 transition-all group-hover:scale-[3] duration-700"></div>
+
+                  <div className="flex justify-between items-start mb-8 relative z-10">
+                    <div className="p-5 bg-slate-50 rounded-[1.5rem] text-slate-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-inner">
+                      {getFileIcon(doc.fileType || "pdf")}
+                    </div>
+                    <span className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-100">
+                      <File size={12} /> {doc.fileType || "PDF"}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-black text-slate-800 mb-6 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-[1.2] italic uppercase tracking-tighter relative z-10">
+                    {doc.title}
+                  </h3>
+
+                  <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      <Calendar size={14} className="text-emerald-500" />
+                      <span>
+                        {new Date(doc.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <a
+                    href={getFileUrl(doc.file)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-8 w-full bg-slate-900 text-white font-black text-[10px] uppercase tracking-[0.2em] py-5 rounded-[1.5rem] flex items-center justify-center gap-3 transition-all hover:bg-emerald-600 shadow-xl shadow-slate-900/10 active:scale-95 relative z-10 italic"
+                  >
+                    <Download size={18} />{" "}
+                    {t("doc_download_btn") || "Yuklab olish"}{" "}
+                    <ArrowRight size={14} className="opacity-50" />
+                  </a>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {!loading && filteredDocs.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50"
+          >
+            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FileText className="text-slate-200" size={48} />
+            </div>
+            <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tighter italic">
+              Hujjatlar topilmadi
+            </h3>
+            <p className="text-slate-400 mt-2 font-bold uppercase text-[10px] tracking-[0.2em]">
+              Qidiruv shartlarini o'zgartirib ko'ring
+            </p>
+          </motion.div>
         )}
       </div>
     </div>

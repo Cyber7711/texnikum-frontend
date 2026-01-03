@@ -139,5 +139,11 @@
   "doc_not_found_title": "Documents not found",
   "doc_not_found_desc": "Try another category or search term.",
   "apply_already_title": "Application Already Submitted",
-  "apply_already_desc": "An application has already been received from this device or phone number. Your information is currently being reviewed by our specialists. We will contact you shortly."
+  "apply_already_desc": "An application has already been received from this device or phone number. Your information is currently being reviewed by our specialists. We will contact you shortly.",
+
+  "footer_mission": "AGRO-TECHNOLOGY CENTER",
+
+  "nav_docs": "DOCUMENTS",
+  "nav_apply": "APPLY NOW",
+  "location": "LOCATION"
 }
