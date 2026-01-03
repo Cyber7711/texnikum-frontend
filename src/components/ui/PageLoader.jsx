@@ -28,15 +28,10 @@ const PageLoader = () => {
       <div className="mt-16 flex flex-col items-center">
         {/* Brend nomi */}
         <div className="flex items-center gap-1.5 mb-3">
-          <span className="text-white font-black tracking-widest text-sm uppercase">
-            Texnikum
-          </span>
-          <span className="text-emerald-500 font-black text-sm uppercase">
-            3
-          </span>
+          <Logo />
         </div>
 
-        {/* Yuklanmoqda matni */}
+        {/* Yuklanmoqsda matni */}
         <h2 className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">
           {t("loading")}
         </h2>

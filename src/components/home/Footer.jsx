@@ -21,10 +21,8 @@ const Footer = () => {
           {/* 1-USTUN: LOGO VA IJTIMOIY TARMOQLAR */}
           <div className="flex flex-col items-center justify-center text-center space-y-4">
             <div className="flex flex-col items-center">
-              <div className="bg-white p-4 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                <span className="text-[#0a1128] font-black text-xl">
-                  <Logo />
-                </span>
+              <div className=" p-4  w-16 h-16 flex items-center justify-center mb-3">
+                <Logo />
               </div>
               <h3 className="text-sm font-bold leading-tight uppercase tracking-widest text-blue-400">
                 {t("footer_school_name")}

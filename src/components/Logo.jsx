@@ -14,7 +14,7 @@ const Logo = () => {
       <div className="flex flex-col">
         <div className="flex items-center gap-1">
           <span className="text-xl font-black tracking-tighter text-white">
-            TEXNIKUM
+            POLITEXNIKUM
           </span>
           <span className="text-xl font-black text-emerald-400">3</span>
         </div>
