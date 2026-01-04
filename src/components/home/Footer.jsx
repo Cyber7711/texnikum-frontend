@@ -131,16 +131,18 @@ const Footer = () => {
             <div className="w-full h-56 rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group relative bg-slate-900">
               <iframe
                 title="TEXNIKUM MAP"
-                src="https://maps.app.goo.gl/ik3ByATCMXZLoFaB7"
+                // Bu yerga o'zingizning haqiqiy Google Maps embed kodingizni qo'ying
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3068.5357973862547!2d66.6060399!3d39.7276138!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3f4da1230dbe72c9%3A0x2af1ecde46316d06!2sAgro%20sanoat%20kolleji!5e0!3m2!1suz!2s!4v1767535653993!5m2!1suz!2s"
                 width="100%"
                 height="100%"
                 style={{
                   border: 0,
                   filter:
-                    "grayscale(1) invert(0.92) contrast(1.2) opacity(0.7)",
+                    "grayscale(1) invert(0.92) contrast(1.2) opacity(0.7)", // Dizaynga moslashish uchun
                 }}
                 allowFullScreen=""
                 loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
               ></iframe>
               <div className="absolute inset-0 bg-[#0a1128]/40 pointer-events-none group-hover:bg-transparent transition-all duration-700"></div>
             </div>

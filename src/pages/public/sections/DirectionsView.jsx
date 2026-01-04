@@ -11,13 +11,14 @@ import {
   Download,
   Sparkles,
   Info,
+  ArrowRight,
   FileTextIcon,
+  CircleDot,
   Clock,
   Wrench,
   CheckCircle2,
   Cpu,
   Globe,
-  Calculator,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -49,7 +50,7 @@ const InfoPortal = () => {
     },
     {
       id: "lms",
-      label: t("info_lms_tab") || "LMS Tizimi",
+      label: t("info_lms_tab") || "LMS",
       icon: <Monitor size={18} />,
     },
     {
@@ -64,28 +65,25 @@ const InfoPortal = () => {
     },
   ];
 
-  // Ranglar mavzusi: Abituriyent (Yashil) vs Talaba (Ko'k)
   const theme = isStudentGroup
     ? {
         text: "text-indigo-600",
         bg: "bg-indigo-600",
         border: "border-indigo-100",
         lightBg: "bg-indigo-50/50",
-        shadow: "shadow-indigo-900/10",
       }
     : {
         text: "text-emerald-600",
         bg: "bg-emerald-600",
         border: "border-emerald-100",
         lightBg: "bg-emerald-50/50",
-        shadow: "shadow-emerald-900/10",
       };
 
   return (
     <PageWrapper>
-      <div className="min-h-screen bg-[#fafbfc] py-24 font-sans">
+      <div className="min-h-screen bg-[#fafbfc] py-24">
         <div className="container mx-auto px-6">
-          {/* --- 1. HEADER SECTION --- */}
+          {/* --- HEADER SECTION --- */}
           <div className="text-center mb-16">
             <motion.div
               key={isStudentGroup ? "student" : "applicant"}
@@ -113,7 +111,7 @@ const InfoPortal = () => {
             </motion.div>
           </div>
 
-          {/* --- 2. TAB NAVIGATION --- */}
+          {/* --- TAB NAVIGATION --- */}
           <div className="flex flex-wrap justify-center gap-3 mb-20">
             {tabs.map((tab) => (
               <button
@@ -121,7 +119,7 @@ const InfoPortal = () => {
                 onClick={() => setSearchParams({ tab: tab.id })}
                 className={`flex items-center gap-3 px-8 py-5 rounded-[2rem] font-black uppercase text-[10px] tracking-widest transition-all duration-500 shadow-sm italic ${
                   activeTab === tab.id
-                    ? `${theme.bg} text-white shadow-xl ${theme.shadow} scale-105`
+                    ? `${theme.bg} text-white shadow-xl shadow-emerald-900/10 scale-105`
                     : "bg-white text-slate-500 hover:bg-slate-50 border border-slate-100"
                 }`}
               >
@@ -130,16 +128,16 @@ const InfoPortal = () => {
             ))}
           </div>
 
-          {/* --- 3. MAIN CONTENT WRAPPER --- */}
+          {/* --- MAIN CONTENT AREA --- */}
           <div
-            className={`max-w-6xl mx-auto bg-white rounded-[3.5rem] p-8 md:p-16 shadow-2xl shadow-slate-200/50 border-t-8 ${theme.bg.replace(
+            className={`max-w-5xl mx-auto bg-white rounded-[3.5rem] p-8 md:p-16 shadow-2xl shadow-slate-200/50 border-t-8 ${theme.bg.replace(
               "bg-",
               "border-"
             )} relative overflow-hidden`}
           >
-            {/* Orqa fon bezagi */}
+            {/* Dekorativ Fon */}
             <div
-              className={`absolute top-0 right-0 w-96 h-96 ${theme.lightBg} rounded-full -mr-48 -mt-48 blur-[100px] opacity-60 pointer-events-none`}
+              className={`absolute top-0 right-0 w-96 h-96 ${theme.lightBg} rounded-full -mr-48 -mt-48 blur-[100px] opacity-60`}
             ></div>
 
             <AnimatePresence mode="wait">
@@ -174,56 +172,52 @@ const InfoPortal = () => {
 };
 
 /* ==========================================================================
-   SUB-COMPONENTS (CONTENT)
+   CONTENT COMPONENTS
    ========================================================================== */
 
-// --- FAQ CONTENT ---
+// --- 1. FAQ CONTENT ---
 const FAQContent = ({ t, theme }) => {
   const [open, setOpen] = useState(null);
   const data = [
     {
       q: "Politexnikumda o'qish pullikmi?",
-      a: "Yo'q, politexnikum davlat muassasasi bo'lib, ta'lim barcha yo'nalishlarda mutlaqo bepul (Davlat granti asosida) amalga oshiriladi.",
+      a: "Yo'q, politexnikum davlat muassasasi bo'lib, ta'lim barcha yo'nalishlarda mutlaqo bepul amalga oshiriladi.",
     },
     {
       q: t("faq_q1") || "Texnikumga qabul qachon boshlanadi?",
       a:
         t("faq_a1") ||
-        "Hujjatlar qabuli har yili iyun oyidan avgust oyigacha davom etadi. Qabul jarayoni my.uzbmb.uz orqali onlayn amalga oshiriladi.",
+        "Hujjatlar qabuli har yili iyun oyidan avgust oyigacha davom etadi.",
     },
     {
       q: t("faq_q2") || "Yotoqxona mavjudmi?",
       a:
         t("faq_a2") ||
-        "Ha, uzoq viloyatlardan kelgan talabalar uchun barcha sharoitlarga ega zamonaviy talabalar turar joyi (Yotoqxona) mavjud.",
-    },
-    {
-      q: "Stipendiya beriladimi?",
-      a: "Ha, a'lo baholarga o'qigan va jamoat ishlarida faol bo'lgan talabalar uchun davlat tomonidan belgilangan tartibda stipendiya to'lanadi.",
+        "Ha, uzoq viloyatlardan kelgan talabalar uchun zamonaviy yotoqxona xizmati mavjud.",
     },
   ];
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div className="mb-12">
-        <h2 className="text-3xl font-black text-slate-800 uppercase italic tracking-tighter mb-4">
+        <h2 className="text-3xl font-black text-slate-800 uppercase italic tracking-tighter mb-3">
           Ko'p beriladigan savollar
         </h2>
-        <div className={`w-24 h-2 ${theme.bg} rounded-full`}></div>
+        <div className={`w-20 h-2 ${theme.bg} rounded-full`}></div>
       </div>
       <div className="grid gap-5">
         {data.map((item, i) => (
           <div
             key={i}
-            className={`rounded-[2.5rem] border transition-all duration-300 ${
+            className={`rounded-[2rem] border transition-all duration-300 ${
               open === i
-                ? `${theme.border} bg-slate-50/60 shadow-inner`
+                ? `${theme.border} bg-slate-50/50 shadow-inner`
                 : "border-slate-100 hover:border-slate-200"
             }`}
           >
             <button
               onClick={() => setOpen(open === i ? null : i)}
-              className="w-full flex justify-between items-center font-black text-slate-700 text-left p-8 md:p-10 italic"
+              className="w-full flex justify-between items-center font-black text-slate-700 text-left p-8 italic"
             >
               <span className="max-w-[85%] text-lg">{item.q}</span>
               <div
@@ -249,7 +243,7 @@ const FAQContent = ({ t, theme }) => {
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden"
                 >
-                  <p className="px-10 pb-10 text-slate-500 text-sm leading-relaxed font-medium italic">
+                  <p className="px-8 pb-8 text-slate-500 text-sm leading-relaxed font-medium italic">
                     {item.a}
                   </p>
                 </motion.div>
@@ -262,41 +256,41 @@ const FAQContent = ({ t, theme }) => {
   );
 };
 
-// --- DIRECTIONS CONTENT (PROFESSIONAL) ---
+// --- 2. DIRECTIONS CONTENT (Kengaytirilgan va Professional) ---
 const DirectionsContent = ({ t, theme }) => {
   const directions = [
     {
       id: "software",
-      title: "Dasturiy injiniring",
+      title: t("dir_software") || "Dasturiy injiniring",
       duration: "2 yil",
       icon: <Cpu size={32} />,
       learn:
-        "Kompyuter savodxonligi, dasturlash asoslari (Python, JS), veb-saytlar yaratish va kompyuter tarmoqlari.",
+        "Kompyuter savodxonligi, dasturlash asoslari, veb-saytlar yaratish va IT-texnologiyalar bilan ishlash.",
       gives:
-        "IT-park rezidentlarida ishlash, shaxsiy startap loyihalarini boshlash yoki frilans faoliyati.",
+        "Zamonaviy IT kompaniyalarda ishlash yoki shaxsiy frilans loyihalarni boshlash imkoniyati.",
       skills: ["Veb-dasturlash", "Kompyuter ta'mirlash", "Ofis dasturlari"],
     },
     {
       id: "accounting",
-      title: "Buxgalteriya hisobi",
+      title: t("dir_accounting") || "Buxgalteriya hisobi",
       duration: "1.5 yil",
-      icon: <Calculator size={32} />,
+      icon: <Briefcase size={32} />,
       learn:
-        "Moliya-hisob ishlari, 1C dasturi, soliq kodeksi, hisobotlarni yuritish va korxona iqtisodiyotini tahlil qilish.",
+        "Moliya-hisob ishlari, soliq qoidalari, hisobotlarni yuritish va korxona iqtisodiyotini tahlil qilish.",
       gives:
-        "Davlat va xususiy korxonalarda buxgalter, iqtisodchi yoki kadrlar bo'limi inspektori vazifasi.",
-      skills: ["1C Buxgalteriya", "Soliq hisoboti", "Audit"],
+        "Xohlagan davlat yoki xususiy korxonada hisobchi, kadrlar bo'limi xodimi bo'lib ishlash huquqi.",
+      skills: ["Hisob-kitob", "Hujjatlar bilan ishlash", "Soliq bilimlari"],
     },
     {
       id: "logistics",
-      title: "Agro-logistika",
+      title: t("dir_logistics") || "Agro-logistika",
       duration: "1.5 yil",
       icon: <Globe size={32} />,
       learn:
-        "Mahsulotlarni yetkazib berish zanjiri, omborxona logistikasi, bojxona rasmiylashtiruvi va eksport.",
+        "Mahsulotlarni yetkazib berish, saqlash, omborxona ishlari va eksport-import asoslari.",
       gives:
-        "Logistika markazlari, eksport qiluvchi korxonalar va transport kompaniyalarida mutaxassislik.",
-      skills: ["Tashuvni tashkil etish", "Ombor nazorati", "Bojxona"],
+        "Logistika markazlari, yirik ishlab chiqarish korxonalari va omborxonalarda tayyor mutaxassis bo'lib ishlash.",
+      skills: ["Tashishni tashkil etish", "Ombor nazorati", "Bozor tahlili"],
     },
   ];
 
@@ -306,11 +300,9 @@ const DirectionsContent = ({ t, theme }) => {
         <h2 className="text-3xl font-black text-slate-800 uppercase italic tracking-tighter mb-4">
           O'quv Yo'nalishlari
         </h2>
-        <p className="text-slate-500 font-medium italic border-l-4 border-emerald-500 pl-6 leading-relaxed max-w-3xl">
-          Politexnikumda ta'lim olish{" "}
-          <span className="text-emerald-600 font-black">mutlaqo bepul</span>.
-          Quyidagi yo'nalishlar 10 yildan ortiq tajribaga ega ustozlar tomonidan
-          o'rgatiladi.
+        <p className="text-slate-500 font-medium italic border-l-4 border-emerald-500 pl-5 leading-relaxed">
+          Politexnikumda ta'lim olish mutlaqo bepul. Quyidagi yo'nalishlar
+          bo'yicha hujjat topshirib, tayyor kasb egasi bo'lishingiz mumkin.
         </p>
       </div>
 
@@ -321,65 +313,59 @@ const DirectionsContent = ({ t, theme }) => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: index * 0.1 }}
-            className="group relative bg-white p-2 md:p-4 rounded-[3rem]"
+            className="group relative flex flex-col md:flex-row gap-10 items-start p-2"
           >
-            <div className="flex flex-col lg:flex-row gap-10 items-start">
-              {/* Icon Section */}
-              <div
-                className={`w-24 h-24 shrink-0 rounded-[2.5rem] ${theme.bg} text-white flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-500`}
-              >
-                {dir.icon}
+            {/* Icon Block */}
+            <div
+              className={`w-24 h-24 shrink-0 rounded-[2.5rem] ${theme.bg} text-white flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-500`}
+            >
+              {dir.icon}
+            </div>
+
+            {/* Info Block */}
+            <div className="flex-1 space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-50 pb-4">
+                <h3 className="text-2xl font-black text-slate-800 uppercase italic tracking-tight">
+                  {dir.title}
+                </h3>
+                <div className="flex items-center gap-2 bg-slate-100 px-5 py-2 rounded-full w-fit">
+                  <Clock size={14} className={theme.text} />
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                    {dir.duration} O'QUV MUDDATI
+                  </span>
+                </div>
               </div>
 
-              {/* Info Section */}
-              <div className="flex-1 space-y-8">
-                {/* Title & Duration */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-50 pb-6">
-                  <h3 className="text-2xl font-black text-slate-800 uppercase italic tracking-tight">
-                    {dir.title}
-                  </h3>
-                  <div className="flex items-center gap-3 bg-slate-50 px-5 py-2 rounded-full border border-slate-100 w-fit">
-                    <Clock size={16} className={theme.text} />
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                      {dir.duration} O'QUV MUDDATI
-                    </span>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-3">
+                  <h4
+                    className={`text-[11px] font-black uppercase tracking-widest ${theme.text} flex items-center gap-2`}
+                  >
+                    <Wrench size={14} /> Nima o'rganasiz?
+                  </h4>
+                  <p className="text-slate-500 text-sm leading-relaxed italic font-medium">
+                    {dir.whatYouLearn || dir.learn}
+                  </p>
                 </div>
+                <div className="space-y-3">
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-indigo-600 flex items-center gap-2">
+                    <CheckCircle2 size={14} /> Kelajakda nima beradi?
+                  </h4>
+                  <p className="text-slate-500 text-sm leading-relaxed italic font-medium">
+                    {dir.whatItGives || dir.gives}
+                  </p>
+                </div>
+              </div>
 
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <div className="space-y-3">
-                    <h4
-                      className={`text-[11px] font-black uppercase tracking-widest ${theme.text} flex items-center gap-2`}
-                    >
-                      <Wrench size={14} /> Nima o'rganasiz?
-                    </h4>
-                    <p className="text-slate-500 text-sm leading-relaxed italic font-medium">
-                      {dir.learn}
-                    </p>
-                  </div>
-                  <div className="space-y-3">
-                    <h4 className="text-[11px] font-black uppercase tracking-widest text-indigo-600 flex items-center gap-2">
-                      <CheckCircle2 size={14} /> Kelajakda nima beradi?
-                    </h4>
-                    <p className="text-slate-500 text-sm leading-relaxed italic font-medium">
-                      {dir.gives}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Skills Tags */}
-                <div className="flex flex-wrap gap-3">
-                  {dir.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="px-4 py-2 bg-slate-50 text-slate-400 text-[10px] font-black uppercase rounded-xl border border-slate-100 italic group-hover:border-emerald-200 transition-colors"
-                    >
-                      #{skill}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-2 pt-4">
+                {dir.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="px-4 py-1.5 bg-slate-50 text-slate-400 text-[9px] font-black uppercase rounded-xl border border-slate-100 italic"
+                  >
+                    #{skill}
+                  </span>
+                ))}
               </div>
             </div>
           </motion.div>
@@ -389,33 +375,18 @@ const DirectionsContent = ({ t, theme }) => {
   );
 };
 
-// --- DOCS CONTENT (Downloadable) ---
+// --- 3. DOCS CONTENT ---
 const DocsContent = ({ t, theme }) => {
-  // Fayllar public/assets/docs papkasidan olinadi
   const documents = [
-    {
-      id: 1,
-      name: "Texnikum Ustavi (Nizom)",
-      size: "1.2 MB",
-      type: "PDF",
-      fileUrl: "/assets/docs/ustav.pdf",
-    },
+    { id: 1, name: "Texnikum Ustavi (Nizom)", size: "1.2 MB", type: "PDF" },
     {
       id: 2,
-      name: "Qabul qilish tartibi",
+      name: "Qabul qilish tartibi va qoidalari",
       size: "850 KB",
       type: "PDF",
-      fileUrl: "/assets/docs/qabul.pdf",
     },
-    {
-      id: 3,
-      name: "Odob-axloq kodeksi",
-      size: "450 KB",
-      type: "PDF",
-      fileUrl: "/assets/docs/odob.pdf",
-    },
+    { id: 3, name: "Odob-axloq kodeksi", size: "450 KB", type: "DOCX" },
   ];
-
   return (
     <div className="space-y-12">
       <div className="mb-12">
@@ -454,16 +425,11 @@ const DocsContent = ({ t, theme }) => {
                 </div>
               </div>
             </div>
-
-            <a
-              href={doc.fileUrl}
-              download={doc.name}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`w-full md:w-auto flex items-center justify-center gap-3 px-10 py-5 ${theme.bg} text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 italic shadow-lg shadow-emerald-900/10 cursor-pointer`}
+            <button
+              className={`w-full md:w-auto flex items-center justify-center gap-3 px-10 py-5 ${theme.bg} text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 italic shadow-lg shadow-emerald-900/10`}
             >
               <Download size={18} /> Yuklab olish
-            </a>
+            </button>
           </div>
         ))}
       </div>
@@ -471,7 +437,7 @@ const DocsContent = ({ t, theme }) => {
   );
 };
 
-// --- PLACEHOLDER CONTENT ---
+// --- 4. PLACEHOLDER (COMING SOON) CONTENT ---
 const PlaceholderContent = ({ title, icon, theme, t }) => (
   <div className="text-center py-24 flex flex-col items-center">
     <motion.div
