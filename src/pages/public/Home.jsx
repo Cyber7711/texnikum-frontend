@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 // Qismlarni import qilish
 import Hero from "./sections/Hero";
 import NewsSection from "./sections/NewsSection";
+import GlobalNews from "./sections/GlobalNews";
 import StatsSection from "./sections/StatsSection";
 import InfoSection from "./sections/InfoSection";
 import QuickLinks from "../../components/home/QuickLinks";
@@ -25,10 +26,8 @@ const Home = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  // Ma'lumotlarni yuklash funksiyasini useCallback ichiga olamiz
   const fetchData = useCallback(async () => {
     try {
-      // API so'rovlariga timeout qo'shish tavsiya etiladi
       const [newsResult, statsResult] = await Promise.allSettled([
         axiosClient.get("/news"),
         axiosClient.get("/statistics"),
@@ -36,18 +35,12 @@ const Home = () => {
 
       if (newsResult.status === "fulfilled") {
         const rawData =
-          newsResult.value.data?.data ||
-          newsResult.value.data?.result ||
-          newsResult.value.data ||
-          [];
+          newsResult.value.data?.data || newsResult.value.data || [];
         setNewsList(Array.isArray(rawData) ? rawData : []);
       }
 
       if (statsResult.status === "fulfilled") {
-        const statData =
-          statsResult.value.data?.data ||
-          statsResult.value.data?.result ||
-          statsResult.value.data;
+        const statData = statsResult.value.data?.data || statsResult.value.data;
         const finalStats = Array.isArray(statData) ? statData[0] : statData;
         if (finalStats) {
           setStats({
@@ -60,7 +53,6 @@ const Home = () => {
     } catch (error) {
       console.error("Home Data Fetch Error:", error);
     } finally {
-      // Ma'lumotlar kelgan zahoti loaderni yopamiz
       setLoading(false);
     }
   }, []);
@@ -107,10 +99,13 @@ const Home = () => {
           className="bg-white flex flex-col min-h-screen font-sans overflow-x-hidden"
         >
           <Hero />
+
+          {/* Mahalliy va Global yangiliklar ketma-ketligi */}
           <NewsSection newsList={newsList} loading={loading} />
+          <GlobalNews />
+
           <VideoSection />
 
-          {/* Interaktiv Xizmatlar */}
           <section className="py-24 bg-white relative overflow-hidden">
             <div className="container mx-auto px-6 text-center">
               <motion.div
@@ -131,15 +126,58 @@ const Home = () => {
             </div>
           </section>
 
-          {/* Info va Stats Section */}
+          {/* Info va Stats Section + Interaktiv Separator */}
           <div className="relative">
             <InfoSection bgImage={footerBg} />
-            <div className="bg-white py-12 flex flex-col items-center justify-center relative">
-              <div className="w-px h-12 bg-gradient-to-b from-slate-200 to-transparent"></div>
-              <div className="mt-6 w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-emerald-500 shadow-lg">
-                <Zap size={16} fill="currentColor" className="animate-pulse" />
-              </div>
+
+            {/* Mukammallashtirilgan Separator */}
+            <div className="bg-white py-16 flex flex-col items-center justify-center relative overflow-hidden">
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                whileInView={{ height: 80, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 1 }}
+                className="w-[2px] bg-gradient-to-b from-emerald-500 via-slate-200 to-transparent"
+              />
+
+              <motion.div
+                initial={{ scale: 0, rotate: -45 }}
+                whileInView={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 100, damping: 10 }}
+                className="relative mt-4"
+              >
+                <div className="w-14 h-14 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-emerald-500 shadow-[0_20px_50px_rgba(16,185,129,0.15)] z-10 relative">
+                  <motion.div
+                    animate={{
+                      opacity: [1, 0.5, 1],
+                      filter: [
+                        "drop-shadow(0 0 0px #10b981)",
+                        "drop-shadow(0 0 8px #10b981)",
+                        "drop-shadow(0 0 0px #10b981)",
+                      ],
+                    }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                  >
+                    <Zap size={24} fill="currentColor" />
+                  </motion.div>
+                </div>
+
+                {/* Atrofdagi aylanma effekt */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                  className="absolute inset-0 -m-4 border border-dashed border-slate-200 rounded-full opacity-50"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ height: 0 }}
+                whileInView={{ height: 40 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="w-[2px] bg-gradient-to-t from-slate-200 to-transparent mt-4"
+              />
             </div>
+
             <StatsSection stats={stats} bgImage={footerBg} />
           </div>
 
