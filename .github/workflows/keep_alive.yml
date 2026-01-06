@@ -1,0 +1,15 @@
+name: Keep Server Alive
+
+on:
+  schedule:
+    # Har 10 daqiqada ishlaydi
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API
+        run: |
+          curl -I https://https://texnikum-backend.onrender.com/api/news
