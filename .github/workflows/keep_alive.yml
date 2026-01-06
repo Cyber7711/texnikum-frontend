@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Ping API
         run: |
-          curl -I https://https://texnikum-backend.onrender.com/api/news
+          curl -I https://texnikum-backend.onrender.com/api/news
