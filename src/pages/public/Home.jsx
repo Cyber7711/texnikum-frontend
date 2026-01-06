@@ -26,7 +26,21 @@ const Home = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  // Server uyg'onishini kuzatish uchun statelar
+  const [isTakingLong, setIsTakingLong] = useState(false);
+  const [loadingText, setLoadingText] = useState(t("loading") || "YUKLANMOQDA");
+
   const fetchData = useCallback(async () => {
+    // Server kechikayotganini tushuntiruvchi taymerlar
+    const longLoadTimer = setTimeout(() => {
+      setIsTakingLong(true);
+      setLoadingText("SERVER UYG'ONMOQDA, ILTIMOS KUTING...");
+    }, 5000);
+
+    const veryLongLoadTimer = setTimeout(() => {
+      setLoadingText("MA'LUMOTLAR YUKLANISHI DAVOM ETMOQDA...");
+    }, 15000);
+
     try {
       const [newsResult, statsResult] = await Promise.allSettled([
         axiosClient.get("/news"),
@@ -53,6 +67,8 @@ const Home = () => {
     } catch (error) {
       console.error("Home Data Fetch Error:", error);
     } finally {
+      clearTimeout(longLoadTimer);
+      clearTimeout(veryLongLoadTimer);
       setLoading(false);
     }
   }, []);
@@ -70,21 +86,54 @@ const Home = () => {
           exit={{ opacity: 0, transition: { duration: 0.5 } }}
           className="flex items-center justify-center min-h-screen bg-white fixed inset-0 z-[9999]"
         >
-          <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-6 px-6 text-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full animate-pulse"></div>
-              <Loader2 className="w-16 h-16 text-emerald-600 animate-spin relative z-10" />
+              <div
+                className={`absolute inset-0 ${
+                  isTakingLong ? "bg-amber-500/20" : "bg-emerald-500/20"
+                } blur-2xl rounded-full animate-pulse`}
+              ></div>
+              <Loader2
+                className={`w-16 h-16 ${
+                  isTakingLong ? "text-amber-600" : "text-emerald-600"
+                } animate-spin relative z-10 transition-colors duration-500`}
+              />
+
+              {isTakingLong && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-2 -right-2 bg-amber-100 p-1 rounded-full text-amber-600 z-20 border-2 border-white"
+                >
+                  <Zap size={14} fill="currentColor" />
+                </motion.div>
+              )}
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-slate-900 font-black italic uppercase tracking-[0.4em] text-xs">
-                {t("loading") || "YUKLANMOQDA"}
-              </span>
-              <div className="w-24 h-1 bg-slate-100 rounded-full overflow-hidden">
+
+            <div className="flex flex-col items-center gap-3">
+              <motion.span
+                key={loadingText}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`${
+                  isTakingLong ? "text-amber-800" : "text-slate-900"
+                } font-black italic uppercase tracking-[0.2em] text-[10px] md:text-xs max-w-xs transition-colors duration-500`}
+              >
+                {loadingText}
+              </motion.span>
+
+              <div className="w-32 h-1 bg-slate-100 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ x: "-100%" }}
                   animate={{ x: "100%" }}
-                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                  className="w-full h-full bg-emerald-500"
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1.5,
+                    ease: "easeInOut",
+                  }}
+                  className={`w-full h-full ${
+                    isTakingLong ? "bg-amber-500" : "bg-emerald-500"
+                  } transition-colors duration-500`}
                 />
               </div>
             </div>
@@ -100,12 +149,13 @@ const Home = () => {
         >
           <Hero />
 
-          {/* Mahalliy va Global yangiliklar ketma-ketligi */}
+          {/* Yangiliklar: Avval mahalliy, keyin dunyo yangiliklari */}
           <NewsSection newsList={newsList} loading={loading} />
           <GlobalNews />
 
           <VideoSection />
 
+          {/* Interaktiv Xizmatlar */}
           <section className="py-24 bg-white relative overflow-hidden">
             <div className="container mx-auto px-6 text-center">
               <motion.div
@@ -130,7 +180,7 @@ const Home = () => {
           <div className="relative">
             <InfoSection bgImage={footerBg} />
 
-            {/* Mukammallashtirilgan Separator */}
+            {/* Animatsiyali Separator qismi */}
             <div className="bg-white py-16 flex flex-col items-center justify-center relative overflow-hidden">
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
@@ -162,7 +212,6 @@ const Home = () => {
                   </motion.div>
                 </div>
 
-                {/* Atrofdagi aylanma effekt */}
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 8, ease: "linear" }}

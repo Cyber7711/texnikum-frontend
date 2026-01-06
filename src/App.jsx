@@ -18,7 +18,8 @@ import Apply from "./pages/public/Apply";
 import Documents from "./pages/public/Documents";
 import InfoPortal from "./pages/public/InfoPortal";
 import Admission from "./pages/public/Admission";
-import NotFound from "./pages//NotFound"; // <--- 1. NOTFOUND IMPORT QILINDI
+import NotFound from "./pages//NotFound";
+import Management from "./pages/public/Management";
 
 // Admin Sahifalar
 import DashboardHome from "./pages/admin/DashboardHome";
@@ -83,6 +84,7 @@ function App() {
             <Route path="documents" element={<Documents />} />
             <Route path="info" element={<InfoPortal />} />
             <Route path="qabul" element={<Admission />} />
+            <Route path="management" element={<Management />} />
 
             {/* 2. PUBLIC NOTFOUND - Noto'g'ri URL yozilsa MainLayout ichida chiqadi */}
             <Route path="*" element={<NotFound />} />
