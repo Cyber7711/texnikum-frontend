@@ -179,7 +179,11 @@
   "lang_uz": "O'zbek",
   "lang_uz_ru": "O'zbek / Rus",
   "apply_badge": "ONLAYN RO'YXATDAN O'TISH",
+  "video_badge": "VIRTUALLIKKA XUSH KELIBSIZ",
 
+  "video_desc": "O'quv xonalari, laboratoriyalar va talabalar hayoti bilan bir daqiqada tanishing.",
+
+  "hero_video_btn": "VIDEO SAYOHAT",
   "nav_management": "Rahbariyat",
   "management_badge": "ORGANIZATSION TUZILMA",
   "management_title_1": "Tashkiliy",

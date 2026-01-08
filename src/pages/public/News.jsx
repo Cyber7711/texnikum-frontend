@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
-import {
-  Calendar,
-  ArrowRight,
-  ImageOff,
-  Newspaper,
-  Clock,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, ImageOff, Newspaper, Clock, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
 const News = () => {
@@ -17,6 +10,7 @@ const News = () => {
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ... fetchAllNews va getImageUrl funksiyalari o'zgarishsiz qoladi ...
   useEffect(() => {
     const fetchAllNews = async () => {
       try {
@@ -42,9 +36,10 @@ const News = () => {
   };
 
   return (
-    <div className="bg-[#fafbfc] min-h-screen pb-32">
-      {/* 1. Dinamik Header - Dark Mode uslubida */}
-      <section className="relative bg-[#0a1128] pt-32 pb-40 overflow-hidden">
+    // ASOSIY WRAPPER: relative position va past z-index beramiz
+    <div className="bg-[#fafbfc] min-h-screen pb-32 relative z-0">
+      {/* 1. Header: z-index 10 qilib qo'yamiz (Navbar odatda z-50 bo'ladi) */}
+      <section className="relative bg-[#0a1128] pt-32 pb-40 overflow-hidden z-10">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -mr-40 -mt-40 animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -ml-20 -mb-20"></div>
 
@@ -79,7 +74,8 @@ const News = () => {
       </section>
 
       {/* 2. Yangiliklar Paneli */}
-      <div className="container mx-auto px-6 -mt-16 relative z-20">
+      {/* BU YERDA: z-index ni 10 ga tushiramiz (Navbar ustidan chiqib ketmasligi uchun) */}
+      <div className="container mx-auto px-6 -mt-16 relative z-10">
         {loading ? (
           /* SKELETON LOADERS */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -143,7 +139,7 @@ const News = () => {
                   )}
 
                   {/* Badge: Sana */}
-                  <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl text-[10px] font-black text-slate-900 shadow-xl flex items-center gap-2 border border-slate-100">
+                  <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl text-[10px] font-black text-slate-900 shadow-xl flex items-center gap-2 border border-slate-100 z-20">
                     <Clock size={14} className="text-emerald-600" />
                     {new Date(news.date || news.createdAt).toLocaleDateString(
                       "uz-UZ"
@@ -152,7 +148,7 @@ const News = () => {
                 </div>
 
                 {/* Content Section */}
-                <div className="p-8 md:p-10 flex flex-col flex-grow relative">
+                <div className="p-8 md:p-10 flex flex-col flex-grow relative z-10">
                   <h3 className="text-2xl font-black text-slate-900 mb-4 line-clamp-2 tracking-tighter leading-tight italic uppercase group-hover:text-emerald-600 transition-colors">
                     {news.title}
                   </h3>

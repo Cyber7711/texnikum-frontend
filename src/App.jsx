@@ -3,9 +3,10 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import PageLoader from "./components/ui/PageLoader";
 import { AnimatePresence, motion } from "framer-motion";
 
-// cursor
+// animations
 
 import CustomCursor from "./components/ui/CustomCursor";
+import ScrollProgress from "./components/ui/ScrollProgress";
 
 // Sahifalar
 import MainLayout from "./components/layout/MainLayout";
@@ -24,6 +25,7 @@ import InfoPortal from "./pages/public/InfoPortal";
 import Admission from "./pages/public/Admission";
 import NotFound from "./pages//NotFound";
 import Management from "./pages/public/Management";
+import VideoTour from "./pages/public/VideoTour";
 
 // Admin Sahifalar
 import DashboardHome from "./pages/admin/DashboardHome";
@@ -58,6 +60,8 @@ function App() {
 
   return (
     <>
+      <CustomCursor />
+      <ScrollProgress />
       <AnimatePresence mode="wait">
         {isPageLoading && (
           <motion.div
@@ -79,7 +83,6 @@ function App() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
-        <CustomCursor />
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
@@ -90,6 +93,7 @@ function App() {
             <Route path="info" element={<InfoPortal />} />
             <Route path="qabul" element={<Admission />} />
             <Route path="management" element={<Management />} />
+            <Route path="/video-tour" element={<VideoTour />} />
 
             {/* 2. PUBLIC NOTFOUND - Noto'g'ri URL yozilsa MainLayout ichida chiqadi */}
             <Route path="*" element={<NotFound />} />
