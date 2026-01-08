@@ -191,16 +191,6 @@ const FAQContent = ({ t, theme }) => {
         t("faq_a1") ||
         "Hujjatlar qabuli har yili iyun oyidan avgust oyigacha davom etadi. Qabul jarayoni my.uzbmb.uz orqali onlayn amalga oshiriladi.",
     },
-    {
-      q: t("faq_q2") || "Yotoqxona mavjudmi?",
-      a:
-        t("faq_a2") ||
-        "Ha, uzoq viloyatlardan kelgan talabalar uchun barcha sharoitlarga ega zamonaviy talabalar turar joyi (Yotoqxona) mavjud.",
-    },
-    {
-      q: "Stipendiya beriladimi?",
-      a: "Ha, a'lo baholarga o'qigan va jamoat ishlarida faol bo'lgan talabalar uchun davlat tomonidan belgilangan tartibda stipendiya to'lanadi.",
-    },
   ];
 
   return (
@@ -279,7 +269,7 @@ const DirectionsContent = ({ t, theme }) => {
     {
       id: "accounting",
       title: "Buxgalteriya hisobi",
-      duration: "1.5 yil",
+      duration: "2 yil",
       icon: <Calculator size={32} />,
       learn:
         "Moliya-hisob ishlari, 1C dasturi, soliq kodeksi, hisobotlarni yuritish va korxona iqtisodiyotini tahlil qilish.",
@@ -290,7 +280,7 @@ const DirectionsContent = ({ t, theme }) => {
     {
       id: "logistics",
       title: "Agro-logistika",
-      duration: "1.5 yil",
+      duration: "2 yil",
       icon: <Globe size={32} />,
       learn:
         "Mahsulotlarni yetkazib berish zanjiri, omborxona logistikasi, bojxona rasmiylashtiruvi va eksport.",

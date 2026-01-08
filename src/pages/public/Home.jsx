@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Qismlarni import qilish
-import Hero from "./sections/Hero";
-import NewsSection from "./sections/NewsSection";
-import GlobalNews from "./sections/GlobalNews";
-import StatsSection from "./sections/StatsSection";
-import InfoSection from "./sections/InfoSection";
+import Hero from "../../components/home/sections/Hero";
+import NewsSection from "../../components/home/sections/NewsSection";
+import GlobalNews from "../../components/home/sections/GlobalNews";
+import StatsSection from "../../components/home/sections/StatsSection";
+import InfoSection from "../../components/home/sections/InfoSection";
 import QuickLinks from "../../components/home/QuickLinks";
 import Partners from "../../components/home/Partners";
 import VideoSection from "../../components/home/VideoSection";

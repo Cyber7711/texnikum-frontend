@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Sparkles,
   ShieldCheck,
+  RefreshCw, // Yangilash ikonkasini qo'shamiz
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -59,6 +60,21 @@ const Apply = () => {
     if (error) setError("");
   };
 
+  // --- YANGI QO'SHILGAN FUNKSIYA: Qaytadan ariza topshirish ---
+  const handleResetApplication = () => {
+    // LocalStorage ni tozalaymiz
+    localStorage.removeItem("texnikum_applied");
+    // State larni boshlang'ich holatga qaytaramiz
+    setSuccess(false);
+    setAlreadyApplied(false);
+    setFormData({
+      fullname: "",
+      phone: "+998 ",
+      direction: "",
+    });
+    setError("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.fullname.trim().length < 5) {
@@ -66,13 +82,19 @@ const Apply = () => {
       return;
     }
     setLoading(true);
+    setError(""); // Oldingi xatoliklarni tozalash
+
     try {
       const payload = { ...formData, phone: formData.phone.replace(/\s/g, "") };
       await axiosClient.post("/applicant", payload);
+
+      // Muvaffaqiyatli bo'lsa localStorage ga yozamiz
       localStorage.setItem("texnikum_applied", "true");
       setSuccess(true);
       toast.success(t("apply_success_title"));
     } catch (err) {
+      // Agar server xato qaytarsa (masalan: bu raqam allaqachon bor)
+      console.error(err);
       setError(err.response?.data?.message || t("apply_error_server"));
     } finally {
       setLoading(false);
@@ -111,12 +133,24 @@ const Apply = () => {
               : t("apply_already_desc") ||
                 "Mutaxassislarimiz tez orada siz bilan bog'lanishadi."}
           </p>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-3 bg-[#0a1128] text-white px-12 py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-emerald-600 transition-all shadow-2xl active:scale-95"
-          >
-            <ArrowLeft size={18} /> {t("nav_home")}
-          </Link>
+
+          <div className="flex flex-col gap-4">
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center gap-3 bg-[#0a1128] text-white px-12 py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-emerald-600 transition-all shadow-2xl active:scale-95"
+            >
+              <ArrowLeft size={18} /> {t("nav_home")}
+            </Link>
+
+            {/* --- YANGI TUGMA: Qayta ariza yuborish --- */}
+            <button
+              onClick={handleResetApplication}
+              className="inline-flex items-center justify-center gap-3 bg-white text-slate-500 border-2 border-slate-100 px-12 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95"
+            >
+              <RefreshCw size={14} />
+              {t("apply_new_application") || "Yangi ariza yuborish"}
+            </button>
+          </div>
         </motion.div>
       </div>
     );

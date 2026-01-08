@@ -3,6 +3,10 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import PageLoader from "./components/ui/PageLoader";
 import { AnimatePresence, motion } from "framer-motion";
 
+// cursor
+
+import CustomCursor from "./components/ui/CustomCursor";
+
 // Sahifalar
 import MainLayout from "./components/layout/MainLayout";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -75,6 +79,7 @@ function App() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
+        <CustomCursor />
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
