@@ -15,6 +15,7 @@ import Partners from "../../components/home/Partners";
 import VideoSection from "../../components/home/VideoSection";
 import Footer from "../../components/home/Footer";
 import footerBg from "../../assets/images/university.jpg";
+import SEO from "../../components/common/SEO";
 
 const Home = () => {
   const { t } = useTranslation();
