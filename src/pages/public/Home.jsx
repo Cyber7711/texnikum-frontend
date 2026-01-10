@@ -79,6 +79,11 @@ const Home = () => {
 
   return (
     <AnimatePresence mode="wait">
+      <SEO
+        title="Bosh sahifa - Kelajak kasblari maskani"
+        description="Texnikumimizda zamonaviy IT, muhandislik va texnologiya yo'nalishlarida sifatli ta'lim oling."
+        keywords="texnikum, ta'lim, o'qish, IT, muhandislik, diplom"
+      />
       {loading ? (
         <motion.div
           key="loader"
