@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { ArrowRight, Newspaper, LayoutGrid } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import NewsCard from "../../../components/ui/NewsCard";
+import NewsCard from "../../../components/ui/NewsCard"; // NewsCard import qilingan
 
-// Skeleton Loader - Ma'lumot yuklanguncha chiroyli blok ko'rsatib turadi
+// Skeleton Loader
 const NewsSkeleton = () => (
   <div className="bg-slate-50 rounded-[3rem] p-6 animate-pulse h-[500px] flex flex-col">
     <div className="w-full h-64 bg-slate-200 rounded-[2.5rem] mb-6"></div>
@@ -20,10 +20,8 @@ const NewsSkeleton = () => (
 const NewsSection = ({ newsList, loading }) => {
   const { t } = useTranslation();
 
-  // newsList massiv ekanligini va ichi bo'sh emasligini tekshiramiz
   const data = Array.isArray(newsList) ? newsList : [];
 
-  // Animatsiya variantlari (Stagger effect - birin ketin chiqishi uchun)
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -77,14 +75,39 @@ const NewsSection = ({ newsList, loading }) => {
           </motion.div>
         </div>
 
-        {/* 3. Bo'sh holat (Yangilik yo'q bo'lganda chiqadigan qism) */}
-        {!loading && data.length === 0 && (
+        {/* --- ASOSIY MANTIQ --- */}
+        {loading ? (
+          /* 1. YUKLANMOQDA (Skeleton) */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <NewsSkeleton />
+            <NewsSkeleton />
+            <NewsSkeleton />
+          </div>
+        ) : data.length > 0 ? (
+          /* 2. YANGILIKLAR BOR (NewsCard ishlatiladigan joy) */
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
+          >
+            {/* Faqat eng so'nggi 3 ta yangilikni ko'rsatamiz */}
+            {data.slice(0, 3).map((news, index) => (
+              <NewsCard
+                key={news._id || index}
+                news={news}
+                index={index} // Animatsiya kechikishi uchun kerak bo'lishi mumkin
+              />
+            ))}
+          </motion.div>
+        ) : (
+          /* 3. BO'SH HOLAT (Empty State) */
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="py-24 text-center bg-slate-50/50 rounded-[4rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center group"
           >
-            {/* Animatsiyali belgi */}
             <div className="w-24 h-24 bg-white rounded-full shadow-xl flex items-center justify-center mb-8 text-slate-300 group-hover:text-emerald-500 transition-colors duration-500">
               <LayoutGrid
                 size={40}
@@ -92,12 +115,9 @@ const NewsSection = ({ newsList, loading }) => {
                 className="animate-pulse"
               />
             </div>
-
-            {/* Asosiy matn */}
             <h3 className="text-xl md:text-2xl font-black text-slate-400 uppercase tracking-widest italic leading-tight px-6">
               {t("no_news_available")}
             </h3>
-
             <p className="text-slate-400 mt-4 text-[10px] font-bold uppercase tracking-[0.3em] opacity-60">
               Yaqin orada yangi ma'lumotlar qo'shiladi
             </p>
