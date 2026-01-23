@@ -214,8 +214,20 @@
   "staff_hr": "Head of HR Department",
   "staff_accountant": "Chief Accountant",
   "video_badge": "WELCOME TO VIRTUAL REALITY",
-
+  "news_badge": "INFORMATION CENTER",
+  "stats_badge": "OUR TECHNICAL SCHOOL IN NUMBERS",
   "video_desc": "Explore classrooms, laboratories, and student life in just one minute.",
+  "technical_life": "Technical School Life",
+  "world_news": "World News",
+  "pos_director": "Director of the Technical School",
+  "pos_deputy_edu": "Deputy Director for Academic Affairs",
+  "pos_deputy_spirit": "Deputy Director for Youth Affairs",
+  "pos_deputy_inno": "Deputy Director for Science and Innovation",
+  "pos_hr": "Head of HR Department",
+  " pos_accountant": "Chief Accountant",
+  "pos_lawyer": "Legal Counsel",
+  "pos_press": "Press Secretary",
+  "view_profile": "VIEW PROFILE",
 
   "staff_supply": "Head of Supply Department"
 }

@@ -77,45 +77,30 @@ const NewsSection = ({ newsList, loading }) => {
           </motion.div>
         </div>
 
-        {/* MANTIQIY KO'RSATISH QISMI */}
-        {loading ? (
-          /* 1. Yuklanayotgan holat */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            <NewsSkeleton />
-            <NewsSkeleton />
-            <NewsSkeleton />
-          </div>
-        ) : data.length > 0 ? (
-          /* 2. Ma'lumot bor holat (NewsCard chaqirilishi) */
+        {/* 3. Bo'sh holat (Yangilik yo'q bo'lganda chiqadigan qism) */}
+        {!loading && data.length === 0 && (
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="py-24 text-center bg-slate-50/50 rounded-[4rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center group"
           >
-            {data.slice(0, 3).map((news, index) => (
-              /* DIQQAT: item={news} emas, news={news} deb uzatamiz! */
-              <NewsCard
-                key={news?._id || news?.id || index}
-                news={news}
-                index={index}
+            {/* Animatsiyali belgi */}
+            <div className="w-24 h-24 bg-white rounded-full shadow-xl flex items-center justify-center mb-8 text-slate-300 group-hover:text-emerald-500 transition-colors duration-500">
+              <LayoutGrid
+                size={40}
+                strokeWidth={1.5}
+                className="animate-pulse"
               />
-            ))}
-          </motion.div>
-        ) : (
-          /* 3. Bo'sh holat */
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="py-32 text-center bg-slate-50/50 rounded-[4rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center"
-          >
-            <div className="w-24 h-24 bg-white rounded-full shadow-2xl flex items-center justify-center mb-8 text-slate-300">
-              <LayoutGrid size={40} strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest italic">
-              {t("no_news_available") || "Hozircha yangiliklar yo'q"}
+
+            {/* Asosiy matn */}
+            <h3 className="text-xl md:text-2xl font-black text-slate-400 uppercase tracking-widest italic leading-tight px-6">
+              {t("no_news_available")}
             </h3>
+
+            <p className="text-slate-400 mt-4 text-[10px] font-bold uppercase tracking-[0.3em] opacity-60">
+              Yaqin orada yangi ma'lumotlar qo'shiladi
+            </p>
           </motion.div>
         )}
       </div>

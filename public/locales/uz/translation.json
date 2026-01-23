@@ -182,7 +182,7 @@
   "video_badge": "VIRTUALLIKKA XUSH KELIBSIZ",
 
   "video_desc": "O'quv xonalari, laboratoriyalar va talabalar hayoti bilan bir daqiqada tanishing.",
-
+  "dir_mechanization": "Qishloq xo'jaligini mexanizatsiyalash",
   "hero_video_btn": "VIDEO SAYOHAT",
   "nav_management": "Rahbariyat",
   "management_badge": "ORGANIZATSION TUZILMA",
@@ -214,5 +214,20 @@
   "dir_logistics_learn": "Mahsulotlarni saqlash, tashish texnologiyalari, omborxona nazorati va eksport-import asoslari o'rgatiladi.",
   "dir_logistics_work": "Logistika markazlari, yirik korxonalarning ta'minot bo'limi va bojxona omborlarida ishlash imkoniyati.",
   "dir_mechanization_learn": "Zamonaviy texnikalarga xizmat ko'rsatish, mexanizmlar ishlash prinsipi va qishloq xo'jaligi texnikalarini boshqarish.",
-  "dir_mechanization_work": "Agrosanoat majmualari, texnik xizmat ko'rsatish markazlari va fermer xo'jaliklarida muhandis-mexanik."
+  "dir_mechanization_work": "Agrosanoat majmualari, texnik xizmat ko'rsatish markazlari va fermer xo'jaliklarida muhandis-mexanik.",
+
+  "pos_director": "Texnikum Direktori",
+  "pos_deputy_edu": "O'quv ishlari bo'yicha direktor o'rinbosari",
+  "pos_deputy_spirit": "Yoshlar bilan ishlash bo'yicha o'rinbosar",
+  "pos_deputy_inno": "Ilmiy ishlar va innovatsiyalar bo'yicha o'rinbosar",
+  "pos_hr": "Kadrlar bo'limi boshlig'i",
+  "pos_accountant": "Bosh hisobchi",
+  "pos_lawyer": "Yuriskonsult",
+  "pos_press": "Matbuot kotibi",
+  "view_profile": "PROFILNI KO'RISH",
+  "technical_life": "Texnikum Hayoti",
+  "world_news": "Dunyo Yangiliklari",
+  "heads_of_departments": "BO'LIM BOSHLIQLARI",
+  "news_badge": "MA'LUMOTLAR MARKAZI",
+  "stats_badge": "RAQAMLARDA BIZNING TEXNIKUM"
 }

@@ -2,294 +2,415 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone,
-  Mail,
   Clock,
-  ShieldCheck,
-  Zap,
   User,
-  X,
-  Award,
-  GraduationCap,
-  ArrowRight,
-  Briefcase,
   ChevronRight,
-  ExternalLink,
+  Briefcase,
+  GraduationCap,
+  Award,
+  Users,
+  Building2,
+  FileText,
+  BadgeCheck,
+  X,
+  Zap,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import SectionHeader from "../../components/ui/SectionHeader";
-import Modal from "../../components/ui/Modal";
 
-// 1. LeaderCard komponentini asosiy komponentdan tashqariga chiqaramiz
-const LeaderCard = ({ leader, isMain, isStaff, onOpen, t }) => {
-  if (!leader) return null;
+// --- 1. OQIMLI CHIZIQ KOMPONENTI (PREMIUM LINE) ---
+// Bu chiziq ichida "nur" oqib o'tadi
+const FlowLine = ({ d, delay = 0 }) => (
+  <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-0">
+    {/* Orqa fon (Yo'lak) */}
+    <motion.path
+      d={d}
+      fill="transparent"
+      stroke="#e2e8f0" // Slate-200 (juda och kulrang)
+      strokeWidth="3"
+      strokeLinecap="round"
+      initial={{ pathLength: 0, opacity: 0 }}
+      whileInView={{ pathLength: 1, opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 1.2, delay }}
+    />
+
+    {/* Harakatlanuvchi NUR (Tok oqimi) */}
+    <motion.path
+      d={d}
+      fill="transparent"
+      stroke="url(#flowGradient)"
+      strokeWidth="3"
+      strokeLinecap="round"
+      initial={{ pathLength: 0, opacity: 0 }}
+      animate={{
+        pathDashoffset: [0, -100],
+        pathLength: [0.05, 0.3, 0.05], // Nur uzayib-qisqaradi
+        opacity: [0, 1, 0],
+      }}
+      transition={{
+        duration: 2.5,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: delay + 1,
+      }}
+    />
+    <defs>
+      <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#10b981" stopOpacity="0" />
+        <stop offset="50%" stopColor="#10b981" stopOpacity="1" />{" "}
+        {/* Emerald Green */}
+        <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+// --- 2. MA'LUMOTLAR ---
+const getManagementData = (t) => ({
+  director: {
+    id: "dir_1",
+    name: "Axmedov Jasur Ilhomovich",
+    position: t("pos_director") || "Texnikum Direktori",
+    role: "director",
+    phone: "+998 71 200-00-01",
+    email: "director@texnikum.uz",
+    reception: "Dushanba - Juma, 08:00 - 11:00",
+    bio: "Texnika fanlari nomzodi, Dotsent. Ta'lim tizimida 22 yillik tajriba. Xalqaro ta'lim grantlari g'olibi.",
+    education: "Toshkent Davlat Texnika Universiteti (PhD)",
+    experience: "22 yil",
+  },
+  deputies: [
+    {
+      id: "dep_1",
+      name: "Rahimov Nodirbek",
+      position: t("pos_deputy_edu") || "O'quv ishlari bo'yicha o'rinbosar",
+      role: "deputy",
+      phone: "+998 71 200-00-02",
+      reception: "Har kuni, 14:00 - 17:00",
+      bio: "O'quv jarayonini raqamlashtirish bo'yicha ekspert.",
+      education: "O'zMU (Magistratura)",
+      experience: "15 yil",
+    },
+    {
+      id: "dep_2",
+      name: "Karimova Dilnoza",
+      position: t("pos_deputy_spirit") || "Yoshlar ishlari bo'yicha o'rinbosar",
+      role: "deputy",
+      phone: "+998 71 200-00-03",
+      reception: "Seshanba - Payshanba, 10:00 - 16:00",
+      bio: "Yoshlar psixologiyasi va ijtimoiy loyihalar bo'yicha mutaxassis.",
+      education: "TDPU",
+      experience: "12 yil",
+    },
+    {
+      id: "dep_3",
+      name: "Tursunov Bekzod",
+      position: t("pos_deputy_inno") || "Innovatsiyalar bo'yicha o'rinbosar",
+      role: "deputy",
+      phone: "+998 71 200-00-04",
+      reception: "Chorshanba - Juma, 15:00 - 17:00",
+      bio: "IT Park rezidenti, startap loyihalar koordinatori.",
+      education: "TATU",
+      experience: "8 yil",
+    },
+  ],
+  heads: [
+    {
+      id: "h1",
+      name: "Ismoilova Nargiza",
+      position: t("pos_hr") || "Kadrlar bo'limi",
+      icon: Users,
+    },
+    {
+      id: "h2",
+      name: "Abdullayev Rustam",
+      position: t("pos_accountant") || "Bosh hisobchi",
+      icon: Building2,
+    },
+    {
+      id: "h3",
+      name: "Sodiqov Alisher",
+      position: t("pos_lawyer") || "Yuriskonsult",
+      icon: BadgeCheck,
+    },
+    {
+      id: "h4",
+      name: "Yusupova Malika",
+      position: t("pos_press") || "Matbuot kotibi",
+      icon: FileText,
+    },
+  ],
+});
+
+// --- 3. KARTA KOMPONENTI (Yangi va Katta) ---
+const LeaderCard = ({ leader, isMain, isSmall, onOpen, t }) => {
+  const Icon = leader.icon || User;
 
   return (
-    <div
+    <motion.div
+      whileHover={{ y: -10 }}
+      onClick={onOpen}
       className={`
+        relative bg-white border border-slate-100 transition-all duration-500 cursor-pointer group overflow-hidden flex flex-col items-center text-center
         ${
           isMain
-            ? "max-w-3xl px-12 py-10"
-            : isStaff
-            ? "max-w-md p-8"
-            : "w-full p-10"
-        } 
-        bg-white rounded-[4rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] 
-        relative group transition-all duration-700 hover:shadow-[0_30px_60px_-15px_rgba(59,130,246,0.15)]
-        hover:border-blue-100 hover:-translate-y-3 flex flex-col items-center text-center mx-auto
+            ? "rounded-[3.5rem] p-12 shadow-[0_20px_50px_-12px_rgba(16,185,129,0.15)] max-w-2xl w-full mx-auto z-30"
+            : isSmall
+              ? "rounded-[2rem] p-6 shadow-sm hover:shadow-xl hover:border-emerald-200 z-10"
+              : "rounded-[3rem] p-10 shadow-lg hover:shadow-2xl hover:border-emerald-200 z-20 h-full justify-between"
+        }
       `}
     >
-      <div className="relative mb-8">
-        <div
-          className={`
-          ${isMain ? "w-48 h-48" : isStaff ? "w-24 h-24" : "w-32 h-32"} 
-          bg-slate-50 rounded-[3rem] flex items-center justify-center text-slate-200 
-          group-hover:bg-blue-600 group-hover:text-white transition-all duration-700 
-          shadow-inner relative z-10 group-hover:rotate-[5deg]
-        `}
-        >
-          <User size={isMain ? 80 : 40} strokeWidth={1} />
-        </div>
-        <div className="absolute inset-0 bg-blue-500/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      {/* Orqa fon bezagi (Glow) */}
+      <div
+        className={`absolute top-0 right-0 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-emerald-500/10 transition-colors duration-700`}
+      />
+
+      {/* Rasm/Icon qismi */}
+      <div
+        className={`
+        relative flex items-center justify-center rounded-[2.5rem] mb-8 transition-all duration-500
+        ${
+          isMain
+            ? "w-40 h-40 bg-emerald-600 text-white shadow-2xl shadow-emerald-200"
+            : isSmall
+              ? "w-16 h-16 bg-slate-50 text-slate-400 group-hover:bg-emerald-500 group-hover:text-white"
+              : "w-24 h-24 bg-slate-50 text-slate-400 group-hover:bg-emerald-600 group-hover:text-white"
+        }
+      `}
+      >
+        <Icon size={isMain ? 64 : isSmall ? 28 : 36} strokeWidth={1.5} />
+        {isMain && (
+          <div className="absolute inset-0 bg-white/20 rounded-[2.5rem] animate-pulse" />
+        )}
       </div>
 
-      <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-4 block italic">
+      {/* Lavozim */}
+      <span
+        className={`font-black uppercase tracking-[0.25em] mb-4 italic ${isMain ? "text-emerald-600 text-xs" : "text-slate-400 text-[9px]"}`}
+      >
         {leader.position}
       </span>
+
+      {/* Ism */}
       <h3
         className={`
-        ${isMain ? "text-4xl" : "text-2xl"} 
-        font-black text-slate-900 uppercase italic tracking-tighter leading-none mb-6 
-        group-hover:text-blue-600 transition-colors
+        font-black text-slate-900 uppercase italic tracking-tighter leading-[0.9] mb-8 group-hover:text-emerald-600 transition-colors
+        ${isMain ? "text-4xl md:text-5xl" : isSmall ? "text-lg" : "text-2xl"}
       `}
       >
         {leader.name}
       </h3>
 
-      <button
-        onClick={onOpen}
-        className="flex items-center gap-3 py-4 px-8 rounded-2xl bg-slate-50 text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all duration-500 font-black text-[10px] uppercase tracking-widest italic"
+      {/* Tugma */}
+      <div
+        className={`
+        inline-flex items-center gap-2 font-black uppercase tracking-widest transition-all
+        ${
+          isMain
+            ? "px-8 py-4 bg-slate-900 text-white rounded-2xl text-xs hover:bg-emerald-600"
+            : "text-[9px] text-slate-400 group-hover:text-emerald-600 border-b border-transparent group-hover:border-emerald-200 pb-1"
+        }
+      `}
       >
-        {t("read_more_details") || "Batafsil"}{" "}
-        <ChevronRight
-          size={14}
-          className="group-hover:translate-x-1 transition-transform"
-        />
-      </button>
-    </div>
+        {t("view_profile") || "Profil"} <ChevronRight size={isMain ? 16 : 12} />
+      </div>
+    </motion.div>
   );
 };
 
-// 2. Ma'lumotlarni alohida obyekt qilib chiqaramiz (xatolikni oldini olish uchun)
-const getManagementData = (t) => ({
-  director: {
-    id: "dir_1",
-    name: "Falonchiyev Pismonchi",
-    position: t("dir_title") || "Texnikum Direktori",
-    reception: "Dushanba - Chorshanba, 09:00 - 12:00",
-    phone: "+998 71 123 45 67",
-    email: "director@texnikum.uz",
-    bio: t("dir_bio") || "Ko'p yillik tajribaga ega rahbar...",
-    education: "O'zbekiston Milliy Universiteti (PhD)",
-    experience: "25 yil",
-  },
-  deputies: [
-    {
-      id: "dep_1",
-      name: "Eshmatov Toshmat",
-      position: t("deputy_edu") || "O'quv ishlari bo'yicha o'rinbosar",
-      reception: "Seshanba - Payshanba, 14:00 - 17:00",
-      phone: "+998 71 123 45 68",
-      email: "deputy_edu@texnikum.uz",
-      bio: "Ta'lim sifati bo'yicha mutaxassis.",
-      education: "Toshkent Davlat Texnika Universiteti",
-      experience: "18 yil",
-    },
-    {
-      id: "dep_2",
-      name: "Abdukarimov Ali",
-      position:
-        t("deputy_spiritual") || "Ma'naviy-ma'rifiy ishlar bo'yicha o'rinbosar",
-      reception: "Har kuni, 09:00 - 11:00",
-      phone: "+998 71 123 45 69",
-      email: "spiritual@texnikum.uz",
-      bio: "Yoshlar bilan ishlash bo'yicha ekspert.",
-      education: "Samarqand Davlat Universiteti",
-      experience: "12 yil",
-    },
-  ],
-  staff: [
-    {
-      id: "staff_1",
-      name: "Karimov Sherzod",
-      position: t("staff_hr") || "Kadrlar bo'limi boshlig'i",
-      reception: "Dushanba - Juma, 09:00 - 18:00",
-      phone: "+998 71 123 45 10",
-      email: "hr@texnikum.uz",
-      education: "Yuridik Universiteti",
-      experience: "10 yil",
-      bio: "Mehnat qonunchiligi mutaxassisi.",
-    },
-  ],
-});
-
+// --- 4. ASOSIY SAHIFA ---
 const Management = () => {
   const { t } = useTranslation();
   const [selectedLeader, setSelectedLeader] = useState(null);
-  const managementData = getManagementData(t);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-  };
+  const data = getManagementData(t);
 
   return (
     <div className="bg-[#fafbfc] min-h-screen pb-40">
-      {/* HERO */}
-      <section className="relative bg-[#0a1128] pt-40 pb-60 overflow-hidden">
+      {/* HEADER */}
+      <section className="relative bg-[#0a1128] pt-40 pb-52 overflow-hidden">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="container mx-auto px-6 relative z-10 text-center">
           <SectionHeader
-            badge={t("management_badge") || "ADMINISTRATIV TUZILMA"}
-            titlePart1={t("management_title_1") || "Tashkiliy"}
-            titlePart2={t("management_title_2") || "Tuzilma"}
-            center={true}
+            badge={t("management_badge")}
+            titlePart1={t("management_title_1")}
+            titlePart2={t("management_title_2")}
+            center
             variant="blue"
           />
         </div>
       </section>
 
-      {/* CONTENT */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className="container mx-auto px-6 -mt-32 relative z-20"
-      >
-        {/* DIREKTOR */}
-        <div className="flex justify-center mb-32">
+      {/* CONTENT BLOCK */}
+      <div className="container mx-auto px-6 -mt-32 relative z-20">
+        {/* 1-QAVAT: DIREKTOR */}
+        <div className="flex justify-center mb-0 relative z-30">
           <LeaderCard
-            leader={managementData.director}
-            isMain={true}
-            onOpen={() => setSelectedLeader(managementData.director)}
+            leader={data.director}
+            isMain
+            onOpen={() => setSelectedLeader(data.director)}
             t={t}
           />
         </div>
 
-        {/* O'RINBOSARLAR */}
-        <div className="flex flex-col items-center mb-20">
-          <motion.div
-            initial={{ height: 0 }}
-            whileInView={{ height: 80 }}
-            className="w-0.5 bg-gradient-to-b from-blue-500 via-blue-200 to-transparent mb-6"
-          />
-          <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em] mb-12 italic">
-            {t("deputies_title") || "DIREKTOR O'RINBOSARLARI"}
-          </h4>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl w-full mx-auto">
-            {managementData.deputies?.map((dep) => (
-              <motion.div key={dep.id} variants={itemVariants}>
-                <LeaderCard
-                  leader={dep}
-                  onOpen={() => setSelectedLeader(dep)}
-                  t={t}
-                />
-              </motion.div>
-            ))}
-          </div>
+        {/* --- ANIMATSIYALI "OQIM" CHIZIQLARI (Desktop) --- */}
+        <div className="hidden lg:block relative h-40 w-full -mt-10 mb-[-20px] z-10">
+          {/* Direktordan pastga tushuvchi magistral */}
+          <FlowLine d="M 50% 0 L 50% 50" delay={0.5} />
+          {/* Gorizontal taqsimlovchi */}
+          <FlowLine d="M 16.6% 50 L 83.4% 50" delay={1.2} />
+          {/* 3 ta o'rinbosarga tushuvchi chiziqlar */}
+          <FlowLine d="M 16.6% 50 L 16.6% 100" delay={2} />
+          <FlowLine d="M 50% 50 L 50% 100" delay={2} />
+          <FlowLine d="M 83.4% 50 L 83.4% 100" delay={2} />
         </div>
 
-        {/* MAS'UL XODIMLAR */}
-        <div className="flex flex-col items-center mt-32 mb-20">
-          <motion.div
-            initial={{ height: 0 }}
-            whileInView={{ height: 60 }}
-            className="w-0.5 bg-gradient-to-b from-slate-200 to-transparent mb-6"
-          />
-          <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em] mb-12 italic">
-            {t("staff_title") || "MAS'UL XODIMLAR"}
-          </h4>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-            {managementData.staff?.map((s) => (
-              <motion.div key={s.id} variants={itemVariants}>
-                <LeaderCard
-                  leader={s}
-                  isStaff={true}
-                  onOpen={() => setSelectedLeader(s)}
-                  t={t}
-                />
-              </motion.div>
-            ))}
-          </div>
+        {/* 2-QAVAT: O'RINBOSARLAR */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-32 pt-10 md:pt-0">
+          {data.deputies.map((dep, idx) => (
+            <motion.div
+              key={dep.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.2 }}
+            >
+              <LeaderCard
+                leader={dep}
+                onOpen={() => setSelectedLeader(dep)}
+                t={t}
+              />
+            </motion.div>
+          ))}
         </div>
-      </motion.div>
 
-      {/* MODAL */}
-      <Modal isOpen={!!selectedLeader} onClose={() => setSelectedLeader(null)}>
+        {/* Separator */}
+        <div className="flex flex-col items-center mb-16 opacity-80">
+          <div className="h-16 w-px bg-gradient-to-b from-slate-200 to-transparent"></div>
+          <span className="bg-slate-50 px-6 py-2 rounded-full border border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] italic">
+            {t("heads_of_departments") || "BO'LIM BOSHLIQLARI"}
+          </span>
+        </div>
+
+        {/* 3-QAVAT: BO'LIMLAR */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          {data.heads.map((head, idx) => (
+            <motion.div
+              key={head.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1 }}
+            >
+              <LeaderCard
+                leader={head}
+                isSmall
+                onOpen={() => setSelectedLeader(head)}
+                t={t}
+              />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* MODAL (PROFILE DETAILS) */}
+      <AnimatePresence>
         {selectedLeader && (
-          <div className="flex flex-col md:flex-row w-full">
-            <div className="md:w-2/5 bg-slate-50 p-12 flex flex-col items-center justify-center border-r border-slate-100 text-center">
-              <div className="w-40 h-40 bg-white rounded-[2.5rem] shadow-xl flex items-center justify-center text-slate-200 mb-6">
-                <User size={80} strokeWidth={1} />
-              </div>
-              <h3 className="text-2xl font-black text-slate-900 uppercase italic leading-tight mb-2 italic">
-                {selectedLeader.name}
-              </h3>
-              <span className="px-4 py-1 bg-blue-600 text-white rounded-full text-[9px] font-black uppercase tracking-widest">
-                {selectedLeader.position}
-              </span>
-            </div>
-            <div className="md:w-3/5 p-12 space-y-8">
-              <section>
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">
-                  Biografiya
-                </h4>
-                <p className="text-slate-600 text-sm leading-relaxed italic">
-                  {selectedLeader.bio}
-                </p>
-              </section>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1">
-                    Ma'lumoti
-                  </p>
-                  <p className="text-xs font-bold text-slate-800">
-                    {selectedLeader.education}
-                  </p>
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-[#0a1128]/90 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white w-full max-w-4xl rounded-[3rem] overflow-hidden relative shadow-2xl flex flex-col md:flex-row max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setSelectedLeader(null)}
+                className="absolute top-6 right-6 p-3 bg-slate-100 rounded-full hover:bg-rose-500 hover:text-white transition-all z-50"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Chap Tomon: Info */}
+              <div className="md:w-2/5 bg-slate-50 p-12 flex flex-col items-center justify-center text-center border-r border-slate-100 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-blue-500"></div>
+                <div className="w-32 h-32 bg-white rounded-[2rem] shadow-xl flex items-center justify-center text-emerald-600 mb-8 transform hover:scale-105 transition-transform duration-500">
+                  <User size={64} strokeWidth={1.5} />
                 </div>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1">
-                    Tajriba
-                  </p>
-                  <p className="text-xs font-bold text-slate-800">
-                    {selectedLeader.experience}
-                  </p>
+                <h2 className="text-3xl font-black text-slate-900 uppercase italic leading-none mb-3">
+                  {selectedLeader.name}
+                </h2>
+                <div className="px-5 py-2 bg-emerald-100 text-emerald-700 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-200">
+                  {selectedLeader.position}
                 </div>
               </div>
-              <section className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-                <div className="flex items-center gap-4 mb-3">
-                  <Phone size={14} className="text-blue-500" />
-                  <span className="text-xs font-bold text-slate-700">
-                    {selectedLeader.phone}
-                  </span>
+
+              {/* O'ng Tomon: Details */}
+              <div className="md:w-3/5 p-12 space-y-8 bg-white">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100">
+                    <Phone className="text-emerald-500 mb-2" size={20} />
+                    <p className="text-[9px] font-black text-slate-400 uppercase">
+                      Telefon
+                    </p>
+                    <p className="text-xs font-bold text-slate-800">
+                      {selectedLeader.phone || "—"}
+                    </p>
+                  </div>
+                  <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100">
+                    <Clock className="text-blue-500 mb-2" size={20} />
+                    <p className="text-[9px] font-black text-slate-400 uppercase">
+                      Qabul
+                    </p>
+                    <p className="text-xs font-bold text-slate-800">
+                      {selectedLeader.reception || "—"}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <Mail size={14} className="text-blue-500" />
-                  <span className="text-xs font-bold text-slate-700">
-                    {selectedLeader.email}
-                  </span>
+
+                <div>
+                  <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-900 uppercase tracking-widest mb-4">
+                    <Briefcase size={14} className="text-emerald-500" />{" "}
+                    Professional Bio
+                  </h4>
+                  <p className="text-sm text-slate-500 leading-relaxed font-medium italic">
+                    {selectedLeader.bio || "Ma'lumotlar yangilanmoqda..."}
+                  </p>
                 </div>
-              </section>
-            </div>
+
+                <div className="space-y-4 pt-6 border-t border-slate-100">
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                      <GraduationCap size={16} />
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase">
+                        Ma'lumoti
+                      </p>
+                      <p className="text-sm font-bold text-slate-800">
+                        {selectedLeader.education || "Oliy"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+                      <Award size={16} />
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase">
+                        Tajriba
+                      </p>
+                      <p className="text-sm font-bold text-slate-800">
+                        {selectedLeader.experience || "—"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         )}
-      </Modal>
+      </AnimatePresence>
     </div>
   );
 };

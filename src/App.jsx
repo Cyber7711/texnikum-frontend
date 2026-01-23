@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "framer-motion";
 
 // animations
 
-import CustomCursor from "./components/ui/CustomCursor";
 import ScrollProgress from "./components/ui/ScrollProgress";
 
 // Sahifalar
@@ -60,7 +59,6 @@ function App() {
 
   return (
     <>
-      <CustomCursor />
       <ScrollProgress />
       <AnimatePresence mode="wait">
         {isPageLoading && (
