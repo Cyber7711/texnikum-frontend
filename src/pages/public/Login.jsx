@@ -71,7 +71,7 @@ const LoginForm = () => {
 
     try {
       // Google'dan token so'raymiz ("login_submit" - bu harakat nomi)
-      const reCaptchaToken = await executeRecaptcha("login_submit");
+      const reCaptchaToken = await executeRecaptcha("login");
 
       // 🛡️ 2-HIMOYA: Backendga ma'lumot yuborish
       const res = await axiosClient.post("/auth/login", {
