@@ -31,29 +31,27 @@ axiosClient.interceptors.request.use(
 // Xatolarni tutish
 axiosClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const originalRequest = error.config;
 
-    // 🛡️ SESSANI YANGILASH (REFRESH TOKEN)
-    // Agar 401 (Unauthorized) bo'lsa va bu birinchi urinish bo'lsa
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const status = error.response?.status;
+
+    // Refresh endpointning o‘zi bo‘lsa, loop qilmaymiz
+    const isRefreshCall =
+      originalRequest?.url?.includes("/auth/refresh-token") ||
+      originalRequest?.url?.includes("/api/auth/refresh-token");
+
+    if (status === 401 && !originalRequest._retry && !isRefreshCall) {
       originalRequest._retry = true;
 
-      // Bu yerda backend'dagi /refresh-token endpointiga murojaat qilinadi.
-      // Refresh token ham Cookie'da bo'lishi shart!
-      return axiosClient
-        .post("/auth/refresh-token")
-        .then(() => axiosClient(originalRequest)) // So'rovni qayta yuborish
-        .catch(() => {
-          // Agar refresh ham xato bo'lsa - majburiy Logout
-          window.location.href = "/login";
-          return Promise.reject(error);
-        });
-    }
-
-    // Xavfsizlik uchun xatolarni filtrlash
-    if (error.code === "ECONNABORTED") {
-      console.warn("⚠️ DDoS yoki Network lag aniqlandi.");
+      try {
+        await axiosClient.post("/auth/refresh-token"); // baseURL /api bo‘lsa
+        return axiosClient(originalRequest);
+      } catch (e) {
+        // refresh ham ishlamadi -> logout flow
+        window.location.href = "/login";
+        return Promise.reject(e);
+      }
     }
 
     return Promise.reject(error);
