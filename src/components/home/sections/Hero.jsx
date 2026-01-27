@@ -68,11 +68,11 @@ const Hero = () => {
               <motion.div variants={textRevealVariants}>
                 <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-md text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] shadow-lg">
                   <Sparkles size={14} className="animate-pulse" />
-                  {t("hero_badge") || "KELAJAK KASBLARI"}
+                  {t("hero_badge", "KELAJAK KASBLARI")}
                 </div>
               </motion.div>
             </div>
-
+            your-super-secret-jwt-key-minimum-32-chars
             <div className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[0.9] uppercase italic tracking-tighter">
               <div className="overflow-hidden">
                 <motion.div variants={textRevealVariants}>
@@ -94,7 +94,6 @@ const Hero = () => {
                 </motion.div>
               </div>
             </div>
-
             <motion.p
               variants={textRevealVariants}
               className="text-lg md:text-xl text-slate-300 font-medium max-w-xl leading-relaxed border-l-2 border-emerald-500/50 pl-6"
