@@ -1,48 +1,63 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  // baseURL ni tekshiring: u oxiri "/" bilan tugamasligi kerak
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
-  // 1. TIMEOUT QO'SHISH (Sayt qotib qolishining oldini oladi)
-  timeout: 15000, // 15 soniyadan keyin so'rovni bekor qiladi
+  timeout: 15000,
+  // 🛡️ HACKER MODE: ON 🛡️
+  // Bu juda muhim! Cookie-larni har bir so'rovga avtomatik biriktiradi.
+  // JS tokenga tega olmaydi, lekin server uni qabul qiladi.
+  withCredentials: true,
 });
 
 // Interceptorlar
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // ❌ LocalStorage.getItem("token") - O'CHIRILDI!
+    // Nega? Chunki XSS orqali o'g'irlanishi mumkin.
+    // Endi token HttpOnly Cookie-da xavfsiz saqlanadi.
+
+    // Agar serveringiz CSRF himoyasini talab qilsa,
+    // tokenni bu yerda header'ga qo'shish mumkin:
+    // config.headers['X-CSRF-TOKEN'] = getCookie('csrf_token');
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error),
 );
 
 // Xatolarni tutish
 axiosClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    // 2. TIMEOUT YOKI NETWORK XATOLIGINI TEKSHIRISH
+    const originalRequest = error.config;
+
+    // 🛡️ SESSANI YANGILASH (REFRESH TOKEN)
+    // Agar 401 (Unauthorized) bo'lsa va bu birinchi urinish bo'lsa
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // Bu yerda backend'dagi /refresh-token endpointiga murojaat qilinadi.
+      // Refresh token ham Cookie'da bo'lishi shart!
+      return axiosClient
+        .post("/auth/refresh-token")
+        .then(() => axiosClient(originalRequest)) // So'rovni qayta yuborish
+        .catch(() => {
+          // Agar refresh ham xato bo'lsa - majburiy Logout
+          window.location.href = "/login";
+          return Promise.reject(error);
+        });
+    }
+
+    // Xavfsizlik uchun xatolarni filtrlash
     if (error.code === "ECONNABORTED") {
-      console.error("Server javob berishi juda uzoq davom etmoqda...");
+      console.warn("⚠️ DDoS yoki Network lag aniqlandi.");
     }
 
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
-      // window.location.href = '/login';
-    }
-
-    // 3. Xatoni throw qilish o'rniga Promise.reject ishlatish tavsiya etiladi
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosClient;
