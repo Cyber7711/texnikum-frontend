@@ -27,6 +27,7 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // simple client-side lock
   const [attempts, setAttempts] = useState(0);
   const [lockTime, setLockTime] = useState(0);
 
@@ -48,21 +49,23 @@ const LoginForm = () => {
     setLoading(true);
     setError(null);
 
-    if (!executeRecaptcha) {
-      setError("Xavfsizlik tizimi yuklanmadi. Internetni tekshiring.");
-      setLoading(false);
-      return;
-    }
-
     try {
+      if (!executeRecaptcha) {
+        throw new Error("Xavfsizlik tizimi yuklanmadi. Internetni tekshiring.");
+      }
+
+      // Action backend bilan bir xil bo‘lsin: "login"
       const captchaToken = await executeRecaptcha("login");
 
+      // ✅ login -> backend cookie set qiladi (HttpOnly)
       await axiosClient.post("/auth/login", {
-        ...formData,
+        username: formData.username,
+        password: formData.password,
         captchaToken,
       });
 
-      navigate("/admin");
+      // ✅ redirect
+      navigate("/admin", { replace: true });
     } catch (err) {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
@@ -70,9 +73,15 @@ const LoginForm = () => {
       if (newAttempts >= 5) {
         setLockTime(60);
         setAttempts(0);
-        setError("Juda ko'p xato urinish! Tizim 60 soniyaga bloklandi.");
+        setError(
+          "Juda ko'p xato urinish! 60 soniyadan keyin qayta urinib ko‘ring.",
+        );
       } else {
-        const msg = err.response?.data?.message || "Login yoki parol noto'g'ri";
+        const apiMsg = err?.response?.data?.message;
+        const msg =
+          apiMsg ||
+          err?.message ||
+          "Login yoki parol noto'g'ri. Qayta urinib ko‘ring.";
         setError(msg);
       }
     } finally {
@@ -86,9 +95,11 @@ const LoginForm = () => {
         <div className="bg-emerald-50 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-3 shadow-inner">
           <User className="text-emerald-600 w-10 h-10 -rotate-3" />
         </div>
+
         <h2 className="text-3xl font-black text-[#0a1128] tracking-tighter uppercase italic">
           Admin <span className="text-emerald-500">Panel</span>
         </h2>
+
         <p className="text-slate-400 mt-2 font-medium">
           {t("login_subtitle") || "Tizimga kirish uchun ma'lumotlarni kiriting"}
         </p>
@@ -102,6 +113,7 @@ const LoginForm = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* USERNAME */}
         <div className="space-y-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
             {t("login_username_label") || "Login"}
@@ -123,6 +135,7 @@ const LoginForm = () => {
           </div>
         </div>
 
+        {/* PASSWORD */}
         <div className="space-y-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
             {t("login_password_label") || "Parol"}
@@ -152,6 +165,7 @@ const LoginForm = () => {
           </div>
         </div>
 
+        {/* SUBMIT */}
         <button
           type="submit"
           disabled={loading || lockTime > 0}
@@ -163,7 +177,7 @@ const LoginForm = () => {
             }`}
         >
           {loading ? (
-            <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+            <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
           ) : lockTime > 0 ? (
             `BLOKLANDI (${lockTime}s)`
           ) : (
@@ -189,15 +203,10 @@ const Login = () => {
   return (
     <GoogleReCaptchaProvider
       reCaptchaKey={siteKey}
-      scriptProps={{
-        async: true,
-        defer: true,
-        appendTo: "head",
-        nonce: undefined,
-      }}
+      scriptProps={{ async: true, defer: true, appendTo: "head" }}
     >
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative overflow-x-hidden font-sans">
-        <div className="absolute top-0 left-0 w-full h-[60%] bg-[#0a1128] -skew-y-3 transform -translate-y-24 z-0"></div>
+        <div className="absolute top-0 left-0 w-full h-[60%] bg-[#0a1128] -skew-y-3 transform -translate-y-24 z-0" />
 
         <Link
           to="/"

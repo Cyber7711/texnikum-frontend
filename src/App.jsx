@@ -1,18 +1,16 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import PageLoader from "./components/ui/PageLoader";
 import { AnimatePresence, motion } from "framer-motion";
 
-// animations
-
+import PageLoader from "./components/ui/PageLoader";
 import ScrollProgress from "./components/ui/ScrollProgress";
 
-// Sahifalar
+// Layouts
 import MainLayout from "./components/layout/MainLayout";
 import AdminLayout from "./pages/admin/AdminLayout";
 import RequireAuth from "./components/auth/RequireAuth";
 
-// Public Sahifalar
+// Public pages
 import Home from "./pages/public/Home";
 import Login from "./pages/public/Login";
 import News from "./pages/public/News";
@@ -22,11 +20,11 @@ import Apply from "./pages/public/Apply";
 import Documents from "./pages/public/Documents";
 import InfoPortal from "./pages/public/InfoPortal";
 import Admission from "./pages/public/Admission";
-import NotFound from "./pages//NotFound";
 import Management from "./pages/public/Management";
 import VideoTour from "./pages/public/VideoTour";
+import NotFound from "./pages/NotFound";
 
-// Admin Sahifalar
+// Admin pages
 import DashboardHome from "./pages/admin/DashboardHome";
 import AdminNews from "./pages/admin/AddNews";
 import AdminStats from "./pages/admin/AdminStats";
@@ -39,27 +37,28 @@ function App() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const location = useLocation();
 
-  // Scrollni tepaga qaytarish (Yangi qo'shimcha: UX uchun muhim)
+  // scroll top
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  // first boot loader
   useEffect(() => {
-    const timer = setTimeout(() => setIsPageLoading(false), 1200);
+    const timer = setTimeout(() => setIsPageLoading(false), 900);
     return () => clearTimeout(timer);
   }, []);
 
+  // route change loader
   useEffect(() => {
     setIsPageLoading(true);
-    const timer = setTimeout(() => {
-      setIsPageLoading(false);
-    }, 600);
+    const timer = setTimeout(() => setIsPageLoading(false), 450);
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
   return (
     <>
       <ScrollProgress />
+
       <AnimatePresence mode="wait">
         {isPageLoading && (
           <motion.div
@@ -67,7 +66,7 @@ function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             style={{ position: "fixed", inset: 0, zIndex: 9999 }}
           >
             <PageLoader />
@@ -79,9 +78,10 @@ function App() {
         key={location.pathname}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
+        transition={{ duration: 0.35, delay: 0.05 }}
       >
         <Routes location={location} key={location.pathname}>
+          {/* Public */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
             <Route path="news" element={<News />} />
@@ -91,15 +91,14 @@ function App() {
             <Route path="info" element={<InfoPortal />} />
             <Route path="qabul" element={<Admission />} />
             <Route path="management" element={<Management />} />
-            <Route path="/video-tour" element={<VideoTour />} />
-
-            {/* 2. PUBLIC NOTFOUND - Noto'g'ri URL yozilsa MainLayout ichida chiqadi */}
+            <Route path="video-tour" element={<VideoTour />} />
             <Route path="*" element={<NotFound />} />
           </Route>
 
           <Route path="/login" element={<Login />} />
           <Route path="/apply" element={<Apply />} />
 
+          {/* Admin */}
           <Route element={<RequireAuth />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<DashboardHome />} />
@@ -109,13 +108,11 @@ function App() {
               <Route path="documents" element={<AdminDocuments />} />
               <Route path="applicants" element={<AdminApplicants />} />
               <Route path="quicklinks" element={<AdminQuickLinks />} />
-
-              {/* 3. ADMIN NOTFOUND - Admin panel ichida xato yo'l yozilsa */}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Route>
 
-          {/* 4. GLOBAL NOTFOUND - Mutlaqo begona URL'lar uchun */}
+          {/* Global */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
