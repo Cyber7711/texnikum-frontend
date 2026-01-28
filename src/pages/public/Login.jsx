@@ -62,7 +62,6 @@ const LoginForm = () => {
         captchaToken,
       });
 
-      // ✅ Cookie set bo‘ladi. Tokenni JS ko‘rmaydi (bu yaxshi).
       navigate("/admin");
     } catch (err) {
       const newAttempts = attempts + 1;
@@ -188,7 +187,15 @@ const Login = () => {
   }
 
   return (
-    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
+    <GoogleReCaptchaProvider
+      reCaptchaKey={siteKey}
+      scriptProps={{
+        async: true,
+        defer: true,
+        appendTo: "head",
+        nonce: undefined,
+      }}
+    >
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative overflow-x-hidden font-sans">
         <div className="absolute top-0 left-0 w-full h-[60%] bg-[#0a1128] -skew-y-3 transform -translate-y-24 z-0"></div>
 
