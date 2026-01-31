@@ -1,30 +1,57 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import axiosClient from "../api/axiosClient";
 import { authApi } from "../api/authApi";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [booting, setBooting] = useState(true); // app start
+  const [booting, setBooting] = useState(true);
 
+  // 1) CSRF init (cookie auth uchun must)
+  const initCsrf = async () => {
+    try {
+      await axiosClient.get("/auth/csrf");
+    } catch {
+      // CSRF fail bo‘lsa ham app yiqilmasin
+    }
+  };
+
+  // 2) me
   const loadMe = async () => {
     try {
       const res = await authApi.me();
       setUser(res.data?.data?.user || null);
     } catch {
       setUser(null);
-    } finally {
-      setBooting(false);
     }
   };
 
+  // 3) App start bootstrap: csrf -> me
   useEffect(() => {
-    loadMe();
+    let alive = true;
+
+    (async () => {
+      try {
+        await initCsrf();
+        if (!alive) return;
+
+        await loadMe();
+        if (!alive) return;
+      } finally {
+        if (alive) setBooting(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
   }, []);
 
+  // 4) actions
   const login = async ({ username, password, captchaToken }) => {
     await authApi.login({ username, password, captchaToken });
-    await loadMe(); // login'dan keyin user ni olib kelamiz
+    await loadMe();
   };
 
   const logout = async () => {

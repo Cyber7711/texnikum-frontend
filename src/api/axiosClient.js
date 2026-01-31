@@ -1,42 +1,48 @@
-// src/api/axiosClient.js
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // https://.../api
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL, // https://texnikum-backend.onrender.com/api
   headers: { "Content-Type": "application/json" },
   timeout: 15000,
+  withCredentials: true,
+});
+
+const getCookie = (name) => {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
+};
+
+axiosClient.interceptors.request.use((config) => {
+  const csrf = getCookie("csrf_token");
+  if (csrf) config.headers["X-CSRF-Token"] = csrf;
+  return config;
 });
 
 axiosClient.interceptors.response.use(
   (res) => res,
-  async (err) => {
-    const status = err.response?.status;
-    const original = err.config;
+  async (error) => {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+    const url = originalRequest?.url || "";
 
-    if (!original) return Promise.reject(err);
-
-    const url = original.url || "";
-    const isAuth =
+    const isAuthCall =
       url.includes("/auth/login") ||
       url.includes("/auth/refresh-token") ||
       url.includes("/auth/logout") ||
-      url.includes("/auth/me");
+      url.includes("/auth/csrf");
 
-    // 401 bo‘lsa, faqat auth bo‘lmagan requestlarda refresh qilamiz
-    if (status === 401 && !original._retry && !isAuth) {
-      original._retry = true;
+    if (status === 401 && !originalRequest._retry && !isAuthCall) {
+      originalRequest._retry = true;
       try {
         await axiosClient.post("/auth/refresh-token");
-        return axiosClient(original);
+        return axiosClient(originalRequest);
       } catch (e) {
-        // refresh ham yiqilsa: login
         window.location.href = "/login";
         return Promise.reject(e);
       }
     }
 
-    return Promise.reject(err);
+    return Promise.reject(error);
   },
 );
 
