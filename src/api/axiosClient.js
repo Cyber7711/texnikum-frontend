@@ -2,39 +2,41 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // ✅ .../api
+  baseURL: import.meta.env.VITE_API_URL, // https://.../api
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
   timeout: 15000,
-  withCredentials: true, // ✅ cookie yuboriladi
 });
 
 axiosClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const original = error.config;
-    const status = error.response?.status;
-    const url = original?.url || "";
+  (res) => res,
+  async (err) => {
+    const status = err.response?.status;
+    const original = err.config;
 
-    const isAuthCall =
+    if (!original) return Promise.reject(err);
+
+    const url = original.url || "";
+    const isAuth =
       url.includes("/auth/login") ||
       url.includes("/auth/refresh-token") ||
       url.includes("/auth/logout") ||
       url.includes("/auth/me");
 
-    // ✅ Auth endpointlarda refresh yo'q
-    if (status === 401 && !original._retry && !isAuthCall) {
+    // 401 bo‘lsa, faqat auth bo‘lmagan requestlarda refresh qilamiz
+    if (status === 401 && !original._retry && !isAuth) {
       original._retry = true;
       try {
         await axiosClient.post("/auth/refresh-token");
         return axiosClient(original);
       } catch (e) {
-        // refresh ham bo'lmasa -> login
+        // refresh ham yiqilsa: login
         window.location.href = "/login";
         return Promise.reject(e);
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(err);
   },
 );
 
