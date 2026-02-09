@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // https://texnikum-backend.onrender.com/api
+  baseURL: import.meta.env.VITE_API_URL,
   headers: { "Content-Type": "application/json" },
   timeout: 15000,
   withCredentials: true,
@@ -21,7 +21,7 @@ axiosClient.interceptors.request.use((config) => {
 axiosClient.interceptors.response.use(
   (res) => res,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config || {};
     const status = error.response?.status;
     const url = originalRequest?.url || "";
 
@@ -29,7 +29,8 @@ axiosClient.interceptors.response.use(
       url.includes("/auth/login") ||
       url.includes("/auth/refresh-token") ||
       url.includes("/auth/logout") ||
-      url.includes("/auth/csrf");
+      url.includes("/auth/csrf") ||
+      url.includes("/auth/me"); // ✅ MUHIM
 
     if (status === 401 && !originalRequest._retry && !isAuthCall) {
       originalRequest._retry = true;
@@ -37,7 +38,10 @@ axiosClient.interceptors.response.use(
         await axiosClient.post("/auth/refresh-token");
         return axiosClient(originalRequest);
       } catch (e) {
-        window.location.href = "/login";
+        // ✅ login sahifasida bo‘lsang hard reload qilma
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         return Promise.reject(e);
       }
     }
