@@ -104,9 +104,8 @@ const Home = () => {
   return (
     <>
       <SEO
-        title="Bosh sahifa"
-        description="3-sonli texnikumning rasmiy sayti. Zamonaviy agro-texnologiyalar, o'quv dasturlari va so'nggi yangiliklar."
-        keywords="3-son texnikum, agro-texnologiya, o'qish, ta'lim"
+        title={null}
+        description="3-sonli texnikumning rasmiy sayti: qabul, hujjatlar, yangiliklar va o‘quv jarayoni."
       />
 
       <AnimatePresence mode="wait">
