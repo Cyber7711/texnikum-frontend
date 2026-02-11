@@ -32,6 +32,7 @@ import AdminTeachers from "./pages/admin/AdminTeachers";
 import AdminApplicants from "./pages/admin/AdminApplicants";
 import AdminDocuments from "./pages/admin/AdminDocuments";
 import AdminQuickLinks from "./pages/admin/AdminQuickLinks";
+import AdminManagement from "./pages/admin/AdminManagement";
 
 function App() {
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -108,6 +109,7 @@ function App() {
               <Route path="documents" element={<AdminDocuments />} />
               <Route path="applicants" element={<AdminApplicants />} />
               <Route path="quicklinks" element={<AdminQuickLinks />} />
+              <Route path="management" element={<AdminManagement />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Route>

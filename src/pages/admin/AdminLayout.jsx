@@ -10,8 +10,9 @@ import {
   LogOut,
   FileQuestion,
   ChevronRight,
-  Menu, // Mobil menyu uchun
-  X, // Yopish uchun
+  Menu,
+  Users2,
+  X,
 } from "lucide-react";
 import Logo from "../../components/Logo";
 
@@ -38,11 +39,18 @@ const AdminLayout = () => {
       name: "Hujjatlar",
       icon: <FileText size={18} />,
     },
+    {
+      path: "/admin/management",
+      name: "Rahbariyat",
+      icon: <Users2 size={18} />,
+    },
   ];
 
-  const handleLogout = () => {
-    if (window.confirm("Tizimdan chiqmoqchimisiz?")) {
-      localStorage.removeItem("token");
+  const handleLogout = async () => {
+    if (!window.confirm("Tizimdan chiqmoqchimisiz?")) return;
+    try {
+      await axiosClient.post("/auth/logout");
+    } finally {
       navigate("/");
     }
   };

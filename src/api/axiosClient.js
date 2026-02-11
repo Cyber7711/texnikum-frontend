@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || 4000,
   headers: { "Content-Type": "application/json" },
   timeout: 15000,
   withCredentials: true,
@@ -30,7 +30,7 @@ axiosClient.interceptors.response.use(
       url.includes("/auth/refresh-token") ||
       url.includes("/auth/logout") ||
       url.includes("/auth/csrf") ||
-      url.includes("/auth/me"); // ✅ MUHIM
+      url.includes("/auth/me");
 
     if (status === 401 && !originalRequest._retry && !isAuthCall) {
       originalRequest._retry = true;
@@ -38,7 +38,7 @@ axiosClient.interceptors.response.use(
         await axiosClient.post("/auth/refresh-token");
         return axiosClient(originalRequest);
       } catch (e) {
-        // ✅ login sahifasida bo‘lsang hard reload qilma
+        // hard reload/loop yo‘q
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
         }

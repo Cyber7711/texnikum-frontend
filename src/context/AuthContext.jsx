@@ -1,5 +1,4 @@
 import { createContext, useEffect, useMemo, useState } from "react";
-import axiosClient from "../api/axiosClient";
 import { authApi } from "../api/authApi";
 
 export const AuthContext = createContext(null);
@@ -8,36 +7,31 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [booting, setBooting] = useState(true);
 
-  // 1) CSRF init (cookie auth uchun must)
-  const initCsrf = async () => {
-    try {
-      await axiosClient.get("/auth/csrf");
-    } catch {
-      // CSRF fail bo‘lsa ham app yiqilmasin
-    }
-  };
-
-  // 2) me
   const loadMe = async () => {
     try {
       const res = await authApi.me();
       setUser(res.data?.data?.user || null);
+      return true;
     } catch {
       setUser(null);
+      return false;
     }
   };
 
-  // 3) App start bootstrap: csrf -> me
   useEffect(() => {
     let alive = true;
 
     (async () => {
       try {
-        await initCsrf();
+        // 1) csrf cookie
+        try {
+          await authApi.csrf();
+        } catch {}
+
         if (!alive) return;
 
+        // 2) me
         await loadMe();
-        if (!alive) return;
       } finally {
         if (alive) setBooting(false);
       }
@@ -48,10 +42,15 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // 4) actions
   const login = async ({ username, password, captchaToken }) => {
     await authApi.login({ username, password, captchaToken });
-    await loadMe();
+
+    // ✅ login 200 bo‘ldi degani auth ishladi degani emas — me bilan tekshiramiz
+    const ok = await loadMe();
+    if (!ok)
+      throw new Error(
+        "Login 200 bo‘ldi, lekin sessiya ochilmadi (cookie/protect muammo).",
+      );
   };
 
   const logout = async () => {
