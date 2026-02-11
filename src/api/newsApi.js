@@ -1,13 +1,10 @@
-import axiosClient from "./axiosClient"; // Biz oldinroq yasagan, cookielarni taniyidgan axios
+import axiosClient from "./axiosClient";
 
 const newsApi = {
-  // 1. Barcha yangiliklarni olib kelish
   getAll: () => {
-    // Nega '/news'? Chunki backendda route shunday nomlangan.
     return axiosClient.get("/news");
   },
 
-  // 2. Yangi yangilik yaratish (Eng muhim joyi!)
   create: (data) => {
     // Nega 'post'? Chunki ma'lumot jo'natyapmiz.
     // 'data' - bu FormData obyekti bo'ladi (rasm borligi uchun).
