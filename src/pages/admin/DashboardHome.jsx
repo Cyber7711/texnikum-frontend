@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom"; // Navigatsiya uchun
 import axiosClient from "../../api/axiosClient";
+import { motion } from "framer-motion"; // Animatsiya uchun
 import {
   Newspaper,
   Users,
@@ -8,70 +10,88 @@ import {
   Calendar,
   Activity,
   Leaf,
-  Sprout,
-  ArrowUpRight,
   Database,
   Server,
   Cloud,
-  Clock,
+  RefreshCw,
+  Plus,
+  ArrowRight,
+  Zap,
 } from "lucide-react";
 import {
   BarChart,
   Bar,
   XAxis,
-  YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Cell,
 } from "recharts";
 
+// --- ANIMATSYA VARIANTS ---
+const containerVar = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVar = {
+  hidden: { y: 20, opacity: 0 },
+  show: { y: 0, opacity: 1 },
+};
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
     news: 0,
     teachers: 0,
-    documents: 12, // Mock
-    applicants: 45, // Mock
+    documents: 0,
+    applicants: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Vaqtni yangilab turish
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  const fetchData = async () => {
+    try {
+      setRefreshing(true);
+      const [teachersRes, newsRes, appsRes, docsRes] = await Promise.all([
+        axiosClient.get("/teachers"),
+        axiosClient.get("/news"),
+        axiosClient.get("/applicant"),
+        axiosClient.get("/doc"),
+      ]);
+
+      const getLen = (res) =>
+        res.data.data?.length ||
+        res.data.result?.length ||
+        res.data?.length ||
+        0;
+
+      setStats({
+        teachers: getLen(teachersRes),
+        news: getLen(newsRes),
+        applicants: getLen(appsRes),
+        documents: getLen(docsRes),
+      });
+    } catch (err) {
+      console.error("Dashboard yuklashda xatolik:", err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // Barcha ma'lumotlarni parallel ravishda olamiz
-        const [teachersRes, newsRes, appsRes, docsRes] = await Promise.all([
-          axiosClient.get("/teachers"),
-          axiosClient.get("/news"),
-          axiosClient.get("/applicant"), // Arizalar endpointi
-          axiosClient.get("/doc"), // Hujjatlar endpointi
-        ]);
-
-        // Backend javoblarini tekshirib, array uzunligini olamiz
-        const getLen = (res) =>
-          res.data.data?.length ||
-          res.data.result?.length ||
-          res.data?.length ||
-          0;
-
-        setStats({
-          teachers: getLen(teachersRes),
-          news: getLen(newsRes),
-          applicants: getLen(appsRes), // Endi bu dinamik!
-          documents: getLen(docsRes), // Endi bu ham dinamik!
-        });
-      } catch (err) {
-        console.error("Dashboard yuklashda xatolik:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
 
@@ -83,91 +103,140 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500 pb-10">
-      {/* 1. HEADER - Mobile Responsive Padding */}
-      <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center bg-[#0f172a] p-6 md:p-8 rounded-[2rem] text-white shadow-xl overflow-hidden border border-emerald-900/30">
-        <Leaf className="absolute -top-10 -right-10 text-emerald-500/10 w-40 h-40 md:w-60 md:h-60 rotate-12" />
+    <motion.div
+      variants={containerVar}
+      initial="hidden"
+      animate="show"
+      className="space-y-8 pb-10"
+    >
+      {/* 1. HERO HEADER */}
+      <motion.div
+        variants={itemVar}
+        className="relative flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl overflow-hidden border border-slate-800"
+      >
+        {/* Dekorativ orqa fon elementlari */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+        <div className="absolute bottom-0 left-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 max-w-lg">
           <div className="flex items-center gap-2 mb-3">
-            <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-black px-3 py-1 rounded-full border border-emerald-500/20 uppercase tracking-widest">
-              Agro-Tech System
+            <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-black px-3 py-1.5 rounded-full border border-emerald-500/20 uppercase tracking-widest backdrop-blur-md">
+              System v2.0
             </span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">
+                Online
+              </span>
+            </div>
           </div>
-          <h2 className="text-2xl md:text-3xl font-black tracking-tight">
-            Xush kelibsiz, Admin! 👋
+          <h2 className="text-3xl md:text-4xl font-black tracking-tighter leading-tight mb-2">
+            Boshqaruv Paneli
           </h2>
-          <p className="text-slate-400 mt-2 text-xs md:text-sm max-w-sm leading-relaxed">
-            Texnikum raqamli tizimi nazorat paneli. Barcha ko'rsatkichlar
-            joyida.
+          <p className="text-slate-400 text-sm font-medium leading-relaxed">
+            Hozirgi holat barqaror. Tizim to'liq quvvat bilan ishlamoqda.
           </p>
         </div>
 
-        <div className="relative z-10 mt-6 md:mt-0 flex items-center bg-white/5 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 w-full md:w-auto justify-center md:justify-start">
-          <Calendar size={18} className="mr-3 text-emerald-400" />
-          <div className="flex flex-col text-left md:text-right">
-            <span className="text-[10px] text-slate-500 uppercase font-black tracking-wider">
-              Bugun
-            </span>
-            <span className="text-sm font-bold text-emerald-50">
-              {currentTime.toLocaleDateString("uz-UZ", {
-                day: "numeric",
-                month: "long",
-              })}
-            </span>
+        <div className="relative z-10 mt-8 md:mt-0 flex flex-col md:items-end gap-4">
+          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/10 shadow-lg">
+            <div className="p-3 bg-emerald-500/20 rounded-xl">
+              <Calendar size={20} className="text-emerald-400" />
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">
+                Vaqt
+              </span>
+              <span className="text-lg font-bold text-white font-mono">
+                {currentTime.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* 2. STAT CARDS - 2 columns on mobile */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <button
+            onClick={fetchData}
+            disabled={refreshing}
+            className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest group"
+          >
+            <RefreshCw
+              size={14}
+              className={`group-hover:rotate-180 transition-transform duration-500 ${refreshing ? "animate-spin" : ""}`}
+            />
+            Ma'lumotlarni yangilash
+          </button>
+        </div>
+      </motion.div>
+
+      {/* 2. STAT CARDS (CLICKABLE) */}
+      <motion.div
+        variants={containerVar}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
         <StatCard
+          to="/admin/teachers"
           title="Ustozlar"
           count={stats.teachers}
-          icon={<Users size={20} />}
-          bg="bg-emerald-500"
+          icon={<Users size={24} />}
+          color="emerald"
           loading={loading}
-          trend="+2"
         />
         <StatCard
+          to="/admin/news"
           title="Yangiliklar"
           count={stats.news}
-          icon={<Newspaper size={20} />}
-          bg="bg-blue-500"
+          icon={<Newspaper size={24} />}
+          color="blue"
           loading={loading}
-          trend="Faol"
         />
         <StatCard
+          to="/admin/applicants"
           title="Arizalar"
           count={stats.applicants}
-          icon={<FileQuestion size={20} />}
-          bg="bg-amber-500"
+          icon={<FileQuestion size={24} />}
+          color="amber"
           loading={loading}
-          trend="+5"
         />
         <StatCard
+          to="/admin/documents"
           title="Hujjatlar"
           count={stats.documents}
-          icon={<FileText size={20} />}
-          bg="bg-indigo-500"
+          icon={<FileText size={24} />}
+          color="indigo"
           loading={loading}
-          trend="OK"
         />
-      </div>
+      </motion.div>
 
-      {/* 3. CHART & STATUS - Stack on mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-        {/* Grafika */}
-        <div className="lg:col-span-2 bg-white p-5 md:p-8 rounded-[2rem] shadow-sm border border-slate-100">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-md font-black text-slate-800 flex items-center gap-2 uppercase tracking-tight">
-              <Activity size={18} className="text-emerald-500" /> Dinamika
-            </h3>
+      {/* 3. MAIN CONTENT GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* CHART SECTION */}
+        <motion.div
+          variants={itemVar}
+          className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-xl transition-shadow duration-300"
+        >
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h3 className="text-lg font-black text-slate-800 flex items-center gap-3 uppercase tracking-tighter">
+                <Activity size={20} className="text-emerald-500" />
+                Statistik Dinamika
+              </h3>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 ml-8">
+                Real vaqt rejimidagi ko'rsatkichlar
+              </p>
+            </div>
           </div>
 
-          <div className="h-[250px] md:h-[350px] w-full">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
+              <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+              >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
@@ -177,19 +246,33 @@ const Dashboard = () => {
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }}
-                  dy={10}
+                  tick={{
+                    fill: "#64748b",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                  }}
+                  dy={15}
                 />
-                <YAxis hide />
                 <Tooltip
-                  cursor={{ fill: "#f8fafc" }}
-                  contentStyle={{
-                    borderRadius: "12px",
-                    border: "none",
-                    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+                  cursor={{ fill: "#f8fafc", radius: 12 }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-slate-900 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-xl">
+                          {payload[0].payload.name}: {payload[0].value}
+                        </div>
+                      );
+                    }
+                    return null;
                   }}
                 />
-                <Bar dataKey="count" radius={[10, 10, 10, 10]} barSize={35}>
+                <Bar
+                  dataKey="count"
+                  radius={[12, 12, 12, 12]}
+                  barSize={40}
+                  animationDuration={1500}
+                >
                   {chartData.map((d, i) => (
                     <Cell key={i} fill={d.color} />
                   ))}
@@ -197,86 +280,140 @@ const Dashboard = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
 
-        {/* System Status */}
-        <div className="bg-white p-5 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
-          <h3 className="text-md font-black text-slate-800 mb-6 flex items-center gap-2 uppercase tracking-tight">
-            <Sprout size={18} className="text-emerald-500" /> Resurslar
-          </h3>
-          <div className="space-y-3 flex-1">
-            <StatusItem
-              label="Database"
-              status="online"
-              icon={<Database size={14} />}
-            />
-            <StatusItem
-              label="API Server"
-              status="online"
-              icon={<Server size={14} />}
-            />
-            <StatusItem
-              label="Storage"
-              status="online"
-              icon={<Cloud size={14} />}
-            />
-          </div>
-
-          <div className="mt-8 bg-slate-900 p-6 rounded-2xl relative overflow-hidden group">
-            <div className="absolute -right-2 -bottom-2 opacity-10 group-hover:scale-110 transition-transform">
-              <Leaf size={60} className="text-emerald-500" />
+        {/* QUICK ACTIONS & SYSTEM STATUS */}
+        <div className="space-y-6">
+          {/* Quick Actions */}
+          <motion.div
+            variants={itemVar}
+            className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100"
+          >
+            <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-3 uppercase tracking-tighter">
+              <Zap size={20} className="text-amber-500" /> Tezkor Amallar
+            </h3>
+            <div className="grid grid-cols-1 gap-3">
+              <QuickActionLink
+                to="/admin/news"
+                label="Yangilik Yozish"
+                color="bg-blue-50 text-blue-600 hover:bg-blue-100"
+              />
+              <QuickActionLink
+                to="/admin/teachers"
+                label="O'qituvchi Qo'shish"
+                color="bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+              />
+              <QuickActionLink
+                to="/admin/documents"
+                label="Hujjat Yuklash"
+                color="bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+              />
             </div>
-            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">
-              Server Time
-            </p>
-            <p className="text-2xl text-emerald-400 font-mono font-bold mt-1">
-              {currentTime.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
+          </motion.div>
+
+          {/* System Status (Compact) */}
+          <motion.div
+            variants={itemVar}
+            className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Database size={16} className="text-slate-400" />
+              <span className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                Tizim holati
+              </span>
+            </div>
+            <div className="space-y-2">
+              <StatusRow
+                label="Database"
+                value="Connected"
+                color="text-emerald-500"
+              />
+              <StatusRow
+                label="API Latency"
+                value="24ms"
+                color="text-blue-500"
+              />
+              <StatusRow
+                label="Storage"
+                value="Optimized"
+                color="text-emerald-500"
+              />
+            </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// --- Minified Stat Card for Mobile ---
-const StatCard = ({ title, count, icon, bg, loading, trend }) => (
-  <div className="bg-white p-4 md:p-6 rounded-3xl border border-slate-100 hover:shadow-lg transition-all">
-    <div className="flex justify-between items-start mb-4">
-      <div
-        className={`p-2.5 md:p-3 rounded-xl text-white ${bg} shadow-lg shadow-inherit/20`}
+// --- SUB COMPONENTS ---
+
+const StatCard = ({ title, count, icon, color, loading, to }) => {
+  const colorMap = {
+    emerald: "bg-emerald-500 shadow-emerald-500/30",
+    blue: "bg-blue-500 shadow-blue-500/30",
+    amber: "bg-amber-500 shadow-amber-500/30",
+    indigo: "bg-indigo-500 shadow-indigo-500/30",
+  };
+
+  return (
+    <motion.div variants={itemVar}>
+      <Link
+        to={to}
+        className="block bg-white p-6 rounded-[2rem] border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
       >
-        {icon}
-      </div>
-      <span className="text-[9px] font-black bg-slate-50 text-slate-400 px-2 py-1 rounded-md border border-slate-100">
-        {trend}
-      </span>
-    </div>
-    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 truncate">
-      {title}
-    </p>
-    {loading ? (
-      <div className="h-6 w-12 bg-slate-50 animate-pulse rounded" />
-    ) : (
-      <p className="text-xl md:text-2xl font-black text-slate-800">{count}</p>
-    )}
-  </div>
+        <div className="flex justify-between items-start mb-6">
+          <div
+            className={`p-4 rounded-2xl text-white ${colorMap[color]} shadow-lg transition-transform group-hover:scale-110`}
+          >
+            {icon}
+          </div>
+          <div className="p-2 bg-slate-50 rounded-full group-hover:bg-slate-100 transition-colors">
+            <ArrowRight
+              size={14}
+              className="text-slate-400 group-hover:text-slate-600 -rotate-45 group-hover:rotate-0 transition-transform duration-300"
+            />
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+            {title}
+          </p>
+          {loading ? (
+            <div className="h-8 w-24 bg-slate-100 animate-pulse rounded-lg" />
+          ) : (
+            <h3 className="text-3xl font-black text-slate-800 tracking-tight">
+              {count}
+            </h3>
+          )}
+        </div>
+      </Link>
+    </motion.div>
+  );
+};
+
+const QuickActionLink = ({ to, label, color }) => (
+  <Link
+    to={to}
+    className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 group ${color}`}
+  >
+    <span className="text-xs font-black uppercase tracking-wide flex items-center gap-2">
+      <Plus size={14} className="opacity-50" /> {label}
+    </span>
+    <ArrowRight
+      size={14}
+      className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all"
+    />
+  </Link>
 );
 
-const StatusItem = ({ label, status, icon }) => (
-  <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100/50">
-    <div className="flex items-center gap-3">
-      <div className="text-slate-400">{icon}</div>
-      <span className="text-xs font-bold text-slate-600">{label}</span>
-    </div>
-    <div
-      className={`w-2 h-2 rounded-full ${
-        status === "online" ? "bg-emerald-500" : "bg-amber-500"
-      } animate-pulse shadow-sm`}
-    />
+const StatusRow = ({ label, value, color }) => (
+  <div className="flex items-center justify-between py-2 border-b border-slate-200/50 last:border-0">
+    <span className="text-xs font-bold text-slate-400">{label}</span>
+    <span className={`text-xs font-black uppercase tracking-wider ${color}`}>
+      {value}
+    </span>
   </div>
 );
 

@@ -23,13 +23,6 @@ const NewsDetail = () => {
   const [news, setNews] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const getImageUrl = (image) => {
-    if (!image) return null;
-    if (image.includes("http")) return image;
-    const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
-    return `https://${CUSTOM_DOMAIN}/${image}/-/preview/1200x800/-/quality/best/-/format/auto/`;
-  };
-
   const handleShare = (platform) => {
     const url = window.location.href;
     const text = news?.title;
@@ -100,7 +93,7 @@ const NewsDetail = () => {
       animate={{ opacity: 1 }}
       className="bg-white min-h-screen pb-32"
     >
-      {/* 1. BREADCRUMBS - Minimal & Modern */}
+      {/* 1. BREADCRUMBS */}
       <nav className="bg-slate-50/50 border-b border-slate-100 py-6 mb-12">
         <div className="container mx-auto px-6">
           <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -124,7 +117,7 @@ const NewsDetail = () => {
 
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
-          {/* 2. HEADER - Bold & Impactful */}
+          {/* 2. HEADER */}
           <header className="mb-12">
             <motion.div
               initial={{ y: 20, opacity: 0 }}
@@ -150,7 +143,7 @@ const NewsDetail = () => {
                   <span className="text-xs font-black text-slate-700 uppercase italic tracking-wider">
                     {new Date(news.date || news.createdAt).toLocaleDateString(
                       "uz-UZ",
-                      { day: "numeric", month: "long", year: "numeric" }
+                      { day: "numeric", month: "long", year: "numeric" },
                     )}
                   </span>
                 </div>
@@ -184,16 +177,17 @@ const NewsDetail = () => {
             </div>
           </header>
 
-          {/* 3. MAIN IMAGE - Cinematic Depth */}
+          {/* 3. MAIN IMAGE */}
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="relative rounded-[3rem] overflow-hidden mb-16 shadow-2xl shadow-emerald-900/10 aspect-video bg-slate-50 group"
           >
-            {news.image ? (
+            {/* ⚠️ TO'G'RIDAN-TO'G'RI URL ISHLATILMOQDA */}
+            {news.imageUrl ? (
               <img
-                src={getImageUrl(news.image)}
+                src={news.imageUrl}
                 alt={news.title}
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
@@ -204,7 +198,7 @@ const NewsDetail = () => {
             )}
           </motion.div>
 
-          {/* 4. CONTENT - High Readability Typography */}
+          {/* 4. CONTENT */}
           <article className="max-w-3xl mx-auto">
             <div className="prose prose-emerald lg:prose-xl">
               {news.content?.split("\n").map(
@@ -219,7 +213,7 @@ const NewsDetail = () => {
                     >
                       {paragraph}
                     </motion.p>
-                  )
+                  ),
               )}
             </div>
           </article>

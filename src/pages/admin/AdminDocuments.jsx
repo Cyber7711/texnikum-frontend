@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import {
   FileText,
@@ -10,11 +10,12 @@ import {
   UploadCloud,
   FileCheck,
   AlertCircle,
+  Download,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 const AdminDocuments = () => {
-  // 1. Boshlang'ich holat har doim bo'sh massiv bo'lishi shart
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -29,15 +30,8 @@ const AdminDocuments = () => {
     try {
       setLoading(true);
       const res = await axiosClient.get("/doc");
-
-      // 2. Xavfsiz ma'lumot olish: res.data.data yoki res.data ni tekshirish
       const incomingData = res.data?.data || res.data?.result || res.data;
-
-      if (Array.isArray(incomingData)) {
-        setDocuments(incomingData);
-      } else {
-        setDocuments([]); // Agar massiv kelmasa, xato bermasligi uchun
-      }
+      setDocuments(Array.isArray(incomingData) ? incomingData : []);
     } catch (err) {
       console.error("Hujjat yuklashda xato:", err);
       toast.error("Ma'lumotlarni yuklab bo'lmadi");
@@ -58,7 +52,7 @@ const AdminDocuments = () => {
     const data = new FormData();
     data.append("title", title);
     data.append("category", category);
-    data.append("file", selectedFile);
+    data.append("file", selectedFile); // Backend "file" maydonini kutadi
 
     setSubmitLoading(true);
     try {
@@ -81,9 +75,8 @@ const AdminDocuments = () => {
       try {
         await axiosClient.delete(`/doc/${id}`);
         toast.success("Hujjat o'chirildi");
-        // Optimistic update: UI-dan darhol o'chirish (massiv ekanligini tekshirib)
         setDocuments((prev) =>
-          Array.isArray(prev) ? prev.filter((d) => d._id !== id) : []
+          Array.isArray(prev) ? prev.filter((d) => d._id !== id) : [],
         );
       } catch (err) {
         toast.error("O'chirishda xatolik");
@@ -97,10 +90,9 @@ const AdminDocuments = () => {
     setSelectedFile(null);
   };
 
-  // 3. Filtrlashdan oldin har doim documents massiv ekanligini tekshirish
   const filteredDocs = Array.isArray(documents)
     ? documents.filter((doc) =>
-        doc.title?.toLowerCase().includes(searchTerm.toLowerCase())
+        doc.title?.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     : [];
 
@@ -197,10 +189,21 @@ const AdminDocuments = () => {
                       <td className="p-6 text-xs font-bold text-slate-400 font-mono">
                         {new Date(doc.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="p-6 text-right">
+                      <td className="p-6 text-right flex justify-end gap-2">
+                        {/* ⚠️ DIQQAT: TO'G'RIDAN-TO'G'RI DOC.FILEURL ISHLATILMOQDA */}
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-3 text-slate-300 hover:text-emerald-500 hover:bg-emerald-50 rounded-2xl transition-all"
+                          title="Ochish/Yuklab olish"
+                        >
+                          <Download size={20} />
+                        </a>
                         <button
                           onClick={() => handleDelete(doc._id)}
                           className="p-3 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"
+                          title="O'chirish"
                         >
                           <Trash2 size={20} />
                         </button>
@@ -231,12 +234,22 @@ const AdminDocuments = () => {
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDelete(doc._id)}
-                    className="p-2 text-rose-300 hover:text-rose-500"
-                  >
-                    <Trash2 size={20} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={doc.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 text-emerald-300 hover:text-emerald-500"
+                    >
+                      <Download size={20} />
+                    </a>
+                    <button
+                      onClick={() => handleDelete(doc._id)}
+                      className="p-2 text-rose-300 hover:text-rose-500"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -244,7 +257,7 @@ const AdminDocuments = () => {
         )}
       </div>
 
-      {/* MODAL - Zamonaviy Agro Style */}
+      {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-md p-8 relative shadow-2xl animate-in zoom-in duration-300 overflow-hidden">
@@ -333,10 +346,10 @@ const AdminDocuments = () => {
               <button
                 type="submit"
                 disabled={submitLoading}
-                className="w-full py-5 bg-emerald-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest text-xs italic shadow-xl shadow-emerald-900/10 active:scale-95 disabled:opacity-50 transition-all"
+                className="w-full py-5 bg-emerald-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest text-xs italic shadow-xl shadow-emerald-900/10 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center"
               >
                 {submitLoading ? (
-                  <Loader2 className="animate-spin mx-auto" />
+                  <Loader2 className="animate-spin" />
                 ) : (
                   "Faylni Saqlash"
                 )}

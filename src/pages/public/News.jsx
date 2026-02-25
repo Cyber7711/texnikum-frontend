@@ -36,13 +36,6 @@ const News = () => {
     fetchInternalNews();
   }, []);
 
-  const getImageUrl = (image) => {
-    if (!image) return null;
-    if (image.includes("http")) return image;
-    const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
-    return `https://${CUSTOM_DOMAIN}/${image}/-/preview/1000x560/-/quality/smart/-/format/auto/`;
-  };
-
   return (
     <div className="bg-[#fafbfc] min-h-screen pb-32 relative z-0">
       {/* 1. Header Section */}
@@ -121,9 +114,10 @@ const News = () => {
                       className="group flex flex-col bg-white rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden"
                     >
                       <div className="h-64 relative overflow-hidden bg-slate-50">
-                        {news.image ? (
+                        {/* ⚠️ TO'G'RIDAN-TO'G'RI URL ISHLATILMOQDA */}
+                        {news.imageUrl ? (
                           <img
-                            src={getImageUrl(news.image)}
+                            src={news.imageUrl}
                             alt={news.title}
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                           />

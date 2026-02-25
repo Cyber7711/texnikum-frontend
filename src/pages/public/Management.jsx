@@ -25,36 +25,7 @@ import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
 import SectionHeader from "../../components/ui/SectionHeader";
 
-/* =========================
-   1) CONFIG
-========================= */
 const ICON_MAP = { Users, Building2, BadgeCheck, FileText };
-
-// ✅ News bilan bir xil
-const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
-
-// ✅ Image resolver (news style)
-const resolveImage = (leader) => {
-  if (!leader) return null;
-
-  // backend transform qilib yuborgan bo‘lsa
-  if (leader.imagePreview) return leader.imagePreview;
-  if (leader.imageUrl) return leader.imageUrl;
-
-  const image = leader.image;
-
-  if (!image || typeof image !== "string") return null;
-
-  // allaqachon URL bo‘lsa
-  if (image.startsWith("http")) return image;
-
-  // UUID bo‘lsa
-  return `https://${CUSTOM_DOMAIN}/${image}/-/preview/1000x1000/-/quality/best/-/format/auto/-/progressive/yes/`;
-};
-
-/* =========================
-   2) UI HELPERS
-========================= */
 
 // 3D Tilt Card
 const TiltCard = ({ children, className, onClick }) => {
@@ -115,14 +86,13 @@ const OrgConnector = ({ type }) => {
   return null;
 };
 
-/* =========================
-   3) CARD
-========================= */
+// Leader Card
 const LeaderCard = ({ leader, variant = "standard", t, onOpen }) => {
   const isMain = variant === "director";
   const isSmall = variant === "head";
 
-  const imageSrc = resolveImage(leader);
+  // ⚠️ TO'G'RIDAN-TO'G'RI BACKEND URL ISHLATILMOQDA
+  const imageSrc = leader?.imageUrl || null;
   const Icon = leader?.iconKey ? ICON_MAP[leader.iconKey] || User : User;
 
   return (
@@ -161,10 +131,6 @@ const LeaderCard = ({ leader, variant = "standard", t, onOpen }) => {
               alt={leader?.name || "leader"}
               className="w-full h-full object-cover"
               loading="lazy"
-              onError={(e) => {
-                e.currentTarget.src =
-                  "https://via.placeholder.com/800x800?text=Image+Error";
-              }}
             />
           ) : (
             <Icon
@@ -194,7 +160,7 @@ const LeaderCard = ({ leader, variant = "standard", t, onOpen }) => {
           {leader?.name || "Ism Familya"}
         </h3>
 
-        {/* CTA (zamonaviyroq) */}
+        {/* CTA */}
         <div className="inline-flex items-center gap-2 group-hover:gap-4 transition-all duration-300">
           <span
             className={`
@@ -215,13 +181,12 @@ const LeaderCard = ({ leader, variant = "standard", t, onOpen }) => {
   );
 };
 
-/* =========================
-   4) MODAL (PRO)
-========================= */
+// Profile Modal
 const ProfileModal = ({ leader, onClose }) => {
   if (!leader) return null;
 
-  const imageSrc = resolveImage(leader);
+  // ⚠️ TO'G'RIDAN-TO'G'RI BACKEND URL
+  const imageSrc = leader?.imageUrl || null;
 
   return (
     <motion.div
@@ -245,10 +210,6 @@ const ProfileModal = ({ leader, onClose }) => {
               src={imageSrc}
               alt={leader?.name || "leader"}
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-              onError={(e) => {
-                e.currentTarget.src =
-                  "https://via.placeholder.com/1000x1200?text=Image+Error";
-              }}
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50">
@@ -352,7 +313,6 @@ const ProfileModal = ({ leader, onClose }) => {
               </div>
             </div>
 
-            {/* (ixtiyoriy) email bo‘lsa ko‘rsatamiz */}
             {leader?.email && (
               <div className="pt-6 border-t border-slate-100">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
@@ -370,9 +330,7 @@ const ProfileModal = ({ leader, onClose }) => {
   );
 };
 
-/* =========================
-   5) PAGE
-========================= */
+// Page
 const Management = () => {
   const { t } = useTranslation();
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -433,7 +391,6 @@ const Management = () => {
         }}
       />
 
-      {/* header */}
       <section className="relative pt-40 pb-60 bg-[#0a1128] overflow-hidden">
         <motion.div
           style={{ y: yGlow }}
@@ -450,9 +407,7 @@ const Management = () => {
         </div>
       </section>
 
-      {/* content */}
       <div className="container mx-auto px-6 -mt-40 relative z-10">
-        {/* director */}
         {data.director ? (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -478,7 +433,6 @@ const Management = () => {
           </div>
         )}
 
-        {/* deputies */}
         {data.deputies.length > 0 && (
           <motion.div
             initial="hidden"
@@ -510,7 +464,6 @@ const Management = () => {
           </motion.div>
         )}
 
-        {/* heads */}
         {data.heads.length > 0 && (
           <>
             <div className="py-20 flex items-center justify-center opacity-60">
@@ -549,7 +502,6 @@ const Management = () => {
         )}
       </div>
 
-      {/* modal */}
       <AnimatePresence>
         {selectedLeader && (
           <ProfileModal

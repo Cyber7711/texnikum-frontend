@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import {
   FileText,
@@ -26,7 +26,7 @@ const getFileIcon = (type = "") => {
 };
 
 const Documents = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -66,15 +66,9 @@ const Documents = () => {
       })
     : [];
 
-  const getFileUrl = (fileId) => {
-    if (!fileId) return "#";
-    if (fileId.startsWith("http")) return fileId;
-    return `https://5nezpc68d1.ucarecd.net/${fileId}/-/inline/yes/`;
-  };
-
   return (
     <div className="bg-[#fafbfc] min-h-screen pb-32">
-      {/* 1. Header Section - Dynamic Background */}
+      {/* 1. Header Section */}
       <div className="bg-[#0a1128] pt-32 pb-40 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[100px] rounded-full -mr-40 -mt-40"></div>
         <div className="container mx-auto px-6 relative z-10 text-center">
@@ -106,7 +100,7 @@ const Documents = () => {
         </div>
       </div>
 
-      {/* 2. Controls Section (Sticky Search & Filter) */}
+      {/* 2. Controls Section */}
       <div className="container mx-auto px-6 -mt-12 relative z-20">
         <div className="bg-white p-4 md:p-6 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 flex flex-col lg:flex-row gap-6">
           <div className="flex flex-wrap gap-2 flex-1">
@@ -194,8 +188,9 @@ const Documents = () => {
                     </div>
                   </div>
 
+                  {/* ⚠️ TO'G'RIDAN TO'G'RI URL ISHLATILMOQDA */}
                   <a
-                    href={getFileUrl(doc.file)}
+                    href={doc.fileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-8 w-full bg-slate-900 text-white font-black text-[10px] uppercase tracking-[0.2em] py-5 rounded-[1.5rem] flex items-center justify-center gap-3 transition-all hover:bg-emerald-600 shadow-xl shadow-slate-900/10 active:scale-95 relative z-10 italic"

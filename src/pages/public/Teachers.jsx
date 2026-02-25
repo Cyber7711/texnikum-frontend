@@ -36,20 +36,17 @@ const Teachers = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const getImageUrl = (photo, fullname) => {
-    const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
-    if (photo && !photo.includes("http") && photo.length > 20) {
-      return `https://${CUSTOM_DOMAIN}/${photo}/-/scale_crop/600x600/smart/-/quality/smart/-/format/auto/`;
-    }
-    if (photo && photo.startsWith("http")) return photo;
+  // Agar rasm bo'lmasa ismidan avatar yasaydi, bor bo'lsa to'g'ridan to'g'ri backendni url'sini ishlatadi
+  const getAvatar = (teacher) => {
+    if (teacher.photoUrl) return teacher.photoUrl;
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      fullname
+      teacher.fullname,
     )}&background=10b981&color=fff&size=512`;
   };
 
   return (
     <div className="bg-[#fafbfc] min-h-screen pb-32">
-      {/* 1. Header Section - Dark Background Style */}
+      {/* 1. Header Section */}
       <section className="relative bg-[#0a1128] pt-32 pb-48 overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] -mr-40 -mt-40"></div>
         <div className="container mx-auto px-6 relative z-10 text-center">
@@ -121,7 +118,7 @@ const Teachers = () => {
                 {/* Image Area */}
                 <div className="h-80 relative overflow-hidden bg-slate-50">
                   <img
-                    src={getImageUrl(teacher.photo, teacher.fullname)}
+                    src={getAvatar(teacher)} // ⚠️ BEVOSITA SUPABASE URL YOKI AVATAR
                     alt={teacher.fullname}
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     loading="lazy"

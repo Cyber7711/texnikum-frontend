@@ -14,13 +14,11 @@ import {
   Shield,
   Briefcase,
   Pencil,
-  Phone,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import managementApi from "../../api/managementApi";
 
-// --- 1. CONFIG & UTILS ---
 const ICONS = [
   { key: "Users", label: "Kadrlar", Icon: Users },
   { key: "Building2", label: "Hisobchi", Icon: Building2 },
@@ -33,13 +31,6 @@ const ROLES = [
   { key: "deputy", label: "O‘rinbosar", Icon: Shield },
   { key: "head", label: "Bo‘lim boshlig‘i", Icon: Briefcase },
 ];
-
-const getImageUrl = (image) => {
-  if (!image) return null;
-  if (image.includes("http")) return image;
-  const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
-  return `https://${CUSTOM_DOMAIN}/${image}/-/preview/500x500/-/quality/smart/-/format/auto/`;
-};
 
 const emptyForm = {
   _id: null,
@@ -55,21 +46,18 @@ const emptyForm = {
   iconKey: "Users",
   order: 0,
   image: null,
-  currentImage: null,
 };
 
 export default function AdminManagement() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal State
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [preview, setPreview] = useState(null);
 
-  // --- DATA LOADING ---
   const fetchAll = async () => {
     try {
       setLoading(true);
@@ -86,7 +74,6 @@ export default function AdminManagement() {
     fetchAll();
   }, []);
 
-  // --- GROUPING ---
   const grouped = useMemo(() => {
     return {
       director: list.filter((x) => x.role === "director"),
@@ -99,7 +86,6 @@ export default function AdminManagement() {
     };
   }, [list]);
 
-  // --- HANDLERS ---
   const handleOpenCreate = () => {
     setForm(emptyForm);
     setPreview(null);
@@ -107,7 +93,6 @@ export default function AdminManagement() {
   };
 
   const handleOpenEdit = (leader) => {
-    // 🛡️ FIX: Backenddan kelgan null qiymatlarni bo'sh stringga aylantiramiz
     setForm({
       ...emptyForm,
       ...leader,
@@ -116,13 +101,10 @@ export default function AdminManagement() {
       reception: leader.reception || "",
       bio: leader.bio || "",
       education: leader.education || "",
-      // Qolganlari
       image: null,
-      currentImage: leader.imagePreview || leader.imageUrl || leader.image,
     });
-    setPreview(
-      getImageUrl(leader.imagePreview || leader.imageUrl || leader.image),
-    );
+    // ⚠️ TO'G'RIDAN TO'G'RI BACKEND URL ISHLATILMOQDA
+    setPreview(leader.imageUrl || null);
     setIsOpen(true);
   };
 
@@ -134,7 +116,6 @@ export default function AdminManagement() {
     }
   };
 
-  // Validations
   const handlePhoneChange = (e) => {
     const val = e.target.value;
     if (/^[0-9+\s()-]*$/.test(val)) setForm({ ...form, phone: val });
@@ -152,10 +133,10 @@ export default function AdminManagement() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!form.name.trim() || !form.position.trim()) {
-      toast.error("Ism va lavozim majburiy!");
-      return;
+      return toast.error("Ism va lavozim majburiy!");
     }
 
     try {
@@ -174,20 +155,23 @@ export default function AdminManagement() {
       fd.append("iconKey", form.iconKey || "Users");
       fd.append("order", form.order || 0);
 
-      if (form.image) fd.append("image", form.image);
+      if (form.image) {
+        // Backend odatda "file" maydonini kutadi
+        fd.append("file", form.image);
+      }
 
       if (form._id) {
         await managementApi.update(form._id, fd);
-        toast.success("Yangilandi");
+        toast.success("Yangilandi ✅");
       } else {
         await managementApi.create(fd);
-        toast.success("Yaratildi");
+        toast.success("Yaratildi ✅");
       }
 
       setIsOpen(false);
       await fetchAll();
     } catch (e) {
-      toast.error("Xatolik yuz berdi");
+      toast.error(e.response?.data?.message || "Xatolik yuz berdi");
     } finally {
       setSaving(false);
     }
@@ -261,7 +245,7 @@ export default function AdminManagement() {
         </div>
       )}
 
-      {/* --- MODAL (FIXED LAYOUT) --- */}
+      {/* MODAL */}
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -279,12 +263,11 @@ export default function AdminManagement() {
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className="relative w-full max-w-5xl h-[85vh] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row"
             >
-              {/* LEFT SIDE (Image) - Scroll bo'lmaydi */}
+              {/* LEFT SIDE (Image) */}
               <div className="hidden md:flex md:w-5/12 bg-slate-50 p-8 border-r border-slate-100 flex-col items-center justify-center relative">
                 <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 absolute top-8 left-8">
                   Profil
                 </div>
-
                 <label className="relative group w-56 h-56 rounded-[2rem] bg-white border border-slate-200 shadow-sm overflow-hidden flex items-center justify-center cursor-pointer hover:border-emerald-400 transition-colors">
                   {preview ? (
                     <img
@@ -305,7 +288,6 @@ export default function AdminManagement() {
                     accept="image/*"
                   />
                 </label>
-
                 <div className="mt-8 w-full max-w-xs space-y-2">
                   {ROLES.map((role) => (
                     <button
@@ -326,9 +308,8 @@ export default function AdminManagement() {
                 </div>
               </div>
 
-              {/* RIGHT SIDE (Form) - Flexbox orqali boshqariladi */}
+              {/* RIGHT SIDE (Form) */}
               <div className="flex-1 flex flex-col h-full bg-white relative">
-                {/* 1. Header (Fixed Top) */}
                 <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
                   <h2 className="text-xl font-black uppercase italic tracking-tighter">
                     {form._id ? "Tahrirlash" : "Yangi Rahbar"}
@@ -341,9 +322,8 @@ export default function AdminManagement() {
                   </button>
                 </div>
 
-                {/* 2. Content (Scrollable Middle) */}
                 <div className="flex-1 overflow-y-auto p-8 space-y-6">
-                  {/* Mobil uchun rasm yuklash (faqat kichik ekranda chiqadi) */}
+                  {/* Mobil uchun rasm yuklash */}
                   <div className="md:hidden flex justify-center mb-6">
                     <label className="relative w-32 h-32 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
                       {preview ? (
@@ -385,7 +365,7 @@ export default function AdminManagement() {
                       </div>
                       <input
                         type="tel"
-                        value={form.phone ?? ""} // 🛡️ FIX: null bo'lsa bo'sh string
+                        value={form.phone ?? ""}
                         onChange={handlePhoneChange}
                         className="w-full h-12 px-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm"
                         placeholder="+998..."
@@ -419,7 +399,7 @@ export default function AdminManagement() {
                       <input
                         type="number"
                         min="0"
-                        value={form.experience ?? ""} // 🛡️ FIX: null bo'lsa bo'sh string
+                        value={form.experience ?? ""}
                         onChange={(e) => handleNumberChange(e, "experience")}
                         className="w-full h-12 px-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm"
                       />
@@ -432,7 +412,7 @@ export default function AdminManagement() {
                       <input
                         type="number"
                         min="0"
-                        value={form.order ?? 0} // 🛡️ FIX: null bo'lsa 0
+                        value={form.order ?? 0}
                         onChange={(e) => handleNumberChange(e, "order")}
                         className="w-full h-12 px-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm"
                       />
@@ -447,6 +427,7 @@ export default function AdminManagement() {
                           {ICONS.map((icon) => (
                             <button
                               key={icon.key}
+                              type="button"
                               onClick={() =>
                                 setForm({ ...form, iconKey: icon.key })
                               }
@@ -465,7 +446,7 @@ export default function AdminManagement() {
                       </div>
                       <textarea
                         className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-emerald-500 outline-none font-medium text-sm text-slate-700 resize-none h-32"
-                        value={form.bio ?? ""} // 🛡️ FIX: null bo'lsa bo'sh string
+                        value={form.bio ?? ""}
                         onChange={(e) =>
                           setForm({ ...form, bio: e.target.value })
                         }
@@ -474,10 +455,10 @@ export default function AdminManagement() {
                   </div>
                 </div>
 
-                {/* 3. Footer (Fixed Bottom) */}
                 <div className="p-6 border-t border-slate-100 flex items-center justify-between bg-white shrink-0 z-20">
                   {form._id ? (
                     <button
+                      type="button"
                       onClick={handleDelete}
                       disabled={deleting}
                       className="text-rose-500 text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-rose-50 px-4 py-3 rounded-xl transition-colors"
@@ -486,7 +467,7 @@ export default function AdminManagement() {
                         <Loader2 className="animate-spin" size={16} />
                       ) : (
                         <Trash2 size={16} />
-                      )}
+                      )}{" "}
                       O'chirish
                     </button>
                   ) : (
@@ -495,12 +476,14 @@ export default function AdminManagement() {
 
                   <div className="flex items-center gap-3">
                     <button
+                      type="button"
                       onClick={() => setIsOpen(false)}
                       className="px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100"
                     >
                       Bekor qilish
                     </button>
                     <button
+                      type="button"
                       onClick={handleSubmit}
                       disabled={saving || !form.name || !form.position}
                       className="px-8 py-3 rounded-xl bg-emerald-600 text-white text-xs font-black uppercase tracking-widest hover:bg-emerald-500 shadow-lg shadow-emerald-200 flex items-center gap-2 disabled:opacity-50"
@@ -509,7 +492,7 @@ export default function AdminManagement() {
                         <Loader2 className="animate-spin" size={16} />
                       ) : (
                         <Save size={16} />
-                      )}
+                      )}{" "}
                       Saqlash
                     </button>
                   </div>
@@ -563,9 +546,9 @@ const Section = ({ title, roleKey, items, onEdit, grid }) => {
 };
 
 const LeaderCard = ({ leader, onClick }) => {
-  const imgUrl = getImageUrl(
-    leader.imagePreview || leader.imageUrl || leader.image,
-  );
+  // ⚠️ TO'G'RIDAN TO'G'RI BACKEND URL ISHLATILMOQDA
+  const imgUrl = leader.imageUrl || null;
+
   return (
     <div
       onClick={onClick}
@@ -573,7 +556,11 @@ const LeaderCard = ({ leader, onClick }) => {
     >
       <div className="w-20 h-20 shrink-0 rounded-[1.5rem] bg-white border border-slate-100 overflow-hidden flex items-center justify-center">
         {imgUrl ? (
-          <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+          <img
+            src={imgUrl}
+            alt={leader.name}
+            className="w-full h-full object-cover"
+          />
         ) : (
           <Users className="text-slate-300" />
         )}
@@ -602,7 +589,6 @@ const LeaderCard = ({ leader, onClick }) => {
   );
 };
 
-// 🛡️ FIX: Inputda null qiymat kelib qolsa, "" ga aylantirish
 const Input = ({
   label,
   value,
