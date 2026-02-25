@@ -120,6 +120,7 @@ const News = () => {
                             src={news.imageUrl}
                             alt={news.title}
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-200">

@@ -93,7 +93,7 @@ const NewsDetail = () => {
       animate={{ opacity: 1 }}
       className="bg-white min-h-screen pb-32"
     >
-      {/* 1. BREADCRUMBS */}
+      {/* 1. BREADCRUMBS - Minimal & Modern */}
       <nav className="bg-slate-50/50 border-b border-slate-100 py-6 mb-12">
         <div className="container mx-auto px-6">
           <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -117,7 +117,7 @@ const NewsDetail = () => {
 
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
-          {/* 2. HEADER */}
+          {/* 2. HEADER - Bold & Impactful */}
           <header className="mb-12">
             <motion.div
               initial={{ y: 20, opacity: 0 }}
@@ -177,14 +177,14 @@ const NewsDetail = () => {
             </div>
           </header>
 
-          {/* 3. MAIN IMAGE */}
+          {/* 3. MAIN IMAGE - Cinematic Depth */}
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="relative rounded-[3rem] overflow-hidden mb-16 shadow-2xl shadow-emerald-900/10 aspect-video bg-slate-50 group"
           >
-            {/* ⚠️ TO'G'RIDAN-TO'G'RI URL ISHLATILMOQDA */}
+            {/* ⚠️ TO'G'RIDAN TO'G'RI URL ISHLATILMOQDA */}
             {news.imageUrl ? (
               <img
                 src={news.imageUrl}
@@ -198,7 +198,7 @@ const NewsDetail = () => {
             )}
           </motion.div>
 
-          {/* 4. CONTENT */}
+          {/* 4. CONTENT - High Readability Typography */}
           <article className="max-w-3xl mx-auto">
             <div className="prose prose-emerald lg:prose-xl">
               {news.content?.split("\n").map(

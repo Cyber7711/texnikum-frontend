@@ -101,9 +101,9 @@ export default function AdminManagement() {
       reception: leader.reception || "",
       bio: leader.bio || "",
       education: leader.education || "",
-      image: null,
+      image: null, // Rasm o'zgarsa yangisi tushadi
     });
-    // ⚠️ TO'G'RIDAN TO'G'RI BACKEND URL ISHLATILMOQDA
+    // BEVOSITA SUPABASE URL ISHLATILADI
     setPreview(leader.imageUrl || null);
     setIsOpen(true);
   };
@@ -155,17 +155,17 @@ export default function AdminManagement() {
       fd.append("iconKey", form.iconKey || "Users");
       fd.append("order", form.order || 0);
 
+      // Backend API faylni "file" nomi bilan qabul qiladi
       if (form.image) {
-        // Backend odatda "file" maydonini kutadi
         fd.append("file", form.image);
       }
 
       if (form._id) {
         await managementApi.update(form._id, fd);
-        toast.success("Yangilandi ✅");
+        toast.success("Muvaffaqiyatli yangilandi");
       } else {
         await managementApi.create(fd);
-        toast.success("Yaratildi ✅");
+        toast.success("Yangi rahbar qo'shildi");
       }
 
       setIsOpen(false);
@@ -178,26 +178,27 @@ export default function AdminManagement() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("O'chirmoqchimisiz?")) return;
+    if (!window.confirm("Ushbu rahbarni o'chirishni tasdiqlaysizmi?")) return;
     try {
       setDeleting(true);
       await managementApi.remove(form._id);
-      toast.success("O'chirildi");
+      toast.success("Rahbar tizimdan o'chirildi");
       setIsOpen(false);
       await fetchAll();
     } catch (e) {
-      toast.error("Xatolik");
+      toast.error("O'chirishda xatolik yuz berdi");
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-10 font-sans text-slate-900 pb-24">
+    <div className="min-h-screen bg-slate-50 p-4 md:p-10 font-sans text-slate-900 pb-24">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <div>
-          <h1 className="text-3xl font-black uppercase italic tracking-tighter text-slate-900">
+        <div className="relative">
+          <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-400 blur opacity-20 rounded-full"></div>
+          <h1 className="relative text-3xl font-black uppercase italic tracking-tighter text-slate-900 bg-slate-50">
             Rahbariyat <span className="text-emerald-500">Boshqaruvi</span>
           </h1>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
@@ -206,11 +207,11 @@ export default function AdminManagement() {
         </div>
         <button
           onClick={handleOpenCreate}
-          className="group flex items-center gap-3 px-6 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/20 active:scale-95"
+          className="group flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-[1.5rem] font-black uppercase tracking-widest text-xs hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95"
         >
           <Plus
             size={18}
-            className="group-hover:rotate-90 transition-transform"
+            className="group-hover:rotate-90 transition-transform duration-300"
           />
           Yangi Rahbar
         </button>
@@ -218,8 +219,11 @@ export default function AdminManagement() {
 
       {/* LIST CONTENT */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="animate-spin text-emerald-500" size={40} />
+        <div className="flex flex-col items-center justify-center py-32 gap-4">
+          <Loader2 className="animate-spin text-emerald-500" size={48} />
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Ma'lumotlar yuklanmoqda...
+          </span>
         </div>
       ) : (
         <div className="space-y-12">
@@ -261,14 +265,14 @@ export default function AdminManagement() {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-5xl h-[85vh] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row"
+              className="relative w-full max-w-5xl h-[90vh] md:h-[85vh] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row"
             >
-              {/* LEFT SIDE (Image) */}
+              {/* LEFT SIDE (Image Selection) */}
               <div className="hidden md:flex md:w-5/12 bg-slate-50 p-8 border-r border-slate-100 flex-col items-center justify-center relative">
                 <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 absolute top-8 left-8">
-                  Profil
+                  Profil Surati
                 </div>
-                <label className="relative group w-56 h-56 rounded-[2rem] bg-white border border-slate-200 shadow-sm overflow-hidden flex items-center justify-center cursor-pointer hover:border-emerald-400 transition-colors">
+                <label className="relative group w-56 h-56 rounded-[2rem] bg-white border-2 border-dashed border-slate-200 shadow-sm overflow-hidden flex items-center justify-center cursor-pointer hover:border-emerald-400 transition-all">
                   {preview ? (
                     <img
                       src={preview}
@@ -276,10 +280,15 @@ export default function AdminManagement() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <ImageIcon className="text-slate-300" size={64} />
+                    <div className="text-center text-slate-300 group-hover:text-emerald-400 transition-colors">
+                      <ImageIcon size={64} className="mx-auto mb-2" />
+                      <span className="text-[10px] font-black uppercase">
+                        Rasm yuklash
+                      </span>
+                    </div>
                   )}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                    <Pencil className="text-white" />
+                  <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
+                    <Pencil size={24} className="text-white" />
                   </div>
                   <input
                     type="file"
@@ -288,19 +297,24 @@ export default function AdminManagement() {
                     accept="image/*"
                   />
                 </label>
-                <div className="mt-8 w-full max-w-xs space-y-2">
+
+                {/* Role Selector */}
+                <div className="mt-12 w-full max-w-xs space-y-3">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
+                    Darajani tanlang
+                  </div>
                   {ROLES.map((role) => (
                     <button
                       key={role.key}
                       onClick={() => setForm({ ...form, role: role.key })}
-                      className={`w-full flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+                      className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
                         form.role === role.key
-                          ? "bg-emerald-50 border-emerald-500 text-emerald-700"
-                          : "bg-white border-slate-100 text-slate-500 hover:bg-slate-50"
+                          ? "bg-emerald-50 border-emerald-500 text-emerald-600 shadow-sm"
+                          : "bg-white border-transparent shadow-sm text-slate-500 hover:border-slate-200"
                       }`}
                     >
                       <role.Icon size={18} />
-                      <span className="text-xs font-bold uppercase">
+                      <span className="text-xs font-bold uppercase tracking-wide">
                         {role.label}
                       </span>
                     </button>
@@ -308,31 +322,31 @@ export default function AdminManagement() {
                 </div>
               </div>
 
-              {/* RIGHT SIDE (Form) */}
+              {/* RIGHT SIDE (Form Data) */}
               <div className="flex-1 flex flex-col h-full bg-white relative">
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
-                  <h2 className="text-xl font-black uppercase italic tracking-tighter">
-                    {form._id ? "Tahrirlash" : "Yangi Rahbar"}
+                <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-800">
+                    {form._id ? "Ma'lumotlarni tahrirlash" : "Yangi Rahbar"}
                   </h2>
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                    className="p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full transition-colors"
                   >
-                    <X size={20} className="text-slate-400" />
+                    <X size={20} />
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-hide">
                   {/* Mobil uchun rasm yuklash */}
                   <div className="md:hidden flex justify-center mb-6">
-                    <label className="relative w-32 h-32 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
+                    <label className="relative w-32 h-32 rounded-[1.5rem] bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer">
                       {preview ? (
                         <img
                           src={preview}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <ImageIcon />
+                        <ImageIcon className="text-slate-300" />
                       )}
                       <input
                         type="file"
@@ -367,7 +381,7 @@ export default function AdminManagement() {
                         type="tel"
                         value={form.phone ?? ""}
                         onChange={handlePhoneChange}
-                        className="w-full h-12 px-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm"
+                        className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-700"
                         placeholder="+998..."
                       />
                     </div>
@@ -401,29 +415,29 @@ export default function AdminManagement() {
                         min="0"
                         value={form.experience ?? ""}
                         onChange={(e) => handleNumberChange(e, "experience")}
-                        className="w-full h-12 px-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm"
+                        className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-700"
                       />
                     </div>
 
                     <div className="col-span-1">
                       <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
-                        Tartib
+                        Kengashdagi tartibi
                       </div>
                       <input
                         type="number"
                         min="0"
                         value={form.order ?? 0}
                         onChange={(e) => handleNumberChange(e, "order")}
-                        className="w-full h-12 px-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm"
+                        className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-700"
                       />
                     </div>
 
                     {form.role === "head" && (
-                      <div className="col-span-2">
-                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                          Icon
+                      <div className="col-span-2 bg-slate-50 p-4 rounded-[1.5rem] border border-slate-100">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
+                          Maxsus Icon
                         </div>
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex gap-3 flex-wrap">
                           {ICONS.map((icon) => (
                             <button
                               key={icon.key}
@@ -431,9 +445,13 @@ export default function AdminManagement() {
                               onClick={() =>
                                 setForm({ ...form, iconKey: icon.key })
                               }
-                              className={`p-3 rounded-xl border ${form.iconKey === icon.key ? "bg-emerald-50 border-emerald-500 text-emerald-600" : "border-slate-100 text-slate-400"}`}
+                              className={`p-4 rounded-xl transition-all ${
+                                form.iconKey === icon.key
+                                  ? "bg-white border-2 border-emerald-500 text-emerald-600 shadow-sm"
+                                  : "bg-white border-2 border-transparent text-slate-400 hover:border-slate-200 shadow-sm"
+                              }`}
                             >
-                              <icon.Icon size={20} />
+                              <icon.Icon size={24} />
                             </button>
                           ))}
                         </div>
@@ -441,20 +459,22 @@ export default function AdminManagement() {
                     )}
 
                     <div className="col-span-2">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
                         Biografiya
                       </div>
                       <textarea
-                        className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-emerald-500 outline-none font-medium text-sm text-slate-700 resize-none h-32"
+                        className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl outline-none transition-all font-medium text-sm text-slate-700 resize-none h-32"
                         value={form.bio ?? ""}
                         onChange={(e) =>
                           setForm({ ...form, bio: e.target.value })
                         }
+                        placeholder="Qisqacha ma'lumot..."
                       />
                     </div>
                   </div>
                 </div>
 
+                {/* FOOTER ACTIONS */}
                 <div className="p-6 border-t border-slate-100 flex items-center justify-between bg-white shrink-0 z-20">
                   {form._id ? (
                     <button
@@ -478,7 +498,7 @@ export default function AdminManagement() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100"
+                      className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-colors"
                     >
                       Bekor qilish
                     </button>
@@ -486,7 +506,7 @@ export default function AdminManagement() {
                       type="button"
                       onClick={handleSubmit}
                       disabled={saving || !form.name || !form.position}
-                      className="px-8 py-3 rounded-xl bg-emerald-600 text-white text-xs font-black uppercase tracking-widest hover:bg-emerald-500 shadow-lg shadow-emerald-200 flex items-center gap-2 disabled:opacity-50"
+                      className="px-8 py-4 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest hover:bg-emerald-600 shadow-xl flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95"
                     >
                       {saving ? (
                         <Loader2 className="animate-spin" size={16} />
@@ -510,13 +530,13 @@ export default function AdminManagement() {
 const Section = ({ title, roleKey, items, onEdit, grid }) => {
   const RoleIcon = ROLES.find((r) => r.key === roleKey)?.Icon || Users;
   return (
-    <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-slate-100 text-slate-600 rounded-2xl">
+    <div className="bg-white rounded-[2.5rem] border border-slate-100 p-6 md:p-8 shadow-sm">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="p-4 bg-emerald-50 text-emerald-600 rounded-[1.5rem]">
           <RoleIcon size={24} />
         </div>
         <div>
-          <h2 className="text-xl font-black uppercase italic tracking-tighter text-slate-900">
+          <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-slate-900">
             {title}
           </h2>
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -525,8 +545,8 @@ const Section = ({ title, roleKey, items, onEdit, grid }) => {
         </div>
       </div>
       {items.length === 0 ? (
-        <div className="text-center py-10 border-2 border-dashed border-slate-100 rounded-[2rem] text-slate-400 font-bold text-sm">
-          Ro'yxat bo'sh
+        <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-[2rem] text-slate-400 font-bold text-sm bg-slate-50/50">
+          Bu bo'limga hozircha xodim qo'shilmagan
         </div>
       ) : (
         <div
@@ -546,13 +566,15 @@ const Section = ({ title, roleKey, items, onEdit, grid }) => {
 };
 
 const LeaderCard = ({ leader, onClick }) => {
-  // ⚠️ TO'G'RIDAN TO'G'RI BACKEND URL ISHLATILMOQDA
   const imgUrl = leader.imageUrl || null;
+  const Icon = leader.iconKey
+    ? ICONS.find((i) => i.key === leader.iconKey)?.Icon || Users
+    : Users;
 
   return (
     <div
       onClick={onClick}
-      className="group relative flex items-center gap-5 p-5 bg-slate-50 hover:bg-white border border-slate-100 hover:border-emerald-200 rounded-[2rem] cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1"
+      className="group relative flex items-center gap-5 p-5 bg-slate-50 hover:bg-white border-2 border-transparent hover:border-emerald-500 rounded-[2rem] cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1"
     >
       <div className="w-20 h-20 shrink-0 rounded-[1.5rem] bg-white border border-slate-100 overflow-hidden flex items-center justify-center">
         {imgUrl ? (
@@ -562,16 +584,16 @@ const LeaderCard = ({ leader, onClick }) => {
             className="w-full h-full object-cover"
           />
         ) : (
-          <Users className="text-slate-300" />
+          <Icon className="text-slate-300" size={32} />
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 truncate mr-2">
             {leader.position}
           </p>
           {leader.order > 0 && (
-            <span className="text-[9px] font-bold bg-slate-200 text-slate-500 px-2 py-0.5 rounded-md">
+            <span className="text-[9px] font-bold bg-slate-200 text-slate-500 px-2 py-0.5 rounded-md flex-shrink-0">
               #{leader.order}
             </span>
           )}
@@ -581,7 +603,7 @@ const LeaderCard = ({ leader, onClick }) => {
         </h3>
       </div>
       <div className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="p-2 bg-slate-900 text-white rounded-xl">
+        <div className="p-2 bg-slate-900 text-white rounded-xl shadow-lg">
           <Pencil size={14} />
         </div>
       </div>
@@ -603,7 +625,7 @@ const Input = ({
     </div>
     <input
       type={type}
-      className="w-full h-12 px-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm text-slate-700 placeholder:text-slate-300 transition-all"
+      className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
       placeholder={placeholder}
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}

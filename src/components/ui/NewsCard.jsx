@@ -6,21 +6,10 @@ import { motion } from "framer-motion";
 const NewsCard = ({ news }) => {
   const { t, i18n } = useTranslation();
 
-  // --- 1. XAVFSIZ IMAGE HELPER ---
-  const getImageUrl = (image) => {
-    // news.image undefined bo'lsa xato bermasligi uchun tekshiruv
-    if (!image) return null;
-    if (typeof image !== "string") return null;
-    if (image.includes("http")) return image;
+  // ⚠️ TO'G'RIDAN TO'G'RI BACKEND URL ISHLATILMOQDA (Supabase)
+  const imageUrl = news?.imageUrl;
 
-    const CUSTOM_DOMAIN = "5nezpc68d1.ucarecd.net";
-    return `https://${CUSTOM_DOMAIN}/${image}/-/preview/800x600/-/quality/best/-/format/auto/-/progressive/yes/`;
-  };
-
-  // news?.image ishlatish orqali undefined xatosidan qutulamiz
-  const imageUrl = getImageUrl(news?.image);
-
-  // --- 2. XAVFSIZ SANA FORMATLASH ---
+  // --- XAVFSIZ SANA FORMATLASH ---
   const formattedDate = () => {
     try {
       const dateValue = news?.createdAt || news?.date;
@@ -30,9 +19,9 @@ const NewsCard = ({ news }) => {
         i18n.language === "en"
           ? "en-US"
           : i18n.language === "ru"
-          ? "ru-RU"
-          : "uz-UZ",
-        { year: "numeric", month: "long", day: "numeric" }
+            ? "ru-RU"
+            : "uz-UZ",
+        { year: "numeric", month: "long", day: "numeric" },
       );
     } catch (err) {
       return "";
@@ -60,7 +49,7 @@ const NewsCard = ({ news }) => {
           <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2 bg-slate-50">
             <ImageOff size={40} strokeWidth={1} />
             <span className="text-[10px] font-bold uppercase tracking-widest">
-              {t("no_image_attached")}
+              {t("no_image_attached") || "RASM MAVJUD EMAS"}
             </span>
           </div>
         )}
