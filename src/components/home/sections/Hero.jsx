@@ -8,18 +8,15 @@ const Hero = () => {
   const { t } = useTranslation();
   const ref = useRef(null);
 
-  // Scroll faqat shu seksiya bo'yicha hisoblanadi
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
 
-  // Animatsiya qiymatlari (sekinroq va silliqroq qilindi)
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
   const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
-  // Animatsiya variantlari
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -42,12 +39,15 @@ const Hero = () => {
       ref={ref}
       className="relative min-h-[100dvh] flex items-center overflow-hidden bg-slate-950 pt-20 pb-20 md:py-0"
     >
-      {/* 1. PARALLAX BACKGROUND */}
+      {/* 1. PARALLAX BACKGROUND IMAGE */}
       <motion.div style={{ y: backgroundY }} className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-slate-900/60 z-10 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/20 to-transparent z-20" />
+        {/* Rasm ustidagi gradient - MATN UCHUN CHAP TOMON QORONG'IROQ QILINDI */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/60 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 z-10" />
+
+        {/* BU YERGA O'Z RASMINGIZNI QO'YING */}
         <img
-          src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop"
+          src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop"
           alt="University Campus"
           className="w-full h-full object-cover scale-105"
         />
@@ -56,13 +56,13 @@ const Hero = () => {
       {/* 2. ASOSIY KONTENT */}
       <div className="container mx-auto px-6 relative z-30">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-          {/* CHAP TOMON */}
+          {/* CHAP TOMON (Matn) */}
           <motion.div
             style={{ y: contentY, opacity: contentOpacity }}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="lg:col-span-7"
+            className="lg:col-span-7 relative z-20"
           >
             <div className="mb-8 overflow-hidden">
               <motion.div variants={textRevealVariants}>
@@ -72,35 +72,40 @@ const Hero = () => {
                 </div>
               </motion.div>
             </div>
-            your-super-secret-jwt-key-minimum-32-chars
-            <div className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[0.9] uppercase italic tracking-tighter">
-              <div className="overflow-hidden">
+
+            <div className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[0.9] uppercase italic tracking-tighter drop-shadow-2xl">
+              <div className="overflow-hidden pb-2">
                 <motion.div variants={textRevealVariants}>
-                  {t("hero_title_1") || "ZAMONAVIY"}
+                  {t("hero_title_1", "ZAMONAVIY")}
                 </motion.div>
               </div>
-              <div className="overflow-hidden text-emerald-500">
+              <div className="overflow-hidden text-emerald-500 pb-2">
                 <motion.div
                   variants={textRevealVariants}
                   className="flex items-center gap-4"
                 >
-                  {t("hero_title_2") || "TEXNIKUM"}
-                  <div className="h-2 w-16 md:w-32 bg-emerald-500 rounded-full hidden sm:block" />
+                  {t("hero_title_2", "TEXNIKUM")}
+                  <div className="h-2 w-16 md:w-32 bg-emerald-500 rounded-full hidden sm:block shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
                 </motion.div>
               </div>
-              <div className="overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-slate-200 to-slate-500">
+              <div className="overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-slate-200 to-slate-400 pb-2">
                 <motion.div variants={textRevealVariants}>
-                  {t("hero_title_3") || "TA'LIMI"}
+                  {t("hero_title_3", "TA'LIMI")}
                 </motion.div>
               </div>
             </div>
-            <motion.p
+
+            <motion.div
               variants={textRevealVariants}
-              className="text-lg md:text-xl text-slate-300 font-medium max-w-xl leading-relaxed border-l-2 border-emerald-500/50 pl-6"
+              className="overflow-hidden"
             >
-              {t("hero_description") ||
-                "Amaliy ko'nikmalar va xalqaro darajadagi mutaxassislar tayyorlash maskani."}
-            </motion.p>
+              <p className="text-lg md:text-xl text-slate-200 font-medium max-w-xl leading-relaxed border-l-2 border-emerald-500/50 pl-6 drop-shadow-md">
+                {t(
+                  "hero_description",
+                  "Amaliy ko'nikmalar va xalqaro darajadagi mutaxassislar tayyorlash maskani.",
+                )}
+              </p>
+            </motion.div>
           </motion.div>
 
           {/* O'NG TOMON (Icon va Tugmalar) */}
@@ -109,14 +114,14 @@ const Hero = () => {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5, duration: 1 }}
-            className="lg:col-span-5 flex flex-col items-center lg:items-end gap-12"
+            className="lg:col-span-5 flex flex-col items-center lg:items-end gap-12 mt-10 lg:mt-0 relative z-20"
           >
             {/* 3D Icon Container */}
-            <div className="relative w-full h-[300px] flex items-center justify-center lg:justify-end pr-0 lg:pr-10">
+            <div className="relative w-full h-[250px] md:h-[300px] flex items-center justify-center lg:justify-end pr-0 lg:pr-10">
               <div className="relative flex items-center justify-center w-32 h-32">
-                <div className="absolute inset-0 bg-emerald-500/30 rounded-full blur-[60px] animate-pulse" />
-                <div className="relative z-10 w-28 h-28 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] flex items-center justify-center shadow-2xl">
-                  <Globe className="text-emerald-400 w-12 h-12 animate-pulse" />
+                <div className="absolute inset-0 bg-emerald-500/60 rounded-full blur-[70px] animate-pulse" />
+                <div className="relative z-10 w-28 h-28 bg-slate-900/40 backdrop-blur-xl border border-white/20 rounded-[2.5rem] flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+                  <Globe className="text-emerald-400 w-12 h-12 animate-pulse drop-shadow-[0_0_15px_rgba(52,211,153,0.8)]" />
                 </div>
               </div>
 
@@ -124,8 +129,8 @@ const Hero = () => {
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                className="absolute w-[320px] h-[320px] border border-white/5 rounded-full border-dashed"
-                style={{ top: "50%", left: "50%", x: "-50%", y: "-50%" }} // Markazlashtirish
+                className="absolute w-[280px] h-[280px] md:w-[320px] md:h-[320px] border border-emerald-400/20 rounded-full border-dashed"
+                style={{ top: "50%", left: "50%", x: "-50%", y: "-50%" }}
               />
 
               {/* Floating Code Icon */}
@@ -136,33 +141,35 @@ const Hero = () => {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="absolute top-0 right-10 bg-slate-800/80 p-5 rounded-3xl border border-white/5 backdrop-blur-md shadow-xl"
+                className="absolute top-0 right-0 md:right-10 bg-slate-900/60 p-5 rounded-3xl border border-white/10 backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.5)]"
               >
-                <Code2 className="text-blue-400 w-8 h-8" />
+                <Code2 className="text-blue-400 w-8 h-8 drop-shadow-[0_0_10px_rgba(96,165,250,0.8)]" />
               </motion.div>
             </div>
 
             {/* Tugmalar */}
-            <div className="flex flex-col gap-5 w-full sm:w-auto items-center lg:items-end pr-0 lg:pr-10">
+            <div className="flex flex-col gap-4 w-full sm:w-auto items-center lg:items-end pr-0 lg:pr-10">
               <Link
                 to="/apply"
-                className="group relative overflow-hidden inline-flex items-center justify-center gap-3 bg-emerald-600 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:bg-emerald-500 shadow-xl shadow-emerald-900/20 active:scale-95 italic min-w-[280px]"
+                className="group relative overflow-hidden inline-flex items-center justify-center gap-3 bg-emerald-600 text-white px-10 py-5 rounded-2xl font-black text-[12px] uppercase tracking-widest transition-all hover:bg-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.4)] active:scale-95 min-w-[280px]"
               >
-                <span className="relative z-10 flex items-center gap-2">
-                  {t("hero_btn_apply") || "QABULGA YOZILISH"}{" "}
-                  <ArrowRight size={18} />
+                <span className="relative z-10 flex items-center gap-2 italic">
+                  {t("hero_btn_apply", "QABULGA YOZILISH")}{" "}
+                  <ArrowRight size={16} />
                 </span>
                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
               </Link>
 
               <Link
                 to="/video-tour"
-                className="inline-flex items-center justify-center gap-3 px-10 py-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm text-white font-black text-sm uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95 group italic min-w-[280px]"
+                className="inline-flex items-center justify-center gap-3 px-10 py-5 rounded-2xl bg-slate-900/40 border border-white/20 backdrop-blur-md text-white font-black text-[12px] uppercase tracking-widest hover:bg-slate-900/60 transition-all active:scale-95 group min-w-[280px]"
               >
                 <div className="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Play size={12} fill="currentColor" />
+                  <Play size={12} fill="currentColor" className="ml-1" />
                 </div>
-                {t("hero_video_btn") || "VIDEO SAYOHAT"}
+                <span className="italic">
+                  {t("hero_video_btn", "VIDEO SAYOHAT")}
+                </span>
               </Link>
             </div>
           </motion.div>
@@ -177,10 +184,13 @@ const Hero = () => {
         transition={{ delay: 2, duration: 1 }}
         className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 hidden md:flex flex-col items-center gap-4"
       >
-        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.5em] writing-vertical">
+        <span
+          className="text-[9px] font-black text-white/50 uppercase tracking-[0.5em]"
+          style={{ writingMode: "vertical-rl" }}
+        >
           SCROLL
         </span>
-        <div className="w-[1px] h-16 bg-gradient-to-b from-emerald-500 to-transparent"></div>
+        <div className="w-[2px] h-16 bg-gradient-to-b from-emerald-500 to-transparent rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
       </motion.div>
     </section>
   );
