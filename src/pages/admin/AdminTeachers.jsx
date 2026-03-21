@@ -27,7 +27,6 @@ const AdminTeachers = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
-  // Rasm preview uchun state
   const [imagePreview, setImagePreview] = useState(null);
 
   const initialForm = {
@@ -54,7 +53,6 @@ const AdminTeachers = () => {
     "Boshqa",
   ];
 
-  // 1. MA'LUMOTLARNI YUKLASH
   const fetchTeachers = async () => {
     try {
       setLoading(true);
@@ -72,7 +70,6 @@ const AdminTeachers = () => {
     fetchTeachers();
   }, []);
 
-  // Telefon raqamini formatlash (+998 90 123 45 67)
   const handlePhoneChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
     if (!value.startsWith("998")) value = "998" + value;
@@ -88,7 +85,6 @@ const AdminTeachers = () => {
     setFormData({ ...formData, phone: formatted });
   };
 
-  // Rasm tanlanganda uni Preview qilish uchun logika
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -109,7 +105,6 @@ const AdminTeachers = () => {
     setIsEdit(true);
     setSelectedId(teacher._id);
 
-    // Form ma'lumotlarini to'ldirish
     setFormData({
       fullname: teacher.fullname,
       subject: teacher.subject,
@@ -119,8 +114,11 @@ const AdminTeachers = () => {
       photo: null,
     });
 
-    // Agar oldindan rasmi bo'lsa, URL'ni preview'ga o'rnatish
-    setImagePreview(teacher.photoUrl || null);
+    // ⚠️ TUZATISH: Hamma ehtimoliy kalitlarni qidiradi (photoUrl, imageUrl)
+    const existingImage = teacher.photoUrl || teacher.imageUrl || teacher.photo;
+    setImagePreview(
+      existingImage && existingImage.includes("http") ? existingImage : null,
+    );
 
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -129,7 +127,6 @@ const AdminTeachers = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Oddiy validatsiya
     if (formData.fullname.length < 3) return toast.error("Ism juda qisqa");
 
     setBtnLoading(true);
@@ -139,19 +136,19 @@ const AdminTeachers = () => {
     data.append("subject", formData.subject);
     data.append("experience", formData.experience);
     data.append("email", formData.email.trim());
-    // Telefon raqamdagi bo'sh joylarni tozalash
     data.append("phone", formData.phone.replace(/\s/g, ""));
 
-    // Rasm bo'lsa yuborish (Backend "file" yoki "photo" qabul qilishi mumkin,
-    // agar app.js da upload.single('file') bo'lsa, bu yerda "file" bo'lishi kerak.
-    // Xavfsizlik yuzasidan buni tekshirib ko'ring, odatda 'file' ishlatyapmiz).
     if (formData.photo) {
+      // ⚠️ TUZATISH: Backend aynan qaysi nomni kutayotganini aniq bilmasangiz
+      // odatda 'file', 'photo' yoki 'image' bo'ladi. Hozirgi kunda asosan 'file' ishlatyapmiz.
       data.append("file", formData.photo);
+      // Agar baribir rasm yuklanmasa, "file" so'zini "photo" ga o'zgartirib ko'ring.
     }
 
     try {
       if (isEdit) {
-        await axiosClient.patch(`/teachers/${selectedId}`, data);
+        // Tahrirlashda PATCH yoki PUT ishlatilishi mumkin
+        await axiosClient.put(`/teachers/${selectedId}`, data);
         toast.success("Ma'lumotlar yangilandi");
       } else {
         await axiosClient.post("/teachers", data);
@@ -185,12 +182,17 @@ const AdminTeachers = () => {
     setImagePreview(null);
   };
 
-  // ⚠️ TO'G'RIDAN-TO'G'RI BACKEND URL ISHLATILMOQDA (Supabase uchun)
+  // ⚠️ TUZATISH: Rasm manzilini aqlli qidirish
   const getAvatar = (teacher) => {
-    if (teacher.photoUrl) return teacher.photoUrl;
-    // Rasm yo'q bo'lsa avtomatik avatar yasaydi
+    const url =
+      teacher.photoUrl || teacher.imageUrl || teacher.photo || teacher.image;
+
+    // Agar url haqiqatan ham link bo'lsa uni qaytaradi
+    if (url && url.includes("http")) return url;
+
+    // Aks holda avatar yasaydi
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      teacher.fullname,
+      teacher.fullname || "User",
     )}&background=10b981&color=fff&size=512`;
   };
 
@@ -244,8 +246,11 @@ const AdminTeachers = () => {
                         src={imagePreview}
                         alt="Preview"
                         className="w-full h-full object-cover"
+                        onError={(e) =>
+                          (e.target.src =
+                            "https://via.placeholder.com/400?text=Rasm+Xatosi")
+                        }
                       />
-                      {/* Image Actions Overlay */}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">
                         <label className="cursor-pointer p-4 bg-white text-emerald-600 rounded-2xl shadow-xl hover:bg-emerald-600 hover:text-white transition-all transform hover:scale-110">
                           <RefreshCw size={24} />
@@ -289,7 +294,6 @@ const AdminTeachers = () => {
 
               {/* RIGHT SIDE: INPUTS */}
               <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* F.I.O Input */}
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">
                     F.I.O (Ism Sharif)
@@ -311,7 +315,6 @@ const AdminTeachers = () => {
                   </div>
                 </div>
 
-                {/* Subject Select */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">
                     Mutaxassislik fani
@@ -337,7 +340,6 @@ const AdminTeachers = () => {
                   </div>
                 </div>
 
-                {/* Experience Input */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">
                     Ish tajribasi (yil)
@@ -361,7 +363,6 @@ const AdminTeachers = () => {
                   </div>
                 </div>
 
-                {/* Email Input */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">
                     Elektron pochta
@@ -384,7 +385,6 @@ const AdminTeachers = () => {
                   </div>
                 </div>
 
-                {/* Phone Input */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">
                     Telefon raqami
@@ -462,6 +462,11 @@ const AdminTeachers = () => {
                           src={getAvatar(t)}
                           alt={t.fullname}
                           className="w-16 h-16 rounded-[1.5rem] object-cover border-4 border-white shadow-lg group-hover:scale-110 transition-transform duration-300"
+                          onError={(e) =>
+                            (e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                              t.fullname,
+                            )}&background=10b981&color=fff`)
+                          }
                         />
                         <div>
                           <div className="font-black text-slate-800 text-lg tracking-tighter italic uppercase leading-tight">
