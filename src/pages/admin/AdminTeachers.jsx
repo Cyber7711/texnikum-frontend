@@ -152,13 +152,13 @@ const AdminTeachers = () => {
     // Rasm bo'lsa yuborish
     if (formData.photo) {
       // ⚠️ MUHIM: Backend qaysi nomni kutadi? Odatda 'file' yoki 'photo'
-      data.append("file", formData.photo);
+      data.append("photo", formData.photo);
     }
 
     try {
       if (isEdit) {
         // Tahrirlash (PUT yoki PATCH)
-        await axiosClient.put(`/teachers/${selectedId}`, data, {
+        await axiosClient.patch(`/teachers/${selectedId}`, data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Muvaffaqiyatli yangilandi");

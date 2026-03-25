@@ -16,7 +16,7 @@ const TopBar = () => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef(null);
 
-  // Tanlangan til ma'lumotlari
+  // Tanlangan til ma'lumotlari (Ingliz tili bayrog'i uchun 'gb' ishlatiladi)
   const languages = [
     { code: "uz", name: "O'zbekcha", flag: "uz" },
     { code: "ru", name: "Русский", flag: "ru" },
@@ -26,6 +26,7 @@ const TopBar = () => {
   const currentLang =
     languages.find((l) => l.code === i18n.language) || languages[0];
 
+  // Shrift o'lchamini o'zgartirish
   const changeFontSize = (delta) => {
     setFontSize((prev) => {
       const newSize = Math.min(Math.max(prev + delta, 80), 130);
@@ -34,15 +35,17 @@ const TopBar = () => {
     });
   };
 
+  // Qora-oq rejimni yoqish/o'chirish (Tailwind'ning "grayscale" klassi orqali)
   const toggleGrayscale = () => {
     setIsGrayscale(!isGrayscale);
     if (!isGrayscale) {
-      document.documentElement.classList.add("grayscale-mode");
+      document.documentElement.classList.add("grayscale");
     } else {
-      document.documentElement.classList.remove("grayscale-mode");
+      document.documentElement.classList.remove("grayscale");
     }
   };
 
+  // Til menyusini tashqariga bosganda yopish
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (langRef.current && !langRef.current.contains(event.target)) {
@@ -67,22 +70,23 @@ const TopBar = () => {
             <SymbolLink
               href={SYMBOLS.flag}
               img="https://flagcdn.com/w40/uz.png"
-              title={t("flag")}
+              title={t("flag") || "Davlat bayrog'i"}
             />
+            {/* ⚠️ TUZATILDI: Gerbning to'g'ridan-to'g'ri va buzilmaydigan SVG formati */}
             <SymbolLink
               href={SYMBOLS.emblem}
-              img="https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Emblem_of_Uzbekistan.svg/512px-Emblem_of_Uzbekistan.svg.png"
-              title={t("emblem")}
+              img="https://upload.wikimedia.org/wikipedia/commons/7/77/Emblem_of_Uzbekistan.svg"
+              title={t("emblem") || "Davlat gerbi"}
             />
             <a
               href={SYMBOLS.anthem}
               target="_blank"
               rel="noreferrer"
-              title={t("anthem")}
-              className="group"
+              title={t("anthem") || "Davlat madhiyasi"}
+              className="group p-1 bg-slate-50 hover:bg-blue-50 rounded-md transition-colors"
             >
               <Music
-                size={18}
+                size={14}
                 className="text-blue-500 group-hover:text-blue-700 transition-all duration-300"
               />
             </a>
@@ -111,7 +115,7 @@ const TopBar = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
               </span>
-              {t("admission")}
+              {t("admission") || "QABUL"}
             </Link>
           </div>
         </div>
@@ -121,7 +125,8 @@ const TopBar = () => {
           <div className="flex items-center gap-3 border-r border-gray-100 pr-5 h-full select-none">
             <button
               onClick={() => changeFontSize(-5)}
-              className="text-gray-400 hover:text-emerald-600 font-black text-xs px-1"
+              className="text-gray-400 hover:text-emerald-600 font-black text-xs px-1 transition-colors"
+              title="Kichraytirish"
             >
               A-
             </button>
@@ -130,7 +135,8 @@ const TopBar = () => {
             </span>
             <button
               onClick={() => changeFontSize(5)}
-              className="text-slate-800 hover:text-emerald-600 font-black text-xs px-1"
+              className="text-slate-800 hover:text-emerald-600 font-black text-xs px-1 transition-colors"
+              title="Kattalashtirish"
             >
               A+
             </button>
@@ -139,9 +145,10 @@ const TopBar = () => {
           <div className="flex items-center gap-3 border-r border-gray-100 pr-5 h-full">
             <button
               onClick={toggleGrayscale}
+              title="Zaif ko'ruvchilar uchun"
               className={`transition-all duration-300 p-1.5 rounded-lg ${
                 isGrayscale
-                  ? "text-white bg-slate-800"
+                  ? "text-white bg-slate-800 shadow-inner"
                   : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
               }`}
             >
@@ -165,34 +172,36 @@ const TopBar = () => {
               </span>
               <ChevronDown
                 size={12}
-                className={`text-slate-400 transition-transform ${
+                className={`text-slate-400 transition-transform duration-300 ${
                   isLangOpen ? "rotate-180" : ""
                 }`}
               />
             </button>
 
-            {isLangOpen && (
-              <div className="absolute top-full right-0 mt-2 w-40 bg-white border border-slate-100 shadow-2xl rounded-2xl py-1.5 overflow-hidden z-[9999]">
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => changeLanguage(lang.code)}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition-colors text-left ${
-                      i18n.language === lang.code
-                        ? "text-emerald-600 bg-emerald-50/50"
-                        : "text-slate-600"
-                    }`}
-                  >
-                    <img
-                      src={`https://flagcdn.com/w20/${lang.flag}.png`}
-                      className="w-5 h-3 object-cover rounded shadow-sm"
-                      alt={lang.code}
-                    />
-                    <span className="text-[11px] font-bold">{lang.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {isLangOpen && (
+                <div className="absolute top-[120%] right-0 w-40 bg-white border border-slate-100 shadow-xl rounded-2xl py-1.5 overflow-hidden z-[9999] origin-top-right transform transition-all animate-in fade-in zoom-in-95 duration-200">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => changeLanguage(lang.code)}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition-colors text-left ${
+                        i18n.language === lang.code
+                          ? "text-emerald-600 bg-emerald-50/50"
+                          : "text-slate-600"
+                      }`}
+                    >
+                      <img
+                        src={`https://flagcdn.com/w20/${lang.flag}.png`}
+                        className="w-5 h-3 object-cover rounded shadow-sm"
+                        alt={lang.code}
+                      />
+                      <span className="text-[11px] font-bold">{lang.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -208,7 +217,7 @@ const SymbolLink = ({ href, img, title }) => (
     title={title}
     className="block transition-transform hover:scale-110 active:scale-95 duration-200"
   >
-    <img src={img} alt={title} className="w-5 h-auto object-contain" />
+    <img src={img} alt={title} className="w-[18px] h-auto object-contain" />
   </a>
 );
 
