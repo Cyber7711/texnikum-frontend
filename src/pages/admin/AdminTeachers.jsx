@@ -34,7 +34,7 @@ const AdminTeachers = () => {
     subject: "Boshqa",
     experience: "",
     email: "",
-    phone: "+998 ",
+    phone: "+998",
     photo: null,
   };
 
@@ -53,6 +53,7 @@ const AdminTeachers = () => {
     "Boshqa",
   ];
 
+  // 1. FETCH TEACHERS
   const fetchTeachers = async () => {
     try {
       setLoading(true);
@@ -70,6 +71,7 @@ const AdminTeachers = () => {
     fetchTeachers();
   }, []);
 
+  // 2. PHONE VALIDATION
   const handlePhoneChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
     if (!value.startsWith("998")) value = "998" + value;
@@ -85,9 +87,13 @@ const AdminTeachers = () => {
     setFormData({ ...formData, phone: formatted });
   };
 
+  // 3. IMAGE HANDLERS
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (!file.type.startsWith("image/")) {
+        return toast.error("Faqat rasm fayllari (JPG, PNG) yuklash mumkin!");
+      }
       if (file.size > 5 * 1024 * 1024) {
         return toast.error("Rasm hajmi 5MB dan oshmasligi kerak!");
       }
@@ -101,6 +107,7 @@ const AdminTeachers = () => {
     setImagePreview(null);
   };
 
+  // 4. EDIT CLICK
   const handleEditClick = (teacher) => {
     setIsEdit(true);
     setSelectedId(teacher._id);
@@ -114,8 +121,9 @@ const AdminTeachers = () => {
       photo: null,
     });
 
-    // ⚠️ TUZATISH: Hamma ehtimoliy kalitlarni qidiradi (photoUrl, imageUrl)
-    const existingImage = teacher.photoUrl || teacher.imageUrl || teacher.photo;
+    // Barcha ehtimoliy kalitlarni aniqlash
+    const existingImage =
+      teacher.photoUrl || teacher.imageUrl || teacher.photo || teacher.image;
     setImagePreview(
       existingImage && existingImage.includes("http") ? existingImage : null,
     );
@@ -124,10 +132,13 @@ const AdminTeachers = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // 5. SUBMIT HANDLER
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.fullname.length < 3) return toast.error("Ism juda qisqa");
+    if (formData.fullname.trim().length < 5) {
+      return toast.error("Iltimos, to'liq ism-sharifni kiriting");
+    }
 
     setBtnLoading(true);
 
@@ -135,34 +146,40 @@ const AdminTeachers = () => {
     data.append("fullname", formData.fullname.trim());
     data.append("subject", formData.subject);
     data.append("experience", formData.experience);
-    data.append("email", formData.email.trim());
+    data.append("email", formData.email.trim().toLowerCase());
     data.append("phone", formData.phone.replace(/\s/g, ""));
 
+    // Rasm bo'lsa yuborish
     if (formData.photo) {
-      // ⚠️ TUZATISH: Backend aynan qaysi nomni kutayotganini aniq bilmasangiz
-      // odatda 'file', 'photo' yoki 'image' bo'ladi. Hozirgi kunda asosan 'file' ishlatyapmiz.
+      // ⚠️ MUHIM: Backend qaysi nomni kutadi? Odatda 'file' yoki 'photo'
       data.append("file", formData.photo);
-      // Agar baribir rasm yuklanmasa, "file" so'zini "photo" ga o'zgartirib ko'ring.
     }
 
     try {
       if (isEdit) {
-        // Tahrirlashda PATCH yoki PUT ishlatilishi mumkin
-        await axiosClient.put(`/teachers/${selectedId}`, data);
-        toast.success("Ma'lumotlar yangilandi");
+        // Tahrirlash (PUT yoki PATCH)
+        await axiosClient.put(`/teachers/${selectedId}`, data, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        toast.success("Muvaffaqiyatli yangilandi");
       } else {
-        await axiosClient.post("/teachers", data);
+        // Yangi qo'shish
+        await axiosClient.post("/teachers", data, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         toast.success("Yangi o'qituvchi qo'shildi");
       }
       resetForm();
       fetchTeachers();
     } catch (err) {
+      console.error("Submit error:", err);
       toast.error(err.response?.data?.message || "Xatolik yuz berdi");
     } finally {
       setBtnLoading(false);
     }
   };
 
+  // 6. DELETE HANDLER
   const handleDelete = async (id) => {
     if (!window.confirm("Haqiqatdan ham o'chirmoqchimisiz?")) return;
     try {
@@ -182,15 +199,15 @@ const AdminTeachers = () => {
     setImagePreview(null);
   };
 
-  // ⚠️ TUZATISH: Rasm manzilini aqlli qidirish
+  // 7. AVATAR HELPER
   const getAvatar = (teacher) => {
     const url =
       teacher.photoUrl || teacher.imageUrl || teacher.photo || teacher.image;
 
-    // Agar url haqiqatan ham link bo'lsa uni qaytaradi
+    // Agar haqiqiy Supabase/Tashqi URL bo'lsa, o'zini qaytaramiz
     if (url && url.includes("http")) return url;
 
-    // Aks holda avatar yasaydi
+    // Rasm bo'lmasa, Ismidan chiroyli avatar yasaymiz
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
       teacher.fullname || "User",
     )}&background=10b981&color=fff&size=512`;
@@ -246,10 +263,10 @@ const AdminTeachers = () => {
                         src={imagePreview}
                         alt="Preview"
                         className="w-full h-full object-cover"
-                        onError={(e) =>
-                          (e.target.src =
-                            "https://via.placeholder.com/400?text=Rasm+Xatosi")
-                        }
+                        onError={(e) => {
+                          e.target.src =
+                            "https://via.placeholder.com/400?text=Rasm+Xatosi";
+                        }}
                       />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">
                         <label className="cursor-pointer p-4 bg-white text-emerald-600 rounded-2xl shadow-xl hover:bg-emerald-600 hover:text-white transition-all transform hover:scale-110">
@@ -365,12 +382,11 @@ const AdminTeachers = () => {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">
-                    Elektron pochta
+                    Elektron pochta (ixtiyoriy)
                   </label>
                   <div className="relative">
                     <input
                       type="email"
-                      required
                       placeholder="example@mail.com"
                       className="w-full bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white p-4 pl-12 rounded-2xl outline-none transition-all font-bold text-slate-700"
                       value={formData.email}
@@ -462,11 +478,11 @@ const AdminTeachers = () => {
                           src={getAvatar(t)}
                           alt={t.fullname}
                           className="w-16 h-16 rounded-[1.5rem] object-cover border-4 border-white shadow-lg group-hover:scale-110 transition-transform duration-300"
-                          onError={(e) =>
-                            (e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                              t.fullname,
-                            )}&background=10b981&color=fff`)
-                          }
+                          onError={(e) => {
+                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                              t.fullname || "User",
+                            )}&background=10b981&color=fff`;
+                          }}
                         />
                         <div>
                           <div className="font-black text-slate-800 text-lg tracking-tighter italic uppercase leading-tight">
@@ -489,7 +505,7 @@ const AdminTeachers = () => {
                         <div className="p-2 bg-slate-50 rounded-lg text-slate-400">
                           <Mail size={14} />
                         </div>
-                        {t.email}
+                        {t.email || "Kiritilmagan"}
                       </div>
                       <div className="flex items-center gap-3 text-[11px] font-black text-slate-900">
                         <div className="p-2 bg-emerald-50 rounded-lg text-emerald-500">

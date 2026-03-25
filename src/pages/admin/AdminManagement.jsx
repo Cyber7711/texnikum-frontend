@@ -14,11 +14,12 @@ import {
   Shield,
   Briefcase,
   Pencil,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import managementApi from "../../api/managementApi";
-import axiosClient from "../../api/axiosClient"; // ⚠️ PUT so'rovlar uchun to'g'ridan-to'g'ri chaqiramiz
+import axiosClient from "../../api/axiosClient";
 
 const ICONS = [
   { key: "Users", label: "Kadrlar", Icon: Users },
@@ -38,7 +39,7 @@ const emptyForm = {
   name: "",
   position: "",
   role: "deputy",
-  phone: "",
+  phone: "+998",
   email: "",
   reception: "",
   bio: "",
@@ -97,7 +98,7 @@ export default function AdminManagement() {
     setForm({
       ...emptyForm,
       ...leader,
-      phone: leader.phone || "",
+      phone: leader.phone || "+998",
       email: leader.email || "",
       reception: leader.reception || "",
       bio: leader.bio || "",
@@ -105,7 +106,6 @@ export default function AdminManagement() {
       image: null,
     });
 
-    // ⚠️ BARChA EHTIMOLIY URL KALITLARNI TEKSHIRAMIZ
     const existingImage = leader.imageUrl || leader.photoUrl || leader.image;
     setPreview(
       existingImage && existingImage.includes("http") ? existingImage : null,
@@ -116,6 +116,11 @@ export default function AdminManagement() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Fayl formatini tekshirish (faqat rasm)
+      if (!file.type.startsWith("image/")) {
+        return toast.error("Faqat rasm fayllari (JPG, PNG) yuklash mumkin!");
+      }
+      // Fayl hajmini tekshirish (Max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         return toast.error("Rasm hajmi 5MB dan oshmasligi kerak!");
       }
@@ -125,8 +130,18 @@ export default function AdminManagement() {
   };
 
   const handlePhoneChange = (e) => {
-    const val = e.target.value;
-    if (/^[0-9+\s()-]*$/.test(val)) setForm({ ...form, phone: val });
+    let value = e.target.value.replace(/\D/g, "");
+    if (!value.startsWith("998")) value = "998" + value;
+    value = value.substring(0, 12);
+
+    let formatted = "+";
+    if (value.length > 0) formatted += value.substring(0, 3);
+    if (value.length > 3) formatted += " " + value.substring(3, 5);
+    if (value.length > 5) formatted += " " + value.substring(5, 8);
+    if (value.length > 8) formatted += " " + value.substring(8, 10);
+    if (value.length > 10) formatted += " " + value.substring(10, 12);
+
+    setForm({ ...form, phone: formatted });
   };
 
   const handleNumberChange = (e, field) => {
@@ -141,36 +156,74 @@ export default function AdminManagement() {
     }
   };
 
+  // --- QATTIQ VALIDATSIYA (SECURITY & DATA INTEGRITY) ---
+  const validateForm = () => {
+    const name = form.name.trim();
+    const position = form.position.trim();
+    const phone = form.phone.replace(/\s/g, "");
+
+    if (name.length < 5) {
+      toast.error("Iltimos, to'liq ism-sharifni kiriting (kamida 5 ta harf)");
+      return false;
+    }
+
+    // Ismda raqamlar qatnashmasligini tekshirish (ixtiyoriy, lekin foydali)
+    if (/\d/.test(name)) {
+      toast.error("Ism-sharifda raqam qatnashishi mumkin emas");
+      return false;
+    }
+
+    if (position.length < 3) {
+      toast.error("Lavozim maydoni to'g'ri kiritilishi shart");
+      return false;
+    }
+
+    // Telefon to'liq kiritilganini tekshirish (+998 90 123 45 67 -> 13 ta belgi)
+    if (phone.length > 4 && phone.length < 13) {
+      toast.error("Telefon raqam to'liq kiritilmagan");
+      return false;
+    }
+
+    // Email validatsiyasi (faqat kiritilgan bo'lsa tekshiradi)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (form.email.trim() !== "" && !emailRegex.test(form.email)) {
+      toast.error("Noto'g'ri elektron pochta formati kiritildi");
+      return false;
+    }
+
+    return true; // Hamma narsa joyida
+  };
+
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!form.name.trim() || !form.position.trim()) {
-      return toast.error("Ism va lavozim majburiy!");
-    }
+
+    // Validatsiyadan o'ta olmasa formani yuborishni to'xtatamiz
+    if (!validateForm()) return;
 
     try {
       setSaving(true);
       const fd = new FormData();
 
-      fd.append("name", form.name);
-      fd.append("position", form.position);
+      // Ma'lumotlarni tozalab (trim qilib) yuboramiz
+      fd.append("name", form.name.trim());
+      fd.append("position", form.position.trim());
       fd.append("role", form.role);
-      fd.append("phone", form.phone || "");
-      fd.append("email", form.email || "");
-      fd.append("reception", form.reception || "");
-      fd.append("bio", form.bio || "");
-      fd.append("education", form.education || "");
-      fd.append("experience", form.experience || "");
+      // Telefon nomerini bo'shliqlarsiz yuboramiz (+998901234567)
+      fd.append("phone", form.phone.replace(/\s/g, ""));
+      fd.append("email", form.email.trim().toLowerCase());
+      fd.append("reception", form.reception.trim());
+      fd.append("bio", form.bio.trim());
+      fd.append("education", form.education.trim());
+      fd.append("experience", form.experience || "0");
       fd.append("iconKey", form.iconKey || "Users");
       fd.append("order", form.order || 0);
 
+      // Backend API faylni "file" nomi bilan qabul qiladi (Universal standart)
       if (form.image) {
-        // ⚠️ BACKEND KUTAYOTGAN NOM: Odatda management uchun 'image' ishlatiladi.
-        // Agar server rasm qabul qilmayotgan bo'lsa, bu yerda "image" so'zini "file" ga o'zgartiring.
-        fd.append("image", form.image);
+        fd.append("file", form.image);
       }
 
       if (form._id) {
-        // ⚠️ MUHIM: Tahrirlash xatoligining oldini olish uchun aniq PUT so'rovi
         await axiosClient.put(`/management/${form._id}`, fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -191,12 +244,12 @@ export default function AdminManagement() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Ushbu rahbarni o'chirishni tasdiqlaysizmi?")) return;
+    if (!window.confirm("Ushbu rahbarni o'chirishni qat'iy tasdiqlaysizmi?"))
+      return;
     try {
       setDeleting(true);
-      // ⚠️ O'chirishni ham axiosClient orqali to'g'ridan-to'g'ri bajaramiz
       await axiosClient.delete(`/management/${form._id}`);
-      toast.success("Rahbar tizimdan o'chirildi");
+      toast.success("Rahbar tizimdan butunlay o'chirildi");
       setIsOpen(false);
       await fetchAll();
     } catch (error) {
@@ -212,12 +265,13 @@ export default function AdminManagement() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-400 blur opacity-20 rounded-full"></div>
-          <h1 className="relative text-3xl font-black uppercase italic tracking-tighter text-slate-900 bg-slate-50">
+          <div className="absolute -inset-1 bg-gradient-to-r"></div>
+          <h1 className="relative text-3xl font-black uppercase italic text-slate-900 bg-slate-50">
             Rahbariyat <span className="text-emerald-500">Boshqaruvi</span>
           </h1>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
-            Jamoa a'zolarini boshqarish paneli
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-2">
+            <Shield size={14} className="text-emerald-500" /> Xavfsiz boshqaruv
+            paneli
           </p>
         </div>
         <button
@@ -287,16 +341,13 @@ export default function AdminManagement() {
                 <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 absolute top-8 left-8">
                   Profil Surati
                 </div>
+
                 <label className="relative group w-56 h-56 rounded-[2rem] bg-white border-2 border-dashed border-slate-200 shadow-sm overflow-hidden flex items-center justify-center cursor-pointer hover:border-emerald-400 transition-all">
                   {preview ? (
                     <img
                       src={preview}
                       alt="Preview"
                       className="w-full h-full object-cover"
-                      onError={(e) =>
-                        (e.target.src =
-                          "https://via.placeholder.com/400?text=Rasm+Xatosi")
-                      }
                     />
                   ) : (
                     <div className="text-center text-slate-300 group-hover:text-emerald-400 transition-colors">
@@ -313,14 +364,17 @@ export default function AdminManagement() {
                     type="file"
                     className="hidden"
                     onChange={handleImageChange}
-                    accept="image/*"
+                    accept="image/jpeg, image/png, image/webp"
                   />
                 </label>
+                <div className="text-[9px] text-slate-400 mt-4 text-center font-medium">
+                  Tavsiya etilgan formatlar: JPG, PNG <br /> Maxsimal hajm: 5MB
+                </div>
 
                 {/* Role Selector */}
-                <div className="mt-12 w-full max-w-xs space-y-3">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
-                    Darajani tanlang
+                <div className="mt-8 w-full max-w-xs space-y-3">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1 flex items-center gap-1">
+                    Daraja <span className="text-rose-500">*</span>
                   </div>
                   {ROLES.map((role) => (
                     <button
@@ -358,6 +412,19 @@ export default function AdminManagement() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-hide">
+                  {/* Security Alert */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-[1.5rem] p-4 flex items-start gap-3">
+                    <AlertCircle
+                      size={18}
+                      className="text-amber-500 mt-0.5 flex-shrink-0"
+                    />
+                    <p className="text-[10px] font-medium text-amber-700 uppercase tracking-wide leading-relaxed">
+                      Diqqat: Ushbu ma'lumotlar ommaviy sahifada barcha uchun
+                      ko'rinadigan bo'ladi. Matnlar va aloqa vositalari
+                      to'g'riligini tasdiqlang.
+                    </p>
+                  </div>
+
                   {/* Mobil uchun rasm yuklash */}
                   <div className="md:hidden flex justify-center mb-6">
                     <label className="relative w-32 h-32 rounded-[1.5rem] bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer">
@@ -380,23 +447,28 @@ export default function AdminManagement() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <Input
-                      label="F.I.SH (Majburiy)"
+                      label="F.I.SH (Ism Sharif)"
                       value={form.name}
                       onChange={(v) => setForm({ ...form, name: v })}
-                      placeholder="Ism Familiya"
+                      placeholder="Asosiy familiya va ism..."
                       full
+                      required
                     />
                     <Input
-                      label="Lavozim (Majburiy)"
+                      label="Lavozim"
                       value={form.position}
                       onChange={(v) => setForm({ ...form, position: v })}
-                      placeholder="Direktor..."
+                      placeholder="Tashkilotdagi lavozimi..."
                       full
+                      required
                     />
 
                     <div className="col-span-1">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
-                        Telefon
+                      <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1 flex items-center gap-1">
+                        Telefon{" "}
+                        <span className="text-emerald-500 text-[8px]">
+                          (ixtiyoriy)
+                        </span>
                       </div>
                       <input
                         type="tel"
@@ -407,12 +479,24 @@ export default function AdminManagement() {
                       />
                     </div>
 
-                    <Input
-                      label="Email"
-                      value={form.email}
-                      onChange={(v) => setForm({ ...form, email: v })}
-                      placeholder="@texnikum.uz"
-                    />
+                    <div className="col-span-1">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1 flex items-center gap-1">
+                        Email{" "}
+                        <span className="text-emerald-500 text-[8px]">
+                          (ixtiyoriy)
+                        </span>
+                      </div>
+                      <input
+                        type="email"
+                        value={form.email ?? ""}
+                        onChange={(e) =>
+                          setForm({ ...form, email: e.target.value })
+                        }
+                        className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-700"
+                        placeholder="@texnikum.uz"
+                      />
+                    </div>
+
                     <Input
                       label="Qabul Vaqti"
                       value={form.reception}
@@ -489,7 +573,7 @@ export default function AdminManagement() {
                         onChange={(e) =>
                           setForm({ ...form, bio: e.target.value })
                         }
-                        placeholder="Qisqacha ma'lumot..."
+                        placeholder="Qisqacha ma'lumot kiritishingiz mumkin..."
                       />
                     </div>
                   </div>
@@ -502,41 +586,39 @@ export default function AdminManagement() {
                       type="button"
                       onClick={handleDelete}
                       disabled={deleting}
-                      className="text-rose-500 text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-rose-50 px-4 py-3 rounded-xl transition-colors"
+                      className="text-rose-500 text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-rose-50 px-4 py-3 rounded-xl transition-colors mr-auto"
                     >
                       {deleting ? (
                         <Loader2 className="animate-spin" size={16} />
                       ) : (
                         <Trash2 size={16} />
-                      )}
+                      )}{" "}
                       O'chirish
                     </button>
                   ) : (
                     <div />
                   )}
 
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setIsOpen(false)}
-                      className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-white hover:shadow-sm transition-all"
-                    >
-                      Bekor qilish
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={saving || !form.name || !form.position}
-                      className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {saving ? (
-                        <Loader2 className="animate-spin" size={18} />
-                      ) : (
-                        <Save size={18} />
-                      )}
-                      Saqlash
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-white hover:shadow-sm transition-all"
+                  >
+                    Bekor qilish
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={saving}
+                    className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-600/20 active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? (
+                      <Loader2 className="animate-spin" size={18} />
+                    ) : (
+                      <Save size={18} />
+                    )}
+                    Saqlash
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -603,9 +685,6 @@ const LeaderCard = ({ leader, onClick }) => {
             src={imgUrl}
             alt={leader.name}
             className="w-full h-full object-cover"
-            onError={(e) =>
-              (e.target.src = "https://via.placeholder.com/150?text=Avatar")
-            }
           />
         ) : (
           <Icon className="text-slate-300" size={32} />
@@ -642,10 +721,14 @@ const Input = ({
   placeholder,
   full,
   type = "text",
+  required = false,
 }) => (
   <div className={full ? "col-span-2" : ""}>
-    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
-      {label}
+    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1 flex items-center gap-1">
+      {label}{" "}
+      {required && (
+        <span className="text-rose-500 text-[14px] leading-none">*</span>
+      )}
     </div>
     <input
       type={type}
