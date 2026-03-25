@@ -1,6 +1,12 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Sparkles, Play, Code2, Globe } from "lucide-react";
+import {
+  ArrowRight,
+  GraduationCap,
+  Landmark,
+  BookOpen,
+  ChevronRight,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
@@ -13,50 +19,47 @@ const Hero = () => {
     offset: ["start start", "end start"],
   });
 
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+      transition: { staggerChildren: 0.15, delayChildren: 0.1 },
     },
   };
 
-  const textRevealVariants = {
-    hidden: { y: "100%", opacity: 0 },
+  const itemVariants = {
+    hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+      transition: { duration: 0.8, ease: "easeOut" },
     },
   };
 
   return (
-    <section
-      ref={ref}
-      className="relative min-h-[100dvh] flex items-center overflow-hidden bg-slate-950 pt-20 pb-20 md:py-0"
-    >
-      {/* 1. PARALLAX BACKGROUND IMAGE */}
+    <section ref={ref} className="relative min-h-[100dvh] flex items-center">
+      {/* 1. PARALLAX BACKGROUND IMAGE (Rasmiy Bino) */}
       <motion.div style={{ y: backgroundY }} className="absolute inset-0 z-0">
-        {/* Rasm ustidagi gradient - MATN UCHUN CHAP TOMON QORONG'IROQ QILINDI */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/60 to-transparent z-10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 z-10" />
+        {/* Rasmiy to'q ko'k (Navy Blue) gradient overlay */}
+        <div className="absolute inset-0 bg-[#0a1930]/80 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a1930] via-[#0a1930]/80" />
 
-        {/* BU YERGA O'Z RASMINGIZNI QO'YING */}
+        {/* Kollej/Universitet Binosi Rasmi */}
         <img
-          src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop"
-          alt="University Campus"
-          className="w-full h-full object-cover scale-105"
+          src="https://images.unsplash.com/photo-1592280771190-3e2e4d571952?q=80&w=2070&auto=format&fit=crop"
+          alt="Texnikum binosi"
+          className="w-full h-full object-cover grayscale-[20%]"
         />
       </motion.div>
 
       {/* 2. ASOSIY KONTENT */}
       <div className="container mx-auto px-6 relative z-30">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-          {/* CHAP TOMON (Matn) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* CHAP TOMON (Matn va Tugmalar) */}
           <motion.div
             style={{ y: contentY, opacity: contentOpacity }}
             variants={containerVariants}
@@ -64,134 +67,117 @@ const Hero = () => {
             animate="visible"
             className="lg:col-span-7 relative z-20"
           >
-            <div className="mb-8 overflow-hidden">
-              <motion.div variants={textRevealVariants}>
-                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-md text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] shadow-lg">
-                  <Sparkles size={14} className="animate-pulse" />
-                  {t("hero_badge", "KELAJAK KASBLARI")}
-                </div>
-              </motion.div>
-            </div>
-
-            <div className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[0.9] uppercase italic tracking-tighter drop-shadow-2xl">
-              <div className="overflow-hidden pb-2">
-                <motion.div variants={textRevealVariants}>
-                  {t("hero_title_1", "ZAMONAVIY")}
-                </motion.div>
+            {/* Rasmiy Badge */}
+            <motion.div variants={itemVariants} className="mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white/10 border border-white/20 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-widest">
+                <Landmark size={14} className="text-amber-400" />
+                {t("hero_badge", "O'ZBEKISTON RESPUBLIKASI TA'LIM VAZIRLIGI")}
               </div>
-              <div className="overflow-hidden text-emerald-500 pb-2">
-                <motion.div
-                  variants={textRevealVariants}
-                  className="flex items-center gap-4"
-                >
+            </motion.div>
+
+            {/* Sarlavha (Salobatli tipografiya) */}
+            <motion.div variants={itemVariants} className="mb-8">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.1] uppercase">
+                {t("hero_title_1", "ZAMONAVIY")}{" "}
+                <span className="text-amber-400 block mt-2">
                   {t("hero_title_2", "TEXNIKUM")}
-                  <div className="h-2 w-16 md:w-32 bg-emerald-500 rounded-full hidden sm:block shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
-                </motion.div>
-              </div>
-              <div className="overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-slate-200 to-slate-400 pb-2">
-                <motion.div variants={textRevealVariants}>
+                </span>
+                <span className="text-slate-300 block mt-2">
                   {t("hero_title_3", "TA'LIMI")}
-                </motion.div>
-              </div>
-            </div>
+                </span>
+              </h1>
+            </motion.div>
 
-            <motion.div
-              variants={textRevealVariants}
-              className="overflow-hidden"
-            >
-              <p className="text-lg md:text-xl text-slate-200 font-medium max-w-xl leading-relaxed border-l-2 border-emerald-500/50 pl-6 drop-shadow-md">
+            <motion.div variants={itemVariants} className="mb-10">
+              <p className="text-base md:text-lg text-slate-300 font-medium max-w-xl leading-relaxed border-l-4 border-amber-400 pl-6">
                 {t(
                   "hero_description",
-                  "Amaliy ko'nikmalar va xalqaro darajadagi mutaxassislar tayyorlash maskani.",
+                  "Nazariy bilimlar va amaliy ko'nikmalarni o'zida jamlagan, xalqaro ta'lim standartlari asosidagi davlat ta'lim muassasasi.",
                 )}
               </p>
             </motion.div>
-          </motion.div>
 
-          {/* O'NG TOMON (Icon va Tugmalar) */}
-          <motion.div
-            style={{ y: contentY, opacity: contentOpacity }}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 1 }}
-            className="lg:col-span-5 flex flex-col items-center lg:items-end gap-12 mt-10 lg:mt-0 relative z-20"
-          >
-            {/* 3D Icon Container */}
-            <div className="relative w-full h-[250px] md:h-[300px] flex items-center justify-center lg:justify-end pr-0 lg:pr-10">
-              <div className="relative flex items-center justify-center w-32 h-32">
-                <div className="absolute inset-0 bg-emerald-500/60 rounded-full blur-[70px] animate-pulse" />
-                <div className="relative z-10 w-28 h-28 bg-slate-900/40 backdrop-blur-xl border border-white/20 rounded-[2.5rem] flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-                  <Globe className="text-emerald-400 w-12 h-12 animate-pulse drop-shadow-[0_0_15px_rgba(52,211,153,0.8)]" />
-                </div>
-              </div>
-
-              {/* Orbitallar */}
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                className="absolute w-[280px] h-[280px] md:w-[320px] md:h-[320px] border border-emerald-400/20 rounded-full border-dashed"
-                style={{ top: "50%", left: "50%", x: "-50%", y: "-50%" }}
-              />
-
-              {/* Floating Code Icon */}
-              <motion.div
-                animate={{ y: [-10, 10, -10] }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="absolute top-0 right-0 md:right-10 bg-slate-900/60 p-5 rounded-3xl border border-white/10 backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.5)]"
-              >
-                <Code2 className="text-blue-400 w-8 h-8 drop-shadow-[0_0_10px_rgba(96,165,250,0.8)]" />
-              </motion.div>
-            </div>
-
-            {/* Tugmalar */}
-            <div className="flex flex-col gap-4 w-full sm:w-auto items-center lg:items-end pr-0 lg:pr-10">
+            {/* Tugmalar (Jiddiy va rasmiy) */}
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row gap-4"
+            >
               <Link
                 to="/apply"
-                className="group relative overflow-hidden inline-flex items-center justify-center gap-3 bg-emerald-600 text-white px-10 py-5 rounded-2xl font-black text-[12px] uppercase tracking-widest transition-all hover:bg-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.4)] active:scale-95 min-w-[280px]"
+                className="inline-flex items-center justify-center gap-3 bg-emerald-600 text-white px-8 py-4 rounded-lg font-bold text-xs uppercase tracking-widest transition-all hover:bg-emerald-700 shadow-lg active:scale-95"
               >
-                <span className="relative z-10 flex items-center gap-2 italic">
-                  {t("hero_btn_apply", "QABULGA YOZILISH")}{" "}
-                  <ArrowRight size={16} />
-                </span>
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <GraduationCap size={18} />
+                {t("hero_btn_apply", "QABULGA YOZILISH")}
               </Link>
 
               <Link
-                to="/video-tour"
-                className="inline-flex items-center justify-center gap-3 px-10 py-5 rounded-2xl bg-slate-900/40 border border-white/20 backdrop-blur-md text-white font-black text-[12px] uppercase tracking-widest hover:bg-slate-900/60 transition-all active:scale-95 group min-w-[280px]"
+                to="/about"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-lg bg-transparent border border-white/30 text-white font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
               >
-                <div className="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Play size={12} fill="currentColor" className="ml-1" />
-                </div>
-                <span className="italic">
-                  {t("hero_video_btn", "VIDEO SAYOHAT")}
-                </span>
+                {t("hero_video_btn", "BATAFSIL MA'LUMOT")}
+                <ChevronRight size={16} />
               </Link>
+            </motion.div>
+          </motion.div>
+
+          {/* O'NG TOMON (Rasmiy Informatsion Kartalar) */}
+          <motion.div
+            style={{ y: contentY, opacity: contentOpacity }}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.6, duration: 1 }}
+            className="lg:col-span-5 flex flex-col gap-6 mt-8 lg:mt-0 relative z-20"
+          >
+            {/* Karta 1 */}
+            <div className="bg-[#0f2341]/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl flex items-start gap-5 transform transition-transform hover:-translate-y-1">
+              <div className="w-14 h-14 shrink-0 bg-emerald-500/20 rounded-xl flex items-center justify-center border border-emerald-500/30">
+                <Landmark className="text-emerald-400 w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg mb-2 uppercase tracking-wide">
+                  Davlat Namunasidagi Diplom
+                </h3>
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  Bitiruvchilarga O'zbekiston Respublikasi hududida to'liq tan
+                  olinadigan rasmiy hujjat beriladi.
+                </p>
+              </div>
+            </div>
+
+            {/* Karta 2 */}
+            <div className="bg-[#0f2341]/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl flex items-start gap-5 transform transition-transform hover:-translate-y-1">
+              <div className="w-14 h-14 shrink-0 bg-amber-500/20 rounded-xl flex items-center justify-center border border-amber-500/30">
+                <BookOpen className="text-amber-400 w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg mb-2 uppercase tracking-wide">
+                  Zamonaviy O'quv Dasturlari
+                </h3>
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  Bozor talablariga moslashtirilgan o'quv reja va amaliyotga
+                  asoslangan ta'lim tizimi.
+                </p>
+              </div>
+            </div>
+
+            {/* Karta 3 (Kichikroq Statistika) */}
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="bg-[#0f2341]/60 backdrop-blur-sm border border-white/5 p-5 rounded-xl text-center">
+                <div className="text-2xl font-black text-white mb-1">15+</div>
+                <div className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+                  Mutaxassisliklar
+                </div>
+              </div>
+              <div className="bg-[#0f2341]/60 backdrop-blur-sm border border-white/5 p-5 rounded-xl text-center">
+                <div className="text-2xl font-black text-white mb-1">100%</div>
+                <div className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+                  Amaliy Ta'lim
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
       </div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        style={{ opacity: contentOpacity }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 hidden md:flex flex-col items-center gap-4"
-      >
-        <span
-          className="text-[9px] font-black text-white/50 uppercase tracking-[0.5em]"
-          style={{ writingMode: "vertical-rl" }}
-        >
-          SCROLL
-        </span>
-        <div className="w-[2px] h-16 bg-gradient-to-b from-emerald-500 to-transparent rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-      </motion.div>
     </section>
   );
 };

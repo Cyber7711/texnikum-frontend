@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Newspaper, ArrowUpRight, Clock, Zap } from "lucide-react";
+import { Newspaper, ArrowUpRight, Clock, Globe } from "lucide-react";
 
 const GlobalNews = ({ isPage = false }) => {
   const [news, setNews] = useState([]);
@@ -31,32 +31,34 @@ const GlobalNews = ({ isPage = false }) => {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#0a1930]/10 border-t-emerald-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    // isPage bo'lsa section va bg-fafbfc'ni olib tashlaymiz
+    // isPage bo'lsa section va bg-slate-50 ni olib tashlaymiz
     <div
-      className={`${!isPage ? "py-24 bg-[#fafbfc] overflow-hidden relative" : "w-full"}`}
+      className={`${!isPage ? "py-24 bg-slate-50 overflow-hidden relative" : "w-full"}`}
     >
       <div className={`${!isPage ? "container mx-auto px-6" : "w-full"}`}>
         {/* HEADER: Sahifada bo'lsa bu qism yashiriladi */}
         {!isPage && (
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 relative z-10">
             <div className="max-w-2xl">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[10px] font-black uppercase tracking-[0.3em] mb-6"
+                viewport={{ once: true }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border border-slate-200 text-[#0a1930] text-[10px] font-bold uppercase tracking-widest mb-6 shadow-sm"
               >
-                <Zap size={14} className="fill-emerald-600" /> DUNYO VA
-                O'ZBEKISTON
+                <Globe size={14} className="text-emerald-600" />
+                DUNYO VA O'ZBEKISTON
               </motion.div>
-              <h2 className="text-4xl md:text-6xl font-black text-slate-900 uppercase italic tracking-tighter leading-none">
-                Tashqi <span className="text-emerald-500">Yangiliklar</span>
+              <h2 className="text-3xl md:text-5xl font-extrabold text-[#0a1930] uppercase tracking-tight leading-tight">
+                Tashqi <span className="text-emerald-600">Yangiliklar</span>
               </h2>
+              <div className="h-1 w-20 bg-amber-400 mt-6 rounded-full"></div>
             </div>
           </div>
         )}
@@ -73,36 +75,39 @@ const GlobalNews = ({ isPage = false }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="group relative bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-500 flex flex-col h-full overflow-hidden"
+              className="group relative bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col h-full overflow-hidden block"
             >
-              {/* Bezaklar */}
-              <div className="absolute top-0 right-0 -mr-12 -mt-12 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors duration-700" />
+              {/* Rasmiy Hover effekti - Tepadan tushadigan yashil chiziq */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-emerald-600 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out" />
 
               <div className="flex justify-between items-start mb-6 relative z-10">
-                <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
-                  <Newspaper size={24} />
+                <div className="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 border border-slate-100 group-hover:bg-[#0a1930] group-hover:text-amber-400 group-hover:border-[#0a1930] transition-all duration-500 shadow-sm">
+                  <Newspaper size={22} strokeWidth={1.5} />
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[10px] italic uppercase tracking-widest">
-                  <Clock size={12} className="text-blue-500" />
+                <div className="flex items-center gap-1.5 text-slate-500 font-bold text-[10px] uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-md border border-slate-100">
+                  <Clock size={12} className="text-emerald-600" />
                   {new Date(item.pubDate).toLocaleDateString("uz-UZ")}
                 </div>
               </div>
 
-              <h3 className="text-lg font-black text-slate-800 uppercase italic leading-tight mb-4 group-hover:text-blue-600 transition-colors line-clamp-3 relative z-10">
+              {/* Sarlavha: Salobatli va aniq (italic olib tashlandi) */}
+              <h3 className="text-lg font-bold text-[#0a1930] leading-snug mb-4 group-hover:text-emerald-600 transition-colors line-clamp-3 relative z-10">
                 {item.title}
               </h3>
 
-              <p className="text-slate-500 text-xs font-medium leading-relaxed italic line-clamp-4 mb-8 opacity-70 group-hover:opacity-100 transition-opacity relative z-10">
+              {/* Matn: O'qilishi oson font */}
+              <p className="text-slate-600 text-sm font-medium leading-relaxed line-clamp-3 mb-8 relative z-10">
                 {item.description.replace(/<[^>]*>?/gm, "").substring(0, 150)}
                 ...
               </p>
 
-              <div className="mt-auto flex items-center justify-between pt-6 border-t border-slate-50 relative z-10">
-                <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">
-                  Batafsil manbada
+              {/* Tugma qismi */}
+              <div className="mt-auto flex items-center justify-between pt-6 border-t border-slate-100 relative z-10">
+                <span className="text-[10px] font-bold text-[#0a1930] uppercase tracking-widest group-hover:text-emerald-600 transition-colors">
+                  BATAFSIL O'QISH
                 </span>
-                <div className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all duration-500">
-                  <ArrowUpRight size={16} />
+                <div className="w-8 h-8 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all duration-300 transform group-hover:-translate-y-1 group-hover:translate-x-1">
+                  <ArrowUpRight size={16} strokeWidth={2} />
                 </div>
               </div>
             </motion.a>

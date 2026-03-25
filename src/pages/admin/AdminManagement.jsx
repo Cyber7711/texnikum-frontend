@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-
 import {
   Plus,
   Trash2,
@@ -15,83 +14,56 @@ import {
   Shield,
   Briefcase,
   Pencil,
+  AlertCircle,
 } from "lucide-react";
-
 import { toast } from "react-hot-toast";
-
 import { motion, AnimatePresence } from "framer-motion";
-
 import managementApi from "../../api/managementApi";
-
-import axiosClient from "../../api/axiosClient"; // ⚠️ PUT so'rovlar uchun to'g'ridan-to'g'ri chaqiramiz
+import axiosClient from "../../api/axiosClient";
 
 const ICONS = [
   { key: "Users", label: "Kadrlar", Icon: Users },
-
   { key: "Building2", label: "Hisobchi", Icon: Building2 },
-
   { key: "BadgeCheck", label: "Yurist", Icon: BadgeCheck },
-
   { key: "FileText", label: "Matbuot", Icon: FileText },
 ];
 
 const ROLES = [
   { key: "director", label: "Direktor", Icon: Crown },
-
   { key: "deputy", label: "O‘rinbosar", Icon: Shield },
-
   { key: "head", label: "Bo‘lim boshlig‘i", Icon: Briefcase },
 ];
 
 const emptyForm = {
   _id: null,
-
   name: "",
-
   position: "",
-
   role: "deputy",
-
   phone: "",
-
   email: "",
-
   reception: "",
-
   bio: "",
-
   education: "",
-
   experience: "",
-
   iconKey: "Users",
-
   order: 0,
-
   image: null,
 };
 
 export default function AdminManagement() {
   const [list, setList] = useState([]);
-
   const [loading, setLoading] = useState(true);
 
   const [isOpen, setIsOpen] = useState(false);
-
   const [form, setForm] = useState(emptyForm);
-
   const [saving, setSaving] = useState(false);
-
   const [deleting, setDeleting] = useState(false);
-
   const [preview, setPreview] = useState(null);
 
   const fetchAll = async () => {
     try {
       setLoading(true);
-
       const res = await managementApi.getAll();
-
       setList(res.data?.data || []);
     } catch (e) {
       toast.error("Ma'lumotlarni yuklab bo'lmadi");
@@ -107,181 +79,159 @@ export default function AdminManagement() {
   const grouped = useMemo(() => {
     return {
       director: list.filter((x) => x.role === "director"),
-
       deputies: list
-
         .filter((x) => x.role === "deputy")
-
         .sort((a, b) => a.order - b.order),
-
       heads: list
-
         .filter((x) => x.role === "head")
-
         .sort((a, b) => a.order - b.order),
     };
   }, [list]);
 
   const handleOpenCreate = () => {
     setForm(emptyForm);
-
     setPreview(null);
-
     setIsOpen(true);
   };
 
   const handleOpenEdit = (leader) => {
     setForm({
       ...emptyForm,
-
       ...leader,
-
       phone: leader.phone || "",
-
       email: leader.email || "",
-
       reception: leader.reception || "",
-
       bio: leader.bio || "",
-
       education: leader.education || "",
-
       image: null,
     });
 
-    // ⚠️ BARChA EHTIMOLIY URL KALITLARNI TEKSHIRAMIZ
-
     const existingImage = leader.imageUrl || leader.photoUrl || leader.image;
-
     setPreview(
       existingImage && existingImage.includes("http") ? existingImage : null,
     );
-
     setIsOpen(true);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-
     if (file) {
+      if (!file.type.startsWith("image/")) {
+        return toast.error("Faqat rasm fayllari (JPG, PNG) yuklash mumkin!");
+      }
       if (file.size > 5 * 1024 * 1024) {
         return toast.error("Rasm hajmi 5MB dan oshmasligi kerak!");
       }
-
       setForm({ ...form, image: file });
-
       setPreview(URL.createObjectURL(file));
     }
   };
 
   const handlePhoneChange = (e) => {
-    const val = e.target.value;
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 0 && !value.startsWith("998")) value = "998" + value;
+    value = value.substring(0, 12);
 
-    if (/^[0-9+\s()-]*$/.test(val)) setForm({ ...form, phone: val });
+    let formatted = value.length > 0 ? "+" : "";
+    if (value.length > 0) formatted += value.substring(0, 3);
+    if (value.length > 3) formatted += " " + value.substring(3, 5);
+    if (value.length > 5) formatted += " " + value.substring(5, 8);
+    if (value.length > 8) formatted += " " + value.substring(8, 10);
+    if (value.length > 10) formatted += " " + value.substring(10, 12);
+
+    setForm({ ...form, phone: formatted });
   };
 
   const handleNumberChange = (e, field) => {
     const val = e.target.value;
-
     if (val === "") {
       setForm({ ...form, [field]: "" });
-
       return;
     }
-
     const num = parseInt(val, 10);
-
     if (!isNaN(num) && num >= 0) {
       setForm({ ...form, [field]: num });
     }
   };
 
+  // ==========================================
+  // ASOSIY TUZATILGAN JOY - SUBMIT LOGIKASI
+  // ==========================================
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
 
-    if (!form.name.trim() || !form.position.trim()) {
-      return toast.error("Ism va lavozim majburiy!");
+    if (!form.name.trim() || form.name.trim().length < 3) {
+      return toast.error("Iltimos, ism-sharifni to'g'ri kiriting");
+    }
+    if (!form.position.trim()) {
+      return toast.error("Lavozim maydoni to'ldirilishi shart");
     }
 
     try {
       setSaving(true);
-
       const fd = new FormData();
 
-      fd.append("name", form.name);
-
-      fd.append("position", form.position);
-
+      fd.append("name", form.name.trim());
+      fd.append("position", form.position.trim());
       fd.append("role", form.role);
-
-      fd.append("phone", form.phone || "");
-
-      fd.append("email", form.email || "");
-
-      fd.append("reception", form.reception || "");
-
-      fd.append("bio", form.bio || "");
-
-      fd.append("education", form.education || "");
-
-      fd.append("experience", form.experience || "");
-
+      fd.append("phone", form.phone ? form.phone.replace(/\s/g, "") : "");
+      fd.append("email", form.email ? form.email.trim().toLowerCase() : "");
+      fd.append("reception", form.reception ? form.reception.trim() : "");
+      fd.append("bio", form.bio ? form.bio.trim() : "");
+      fd.append("education", form.education ? form.education.trim() : "");
+      fd.append("experience", form.experience || "0");
       fd.append("iconKey", form.iconKey || "Users");
-
       fd.append("order", form.order || 0);
 
+      // ⚠️ 1-TUZATISH: Backend "image" deb kutyapti, "file" qabul qilmaydi!
       if (form.image) {
-        // ⚠️ BACKEND KUTAYOTGAN NOM: Odatda management uchun 'image' ishlatiladi.
-
-        // Agar server rasm qabul qilmayotgan bo'lsa, bu yerda "image" so'zini "file" ga o'zgartiring.
-
         fd.append("image", form.image);
       }
 
       if (form._id) {
-        // ⚠️ MUHIM: Tahrirlash xatoligining oldini olish uchun aniq PUT so'rovi
-
-        await axiosClient.put(`/management/${form._id}`, fd, {
+        // ⚠️ 2-TUZATISH: Tahrirlash uchun "put" emas "patch" ishlatamiz!
+        await axiosClient.patch(`/management/${form._id}`, fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-
         toast.success("Muvaffaqiyatli yangilandi");
       } else {
-        await managementApi.create(fd);
-
-        toast.success("Yangi rahbar qo'shildi");
+        // ⚠️ 3-TUZATISH: Yangi yaratishni to'g'ridan-to'g'ri axiosClient da yuboramiz
+        await axiosClient.post("/management", fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        toast.success("Yangi rahbar muvaffaqiyatli qo'shildi!");
       }
 
       setIsOpen(false);
-
       await fetchAll();
     } catch (error) {
-      console.error("Management Submit Error:", error);
+      console.error(
+        "Management Submit Error Response:",
+        error.response?.data || error,
+      );
 
-      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
+      // Aniq xatoni ushlash (Backenddan kelayotgan mesajni yuzaga chiqaramiz)
+      const errorMsg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Ma'lumotni kiritishda kutilmagan xatolik";
+      toast.error(`XATO: ${errorMsg}`);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Ushbu rahbarni o'chirishni tasdiqlaysizmi?")) return;
-
+    if (!window.confirm("Ushbu rahbarni o'chirishni qat'iy tasdiqlaysizmi?"))
+      return;
     try {
       setDeleting(true);
-
-      // ⚠️ O'chirishni ham axiosClient orqali to'g'ridan-to'g'ri bajaramiz
-
       await axiosClient.delete(`/management/${form._id}`);
-
-      toast.success("Rahbar tizimdan o'chirildi");
-
+      toast.success("Rahbar tizimdan butunlay o'chirildi");
       setIsOpen(false);
-
       await fetchAll();
     } catch (error) {
       console.error("Delete Error:", error);
-
       toast.error("O'chirishda xatolik yuz berdi");
     } finally {
       setDeleting(false);
@@ -291,20 +241,16 @@ export default function AdminManagement() {
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-10 font-sans text-slate-900 pb-24">
       {/* HEADER */}
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-400 blur opacity-20 rounded-full"></div>
-
-          <h1 className="relative text-3xl font-black uppercase italic tracking-tighter text-slate-900 bg-slate-50">
+          <div className="absolute -inset-1 bg-gradient-to-r"></div>
+          <h1 className="relative text-3xl font-black uppercase italic text-slate-900 bg-slate-50">
             Rahbariyat <span className="text-emerald-500">Boshqaruvi</span>
           </h1>
-
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
-            Jamoa a'zolarini boshqarish paneli
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-2">
+            <Shield size={14} className="text-emerald-500" /> Boshqaruv paneli
           </p>
         </div>
-
         <button
           onClick={handleOpenCreate}
           className="group flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-[1.5rem] font-black uppercase tracking-widest text-xs hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95"
@@ -318,11 +264,9 @@ export default function AdminManagement() {
       </div>
 
       {/* LIST CONTENT */}
-
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <Loader2 className="animate-spin text-emerald-500" size={48} />
-
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
             Ma'lumotlar yuklanmoqda...
           </span>
@@ -335,14 +279,12 @@ export default function AdminManagement() {
             items={grouped.director}
             onEdit={handleOpenEdit}
           />
-
           <Section
             title="O'rinbosarlar"
             roleKey="deputy"
             items={grouped.deputies}
             onEdit={handleOpenEdit}
           />
-
           <Section
             title="Bo'lim Boshliqlari"
             roleKey="head"
@@ -354,7 +296,6 @@ export default function AdminManagement() {
       )}
 
       {/* MODAL */}
-
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -373,7 +314,6 @@ export default function AdminManagement() {
               className="relative w-full max-w-5xl h-[90vh] md:h-[85vh] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row"
             >
               {/* LEFT SIDE (Image Selection) */}
-
               <div className="hidden md:flex md:w-5/12 bg-slate-50 p-8 border-r border-slate-100 flex-col items-center justify-center relative">
                 <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 absolute top-8 left-8">
                   Profil Surati
@@ -385,40 +325,34 @@ export default function AdminManagement() {
                       src={preview}
                       alt="Preview"
                       className="w-full h-full object-cover"
-                      onError={(e) =>
-                        (e.target.src =
-                          "https://via.placeholder.com/400?text=Rasm+Xatosi")
-                      }
                     />
                   ) : (
                     <div className="text-center text-slate-300 group-hover:text-emerald-400 transition-colors">
                       <ImageIcon size={64} className="mx-auto mb-2" />
-
                       <span className="text-[10px] font-black uppercase">
                         Rasm yuklash
                       </span>
                     </div>
                   )}
-
                   <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
                     <Pencil size={24} className="text-white" />
                   </div>
-
                   <input
                     type="file"
                     className="hidden"
                     onChange={handleImageChange}
-                    accept="image/*"
+                    accept="image/jpeg, image/png, image/webp"
                   />
                 </label>
+                <div className="text-[9px] text-slate-400 mt-4 text-center font-medium">
+                  Tavsiya etilgan formatlar: JPG, PNG <br /> Maxsimal hajm: 5MB
+                </div>
 
                 {/* Role Selector */}
-
-                <div className="mt-12 w-full max-w-xs space-y-3">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
-                    Darajani tanlang
+                <div className="mt-8 w-full max-w-xs space-y-3">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1 flex items-center gap-1">
+                    Daraja <span className="text-rose-500">*</span>
                   </div>
-
                   {ROLES.map((role) => (
                     <button
                       key={role.key}
@@ -431,7 +365,6 @@ export default function AdminManagement() {
                       }`}
                     >
                       <role.Icon size={18} />
-
                       <span className="text-xs font-bold uppercase tracking-wide">
                         {role.label}
                       </span>
@@ -441,13 +374,11 @@ export default function AdminManagement() {
               </div>
 
               {/* RIGHT SIDE (Form Data) */}
-
               <div className="flex-1 flex flex-col h-full bg-white relative">
                 <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
                   <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-800">
                     {form._id ? "Ma'lumotlarni tahrirlash" : "Yangi Rahbar"}
                   </h2>
-
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
@@ -458,8 +389,18 @@ export default function AdminManagement() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-hide">
-                  {/* Mobil uchun rasm yuklash */}
+                  <div className="bg-sky-50 border border-sky-200 rounded-[1.5rem] p-4 flex items-start gap-3">
+                    <AlertCircle
+                      size={18}
+                      className="text-sky-500 mt-0.5 flex-shrink-0"
+                    />
+                    <p className="text-[10px] font-medium text-sky-700 uppercase tracking-wide leading-relaxed">
+                      Eslatma: Qo'shilayotgan xodim ma'lumotlari ommaviy
+                      sahifada ko'rinadi. Maydonlarni to'ldirish ixtiyoriy.
+                    </p>
+                  </div>
 
+                  {/* Mobil uchun rasm yuklash */}
                   <div className="md:hidden flex justify-center mb-6">
                     <label className="relative w-32 h-32 rounded-[1.5rem] bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center cursor-pointer">
                       {preview ? (
@@ -470,7 +411,6 @@ export default function AdminManagement() {
                       ) : (
                         <ImageIcon className="text-slate-300" />
                       )}
-
                       <input
                         type="file"
                         className="hidden"
@@ -482,26 +422,26 @@ export default function AdminManagement() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <Input
-                      label="F.I.SH (Majburiy)"
+                      label="F.I.SH (Ism Sharif)"
                       value={form.name}
                       onChange={(v) => setForm({ ...form, name: v })}
-                      placeholder="Ism Familiya"
+                      placeholder="Asosiy familiya va ism..."
                       full
+                      required
                     />
-
                     <Input
-                      label="Lavozim (Majburiy)"
+                      label="Lavozim"
                       value={form.position}
                       onChange={(v) => setForm({ ...form, position: v })}
-                      placeholder="Direktor..."
+                      placeholder="Tashkilotdagi lavozimi..."
                       full
+                      required
                     />
 
                     <div className="col-span-1">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1 flex items-center gap-1">
                         Telefon
                       </div>
-
                       <input
                         type="tel"
                         value={form.phone ?? ""}
@@ -511,12 +451,20 @@ export default function AdminManagement() {
                       />
                     </div>
 
-                    <Input
-                      label="Email"
-                      value={form.email}
-                      onChange={(v) => setForm({ ...form, email: v })}
-                      placeholder="@texnikum.uz"
-                    />
+                    <div className="col-span-1">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1 flex items-center gap-1">
+                        Email
+                      </div>
+                      <input
+                        type="email"
+                        value={form.email ?? ""}
+                        onChange={(e) =>
+                          setForm({ ...form, email: e.target.value })
+                        }
+                        className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-700"
+                        placeholder="@texnikum.uz"
+                      />
+                    </div>
 
                     <Input
                       label="Qabul Vaqti"
@@ -525,7 +473,6 @@ export default function AdminManagement() {
                       placeholder="Dushanba..."
                       full
                     />
-
                     <Input
                       label="Ma'lumoti"
                       value={form.education}
@@ -537,7 +484,6 @@ export default function AdminManagement() {
                       <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
                         Tajriba (Yil)
                       </div>
-
                       <input
                         type="number"
                         min="0"
@@ -551,7 +497,6 @@ export default function AdminManagement() {
                       <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
                         Kengashdagi tartibi
                       </div>
-
                       <input
                         type="number"
                         min="0"
@@ -566,7 +511,6 @@ export default function AdminManagement() {
                         <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
                           Maxsus Icon
                         </div>
-
                         <div className="flex gap-3 flex-wrap">
                           {ICONS.map((icon) => (
                             <button
@@ -592,63 +536,58 @@ export default function AdminManagement() {
                       <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
                         Biografiya
                       </div>
-
                       <textarea
                         className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl outline-none transition-all font-medium text-sm text-slate-700 resize-none h-32"
                         value={form.bio ?? ""}
                         onChange={(e) =>
                           setForm({ ...form, bio: e.target.value })
                         }
-                        placeholder="Qisqacha ma'lumot..."
+                        placeholder="Qisqacha ma'lumot kiritishingiz mumkin..."
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* FOOTER ACTIONS */}
-
                 <div className="p-6 md:p-8 border-t border-slate-100 bg-slate-50 shrink-0 flex items-center justify-end gap-4 rounded-b-[3rem]">
                   {form._id ? (
                     <button
                       type="button"
                       onClick={handleDelete}
                       disabled={deleting}
-                      className="text-rose-500 text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-rose-50 px-4 py-3 rounded-xl transition-colors"
+                      className="text-rose-500 text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-rose-50 px-4 py-3 rounded-xl transition-colors mr-auto"
                     >
                       {deleting ? (
                         <Loader2 className="animate-spin" size={16} />
                       ) : (
                         <Trash2 size={16} />
-                      )}
+                      )}{" "}
                       O'chirish
                     </button>
                   ) : (
                     <div />
                   )}
 
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setIsOpen(false)}
-                      className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-white hover:shadow-sm transition-all"
-                    >
-                      Bekor qilish
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={saving || !form.name || !form.position}
-                      className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {saving ? (
-                        <Loader2 className="animate-spin" size={18} />
-                      ) : (
-                        <Save size={18} />
-                      )}
-                      Saqlash
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-white hover:shadow-sm transition-all"
+                  >
+                    Bekor qilish
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={saving}
+                    className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-600/20 active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? (
+                      <Loader2 className="animate-spin" size={18} />
+                    ) : (
+                      <Save size={18} />
+                    )}
+                    Saqlash
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -660,28 +599,23 @@ export default function AdminManagement() {
 }
 
 // --- SUB COMPONENTS ---
-
 const Section = ({ title, roleKey, items, onEdit, grid }) => {
   const RoleIcon = ROLES.find((r) => r.key === roleKey)?.Icon || Users;
-
   return (
     <div className="bg-white rounded-[2.5rem] border border-slate-100 p-6 md:p-8 shadow-sm">
       <div className="flex items-center gap-4 mb-8">
         <div className="p-4 bg-emerald-50 text-emerald-600 rounded-[1.5rem]">
           <RoleIcon size={24} />
         </div>
-
         <div>
           <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-slate-900">
             {title}
           </h2>
-
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
             {items.length} xodim
           </div>
         </div>
       </div>
-
       {items.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-[2rem] text-slate-400 font-bold text-sm bg-slate-50/50">
           Bu bo'limga hozircha xodim qo'shilmagan
@@ -705,7 +639,6 @@ const Section = ({ title, roleKey, items, onEdit, grid }) => {
 
 const LeaderCard = ({ leader, onClick }) => {
   const imgUrl = leader.imageUrl || leader.photoUrl || null;
-
   const Icon = leader.iconKey
     ? ICONS.find((i) => i.key === leader.iconKey)?.Icon || Users
     : Users;
@@ -729,25 +662,21 @@ const LeaderCard = ({ leader, onClick }) => {
           <Icon className="text-slate-300" size={32} />
         )}
       </div>
-
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between mb-1">
           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 truncate mr-2">
             {leader.position}
           </p>
-
           {leader.order > 0 && (
             <span className="text-[9px] font-bold bg-slate-200 text-slate-500 px-2 py-0.5 rounded-md flex-shrink-0">
               #{leader.order}
             </span>
           )}
         </div>
-
         <h3 className="text-lg font-black text-slate-900 italic truncate">
           {leader.name}
         </h3>
       </div>
-
       <div className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity">
         <div className="p-2 bg-slate-900 text-white rounded-xl shadow-lg">
           <Pencil size={14} />
@@ -759,22 +688,20 @@ const LeaderCard = ({ leader, onClick }) => {
 
 const Input = ({
   label,
-
   value,
-
   onChange,
-
   placeholder,
-
   full,
-
   type = "text",
+  required = false,
 }) => (
   <div className={full ? "col-span-2" : ""}>
-    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
-      {label}
+    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1 flex items-center gap-1">
+      {label}{" "}
+      {required && (
+        <span className="text-rose-500 text-[14px] leading-none">*</span>
+      )}
     </div>
-
     <input
       type={type}
       className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"

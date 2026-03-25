@@ -16,11 +16,11 @@ const Logo = () => {
           <span className="text-xl font-black tracking-tighter text-white">
             POLITEXNIKUM
           </span>
-          <span className="text-xl font-black text-emerald-400">3</span>
+          <span className="text-xl font-black text-emerald-400">3-SON</span>
         </div>
         <div className="h-[2px] w-full bg-gradient-to-r from-emerald-500 to-transparent rounded-full" />
         <span className="text-[9px] font-bold text-emerald-100/60 uppercase tracking-[0.25em] mt-1">
-          Agro-Texnologiyalar
+          Agro-Sanoat kolleji
         </span>
       </div>
     </div>
