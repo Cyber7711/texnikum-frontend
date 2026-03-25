@@ -39,7 +39,7 @@ const emptyForm = {
   name: "",
   position: "",
   role: "deputy",
-  phone: "+998",
+  phone: "",
   email: "",
   reception: "",
   bio: "",
@@ -98,7 +98,7 @@ export default function AdminManagement() {
     setForm({
       ...emptyForm,
       ...leader,
-      phone: leader.phone || "+998",
+      phone: leader.phone || "",
       email: leader.email || "",
       reception: leader.reception || "",
       bio: leader.bio || "",
@@ -116,11 +116,9 @@ export default function AdminManagement() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Fayl formatini tekshirish (faqat rasm)
       if (!file.type.startsWith("image/")) {
         return toast.error("Faqat rasm fayllari (JPG, PNG) yuklash mumkin!");
       }
-      // Fayl hajmini tekshirish (Max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         return toast.error("Rasm hajmi 5MB dan oshmasligi kerak!");
       }
@@ -131,6 +129,13 @@ export default function AdminManagement() {
 
   const handlePhoneChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
+
+    // Agar umuman o'chirib tashlasa, bo'sh qoldiramiz
+    if (value.length === 0) {
+      setForm({ ...form, phone: "" });
+      return;
+    }
+
     if (!value.startsWith("998")) value = "998" + value;
     value = value.substring(0, 12);
 
@@ -156,79 +161,78 @@ export default function AdminManagement() {
     }
   };
 
-  // --- QATTIQ VALIDATSIYA (SECURITY & DATA INTEGRITY) ---
+  // --- VALIDATSIYA (YUMSHATILGAN VA TO'G'RILANGAN) ---
   const validateForm = () => {
     const name = form.name.trim();
     const position = form.position.trim();
-    const phone = form.phone.replace(/\s/g, "");
+    const phone = form.phone ? form.phone.replace(/\s/g, "") : "";
+    const email = form.email ? form.email.trim() : "";
 
-    if (name.length < 5) {
-      toast.error("Iltimos, to'liq ism-sharifni kiriting (kamida 5 ta harf)");
-      return false;
-    }
-
-    // Ismda raqamlar qatnashmasligini tekshirish (ixtiyoriy, lekin foydali)
-    if (/\d/.test(name)) {
-      toast.error("Ism-sharifda raqam qatnashishi mumkin emas");
+    if (name.length < 3) {
+      toast.error("F.I.SH kamida 3 ta belgidan iborat bo'lishi kerak");
       return false;
     }
 
     if (position.length < 3) {
-      toast.error("Lavozim maydoni to'g'ri kiritilishi shart");
+      toast.error("Lavozim to'g'ri kiritilishi shart");
       return false;
     }
 
-    // Telefon to'liq kiritilganini tekshirish (+998 90 123 45 67 -> 13 ta belgi)
-    if (phone.length > 4 && phone.length < 13) {
-      toast.error("Telefon raqam to'liq kiritilmagan");
+    // Agar telefon kiritilgan bo'lsa, to'liqligini tekshiramiz
+    if (phone.length > 0 && phone !== "+998" && phone.length < 13) {
+      toast.error("Telefon raqam to'liq emas");
       return false;
     }
 
-    // Email validatsiyasi (faqat kiritilgan bo'lsa tekshiradi)
+    // Email kiritilgan bo'lsa tekshiradi
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (form.email.trim() !== "" && !emailRegex.test(form.email)) {
-      toast.error("Noto'g'ri elektron pochta formati kiritildi");
+    if (email.length > 0 && !emailRegex.test(email)) {
+      toast.error("Noto'g'ri elektron pochta formati");
       return false;
     }
 
-    return true; // Hamma narsa joyida
+    return true;
   };
 
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
 
-    // Validatsiyadan o'ta olmasa formani yuborishni to'xtatamiz
     if (!validateForm()) return;
 
     try {
       setSaving(true);
       const fd = new FormData();
 
-      // Ma'lumotlarni tozalab (trim qilib) yuboramiz
       fd.append("name", form.name.trim());
       fd.append("position", form.position.trim());
       fd.append("role", form.role);
-      // Telefon nomerini bo'shliqlarsiz yuboramiz (+998901234567)
-      fd.append("phone", form.phone.replace(/\s/g, ""));
-      fd.append("email", form.email.trim().toLowerCase());
-      fd.append("reception", form.reception.trim());
-      fd.append("bio", form.bio.trim());
-      fd.append("education", form.education.trim());
+
+      // Bo'sh bo'lsa yubormaymiz (orqa tomonda Unique error bermasligi uchun)
+      const cleanPhone = form.phone ? form.phone.replace(/\s/g, "") : "";
+      if (cleanPhone === "+998") fd.append("phone", "");
+      else fd.append("phone", cleanPhone);
+
+      fd.append("email", form.email ? form.email.trim().toLowerCase() : "");
+      fd.append("reception", form.reception ? form.reception.trim() : "");
+      fd.append("bio", form.bio ? form.bio.trim() : "");
+      fd.append("education", form.education ? form.education.trim() : "");
       fd.append("experience", form.experience || "0");
       fd.append("iconKey", form.iconKey || "Users");
       fd.append("order", form.order || 0);
 
-      // Backend API faylni "file" nomi bilan qabul qiladi (Universal standart)
+      // Backend API rasm nomi
       if (form.image) {
         fd.append("file", form.image);
       }
 
       if (form._id) {
+        // Tahrirlash (PATCH/PUT)
         await axiosClient.put(`/management/${form._id}`, fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Muvaffaqiyatli yangilandi");
       } else {
+        // Yangi qo'shish
         await managementApi.create(fd);
         toast.success("Yangi rahbar qo'shildi");
       }
@@ -348,6 +352,10 @@ export default function AdminManagement() {
                       src={preview}
                       alt="Preview"
                       className="w-full h-full object-cover"
+                      onError={(e) =>
+                        (e.target.src =
+                          "https://via.placeholder.com/400?text=Rasm+Xatosi")
+                      }
                     />
                   ) : (
                     <div className="text-center text-slate-300 group-hover:text-emerald-400 transition-colors">
@@ -412,7 +420,6 @@ export default function AdminManagement() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-hide">
-                  {/* Security Alert */}
                   <div className="bg-amber-50 border border-amber-200 rounded-[1.5rem] p-4 flex items-start gap-3">
                     <AlertCircle
                       size={18}
@@ -609,7 +616,7 @@ export default function AdminManagement() {
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    disabled={saving}
+                    disabled={saving || !form.name || !form.position}
                     className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-600/20 active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? (
@@ -685,6 +692,9 @@ const LeaderCard = ({ leader, onClick }) => {
             src={imgUrl}
             alt={leader.name}
             className="w-full h-full object-cover"
+            onError={(e) =>
+              (e.target.src = "https://via.placeholder.com/150?text=Avatar")
+            }
           />
         ) : (
           <Icon className="text-slate-300" size={32} />
