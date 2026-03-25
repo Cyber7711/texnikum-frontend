@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Phone, Mail, Music, Eye, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { AnimatePresence } from "framer-motion";
 
 const SYMBOLS = {
   flag: "https://president.uz/uz/pages/symbols?menu_id=12",
