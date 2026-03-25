@@ -28,7 +28,22 @@ import SectionHeader from "../../components/ui/SectionHeader";
 
 const ICON_MAP = { Users, Building2, BadgeCheck, FileText };
 
-// 3D Tilt Card Component
+// ⚠️ UNIVERSAL IMAGE HELPER: Barcha ehtimoliy backend maydonlarini tekshiradi
+const getLeaderImage = (leader) => {
+  if (!leader) return null;
+  const url =
+    leader.imageUrl || leader.photoUrl || leader.image || leader.photo;
+
+  // Agar URL bo'lsa uni qaytaramiz
+  if (url && url.includes("http")) return url;
+
+  // Agar yo'q bo'lsa (yoki kelmasa), avtomatik chiroyli Avatar yasaladi
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    leader.name || "User",
+  )}&background=0f172a&color=34d399&size=512`;
+};
+
+// --- 3D Tilt Card Component ---
 const TiltCard = ({ children, className, onClick }) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -64,7 +79,7 @@ const TiltCard = ({ children, className, onClick }) => {
   );
 };
 
-// Tree Connectors
+// --- Tree Connectors ---
 const OrgConnector = ({ type }) => {
   if (type === "vertical") {
     return (
@@ -87,12 +102,12 @@ const OrgConnector = ({ type }) => {
   return null;
 };
 
-// Leader Card UI
+// --- Leader Card UI ---
 const LeaderCard = ({ leader, variant = "standard", t, onOpen }) => {
   const isMain = variant === "director";
   const isSmall = variant === "head";
 
-  const imageSrc = leader?.imageUrl || null;
+  const imageSrc = getLeaderImage(leader);
   const Icon = leader?.iconKey ? ICON_MAP[leader.iconKey] || User : User;
 
   return (
@@ -131,6 +146,9 @@ const LeaderCard = ({ leader, variant = "standard", t, onOpen }) => {
               alt={leader?.name}
               className="w-full h-full object-cover"
               loading="lazy"
+              onError={(e) => {
+                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(leader.name || "U")}&background=0f172a&color=34d399`;
+              }}
             />
           ) : (
             <Icon
@@ -186,10 +204,10 @@ const LeaderCard = ({ leader, variant = "standard", t, onOpen }) => {
   );
 };
 
-// Advanced Profile Modal
+// --- Advanced Profile Modal ---
 const ProfileModal = ({ leader, onClose }) => {
   if (!leader) return null;
-  const imageSrc = leader?.imageUrl || null;
+  const imageSrc = getLeaderImage(leader);
 
   return (
     <motion.div
@@ -212,7 +230,7 @@ const ProfileModal = ({ leader, onClose }) => {
             <img
               src={imageSrc}
               alt={leader?.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50">
@@ -338,7 +356,7 @@ const ProfileModal = ({ leader, onClose }) => {
   );
 };
 
-// Main Page Component
+// --- Main Page Component ---
 const Management = () => {
   const { t } = useTranslation();
   const [selectedLeader, setSelectedLeader] = useState(null);

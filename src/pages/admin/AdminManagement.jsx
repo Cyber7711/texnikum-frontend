@@ -18,6 +18,7 @@ import {
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import managementApi from "../../api/managementApi";
+import axiosClient from "../../api/axiosClient"; // ⚠️ PUT so'rovlar uchun to'g'ridan-to'g'ri chaqiramiz
 
 const ICONS = [
   { key: "Users", label: "Kadrlar", Icon: Users },
@@ -101,16 +102,23 @@ export default function AdminManagement() {
       reception: leader.reception || "",
       bio: leader.bio || "",
       education: leader.education || "",
-      image: null, // Rasm o'zgarsa yangisi tushadi
+      image: null,
     });
-    // BEVOSITA SUPABASE URL ISHLATILADI
-    setPreview(leader.imageUrl || null);
+
+    // ⚠️ BARChA EHTIMOLIY URL KALITLARNI TEKSHIRAMIZ
+    const existingImage = leader.imageUrl || leader.photoUrl || leader.image;
+    setPreview(
+      existingImage && existingImage.includes("http") ? existingImage : null,
+    );
     setIsOpen(true);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        return toast.error("Rasm hajmi 5MB dan oshmasligi kerak!");
+      }
       setForm({ ...form, image: file });
       setPreview(URL.createObjectURL(file));
     }
@@ -155,13 +163,17 @@ export default function AdminManagement() {
       fd.append("iconKey", form.iconKey || "Users");
       fd.append("order", form.order || 0);
 
-      // Backend API faylni "file" nomi bilan qabul qiladi
       if (form.image) {
-        fd.append("file", form.image);
+        // ⚠️ BACKEND KUTAYOTGAN NOM: Odatda management uchun 'image' ishlatiladi.
+        // Agar server rasm qabul qilmayotgan bo'lsa, bu yerda "image" so'zini "file" ga o'zgartiring.
+        fd.append("image", form.image);
       }
 
       if (form._id) {
-        await managementApi.update(form._id, fd);
+        // ⚠️ MUHIM: Tahrirlash xatoligining oldini olish uchun aniq PUT so'rovi
+        await axiosClient.put(`/management/${form._id}`, fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         toast.success("Muvaffaqiyatli yangilandi");
       } else {
         await managementApi.create(fd);
@@ -170,8 +182,9 @@ export default function AdminManagement() {
 
       setIsOpen(false);
       await fetchAll();
-    } catch (e) {
-      toast.error(e.response?.data?.message || "Xatolik yuz berdi");
+    } catch (error) {
+      console.error("Management Submit Error:", error);
+      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
     } finally {
       setSaving(false);
     }
@@ -181,11 +194,13 @@ export default function AdminManagement() {
     if (!window.confirm("Ushbu rahbarni o'chirishni tasdiqlaysizmi?")) return;
     try {
       setDeleting(true);
-      await managementApi.remove(form._id);
+      // ⚠️ O'chirishni ham axiosClient orqali to'g'ridan-to'g'ri bajaramiz
+      await axiosClient.delete(`/management/${form._id}`);
       toast.success("Rahbar tizimdan o'chirildi");
       setIsOpen(false);
       await fetchAll();
-    } catch (e) {
+    } catch (error) {
+      console.error("Delete Error:", error);
       toast.error("O'chirishda xatolik yuz berdi");
     } finally {
       setDeleting(false);
@@ -278,6 +293,10 @@ export default function AdminManagement() {
                       src={preview}
                       alt="Preview"
                       className="w-full h-full object-cover"
+                      onError={(e) =>
+                        (e.target.src =
+                          "https://via.placeholder.com/400?text=Rasm+Xatosi")
+                      }
                     />
                   ) : (
                     <div className="text-center text-slate-300 group-hover:text-emerald-400 transition-colors">
@@ -306,6 +325,7 @@ export default function AdminManagement() {
                   {ROLES.map((role) => (
                     <button
                       key={role.key}
+                      type="button"
                       onClick={() => setForm({ ...form, role: role.key })}
                       className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
                         form.role === role.key
@@ -329,6 +349,7 @@ export default function AdminManagement() {
                     {form._id ? "Ma'lumotlarni tahrirlash" : "Yangi Rahbar"}
                   </h2>
                   <button
+                    type="button"
                     onClick={() => setIsOpen(false)}
                     className="p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full transition-colors"
                   >
@@ -475,7 +496,7 @@ export default function AdminManagement() {
                 </div>
 
                 {/* FOOTER ACTIONS */}
-                <div className="p-6 border-t border-slate-100 flex items-center justify-between bg-white shrink-0 z-20">
+                <div className="p-6 md:p-8 border-t border-slate-100 bg-slate-50 shrink-0 flex items-center justify-end gap-4 rounded-b-[3rem]">
                   {form._id ? (
                     <button
                       type="button"
@@ -487,7 +508,7 @@ export default function AdminManagement() {
                         <Loader2 className="animate-spin" size={16} />
                       ) : (
                         <Trash2 size={16} />
-                      )}{" "}
+                      )}
                       O'chirish
                     </button>
                   ) : (
@@ -498,7 +519,7 @@ export default function AdminManagement() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-colors"
+                      className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-white hover:shadow-sm transition-all"
                     >
                       Bekor qilish
                     </button>
@@ -506,13 +527,13 @@ export default function AdminManagement() {
                       type="button"
                       onClick={handleSubmit}
                       disabled={saving || !form.name || !form.position}
-                      className="px-8 py-4 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest hover:bg-emerald-600 shadow-xl flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95"
+                      className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {saving ? (
-                        <Loader2 className="animate-spin" size={16} />
+                        <Loader2 className="animate-spin" size={18} />
                       ) : (
-                        <Save size={16} />
-                      )}{" "}
+                        <Save size={18} />
+                      )}
                       Saqlash
                     </button>
                   </div>
@@ -566,7 +587,7 @@ const Section = ({ title, roleKey, items, onEdit, grid }) => {
 };
 
 const LeaderCard = ({ leader, onClick }) => {
-  const imgUrl = leader.imageUrl || null;
+  const imgUrl = leader.imageUrl || leader.photoUrl || null;
   const Icon = leader.iconKey
     ? ICONS.find((i) => i.key === leader.iconKey)?.Icon || Users
     : Users;
@@ -582,6 +603,9 @@ const LeaderCard = ({ leader, onClick }) => {
             src={imgUrl}
             alt={leader.name}
             className="w-full h-full object-cover"
+            onError={(e) =>
+              (e.target.src = "https://via.placeholder.com/150?text=Avatar")
+            }
           />
         ) : (
           <Icon className="text-slate-300" size={32} />
