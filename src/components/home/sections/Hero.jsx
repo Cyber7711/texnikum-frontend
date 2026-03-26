@@ -111,7 +111,7 @@ const Hero = () => {
               </Link>
 
               <Link
-                to="/about"
+                to="/video-tour"
                 className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-lg bg-transparent border border-white/30 text-white font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
               >
                 {t("hero_video_btn", "BATAFSIL MA'LUMOT")}

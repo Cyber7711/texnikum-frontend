@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axiosClient from "../../api/axiosClient";
 import {
   FileText,
@@ -8,21 +8,22 @@ import {
   Calendar,
   Loader2,
   Filter,
-  ArrowRight,
-  ShieldCheck,
+  Landmark,
+  FileArchive,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
+// Rasmiy hujjat turiga qarab ikonka va rang tanlash
 const getFileIcon = (type = "") => {
   const fileType = type.toLowerCase();
   if (fileType.includes("pdf"))
-    return <FileText className="text-rose-500" size={28} />;
-  if (fileType.includes("doc"))
-    return <FileText className="text-blue-500" size={28} />;
-  if (fileType.includes("xls"))
-    return <FileText className="text-emerald-500" size={28} />;
-  return <File className="text-slate-400" size={28} />;
+    return <FileText className="text-rose-600" size={24} />;
+  if (fileType.includes("doc") || fileType.includes("docx"))
+    return <FileText className="text-blue-600" size={24} />;
+  if (fileType.includes("xls") || fileType.includes("xlsx"))
+    return <FileText className="text-emerald-600" size={24} />;
+  return <File className="text-slate-500" size={24} />;
 };
 
 const Documents = () => {
@@ -35,6 +36,7 @@ const Documents = () => {
   useEffect(() => {
     const fetchDocs = async () => {
       try {
+        setLoading(true);
         const res = await axiosClient.get("/doc");
         const data = res.data?.data || res.data;
         setDocuments(Array.isArray(data) ? data : []);
@@ -45,180 +47,216 @@ const Documents = () => {
       }
     };
     fetchDocs();
+    window.scrollTo(0, 0);
   }, []);
 
   const categories = [
-    { id: "all", label: t("doc_cat_all") || "Barchasi" },
-    { id: "nizom", label: t("doc_cat_nizom") || "Nizomlar" },
-    { id: "qaror", label: t("doc_cat_qaror") || "Qarorlar" },
-    { id: "buyruq", label: t("doc_cat_buyruq") || "Buyruqlar" },
-    { id: "metodik", label: t("doc_cat_metodik") || "Metodik" },
+    { id: "all", label: t("doc_cat_all", "Barchasi") },
+    { id: "nizom", label: t("doc_cat_nizom", "Nizomlar") },
+    { id: "qaror", label: t("doc_cat_qaror", "Qarorlar") },
+    { id: "buyruq", label: t("doc_cat_buyruq", "Buyruqlar") },
+    { id: "metodik", label: t("doc_cat_metodik", "Metodik Qo'llanmalar") },
   ];
 
-  const filteredDocs = Array.isArray(documents)
-    ? documents.filter((doc) => {
-        const matchesCategory =
-          activeCategory === "all" || doc.category === activeCategory;
-        const matchesSearch = doc.title
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase());
-        return matchesCategory && matchesSearch;
-      })
-    : [];
+  const filteredDocs = useMemo(() => {
+    if (!Array.isArray(documents)) return [];
+    return documents.filter((doc) => {
+      const matchesCategory =
+        activeCategory === "all" || doc.category === activeCategory;
+      const matchesSearch = (doc.title || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [documents, activeCategory, searchTerm]);
 
   return (
-    <div className="bg-[#fafbfc] min-h-screen pb-32">
-      {/* 1. Header Section */}
-      <div className="bg-[#0a1128] pt-32 pb-40 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[100px] rounded-full -mr-40 -mt-40"></div>
-        <div className="container mx-auto px-6 relative z-10 text-center">
+    <div className="bg-[#f8fafc] min-h-screen pb-32 font-sans">
+      {/* 1. Rasmiy Header Section */}
+      <section className="bg-[#0a1930] pt-32 pb-48 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/50 via-[#0a1930] to-[#0a1930] pointer-events-none" />
+
+        <div className="container mx-auto px-6 text-center relative z-10">
           <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest mb-8 backdrop-blur-md shadow-lg"
+          >
+            <Landmark size={14} className="text-amber-400" />
+            {t("doc_badge", "RASMIY HUJJATLAR OMBORI")}
+          </motion.div>
+
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] mb-8"
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white uppercase tracking-tight leading-[1.1] mb-6"
           >
-            <ShieldCheck size={14} />{" "}
-            {t("doc_badge") || "Rasmiy hujjatlar ombori"}
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-4xl md:text-7xl font-black text-white mb-6 uppercase italic tracking-tighter"
-          >
-            {t("doc_page_title") || "Hujjatlar"}{" "}
-            <span className="text-emerald-500 not-italic">Bazasi</span>
+            ME'YORIY <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 drop-shadow-lg">
+              HUJJATLAR BAZASI
+            </span>
           </motion.h1>
+
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-slate-400 max-w-2xl mx-auto font-medium text-lg md:text-xl"
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-slate-400 max-w-2xl mx-auto font-medium text-base md:text-lg"
           >
-            {t("doc_page_subtitle") ||
-              "Texnikum faoliyatiga doir barcha me'yoriy va o'quv hujjatlarini yuklab oling."}
+            {t(
+              "doc_page_subtitle",
+              "Texnikum faoliyatiga doir barcha qarorlar, buyruqlar, nizomlar va o'quv-metodik hujjatlar to'plami.",
+            )}
           </motion.p>
         </div>
-      </div>
+      </section>
 
-      {/* 2. Controls Section */}
-      <div className="container mx-auto px-6 -mt-12 relative z-20">
-        <div className="bg-white p-4 md:p-6 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 flex flex-col lg:flex-row gap-6">
+      {/* 2. Controls & Search Section */}
+      <div className="container mx-auto px-6 -mt-24 relative z-20">
+        <div className="bg-white p-4 md:p-6 rounded-[1.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col lg:flex-row gap-5 max-w-6xl mx-auto">
+          {/* Kategoriyalar Filteri */}
           <div className="flex flex-wrap gap-2 flex-1">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
+                className={`px-5 py-3.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
                   activeCategory === cat.id
-                    ? "bg-emerald-600 text-white shadow-xl shadow-emerald-200"
-                    : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100"
+                    ? "bg-[#0a1930] text-white shadow-md transform scale-[1.02]"
+                    : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200/60"
                 }`}
               >
-                {activeCategory === cat.id && <Filter size={12} />}
+                {activeCategory === cat.id && (
+                  <Filter size={14} className="text-amber-400" />
+                )}
                 {cat.label}
               </button>
             ))}
           </div>
 
-          <div className="relative w-full lg:w-96 group">
-            <Search
-              className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder={t("doc_search_placeholder") || "Qidirish..."}
-              className="w-full pl-14 pr-6 py-4 rounded-2xl border-2 border-slate-50 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none transition-all font-bold text-slate-700 shadow-inner"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          {/* Qidiruv tizimi (TUZATILDI) */}
+          <div className="w-full lg:w-[400px] shrink-0 group">
+            <div className="relative flex items-center w-full h-full">
+              {/* Ikonka markazlashtirildi */}
+              <div className="absolute left-4 text-slate-400 group-focus-within:text-blue-600 transition-colors z-10">
+                <Search size={18} />
+              </div>
+              <input
+                type="text"
+                placeholder={t(
+                  "doc_search_placeholder",
+                  "Hujjat nomini kiriting...",
+                )}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-full min-h-[48px] bg-slate-50 border border-slate-200 text-[#0a1930] text-sm font-bold rounded-xl pl-12 pr-4 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:font-medium placeholder:text-slate-400"
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Grid Section */}
-      <div className="container mx-auto px-6 mt-16">
+      {/* 3. Grid Section (Hujjatlar ro'yxati) */}
+      <div className="container mx-auto px-6 mt-12 max-w-7xl mx-auto">
         {loading ? (
-          <div className="py-40 text-center">
-            <Loader2
-              className="animate-spin text-emerald-600 mx-auto"
-              size={56}
-            />
-            <p className="mt-4 text-slate-400 font-black uppercase tracking-[0.3em] text-xs">
-              Ma'lumotlar yuklanmoqda...
+          <div className="min-h-[40vh] flex flex-col items-center justify-center bg-white rounded-[2rem] shadow-sm border border-slate-100 py-20">
+            <Loader2 className="animate-spin text-blue-600 mb-6" size={48} />
+            <p className="text-xs font-extrabold uppercase tracking-[0.3em] text-slate-400">
+              Hujjatlar bazasi yuklanmoqda...
             </p>
           </div>
         ) : (
           <motion.div
             layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8"
           >
-            <AnimatePresence>
+            {/* SMOOTH ANIMATION UCHUN popLayout qoshildi */}
+            <AnimatePresence mode="popLayout">
               {filteredDocs.map((doc, idx) => (
                 <motion.div
-                  layout
+                  layout // Kartalar joylashuvini silliq o'zgartiradi
                   key={doc._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="group bg-white p-8 rounded-[3rem] shadow-sm hover:shadow-2xl transition-all duration-500 border border-slate-100 flex flex-col h-full relative overflow-hidden"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.9,
+                    transition: { duration: 0.2 },
+                  }}
+                  transition={{
+                    layout: { type: "spring", stiffness: 300, damping: 30 },
+                    duration: 0.4,
+                  }}
+                  className="group bg-white p-6 md:p-8 rounded-[1.5rem] shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgb(10,25,48,0.08)] transition-all duration-300 border border-slate-200 flex flex-col h-full relative overflow-hidden"
                 >
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 transition-all group-hover:scale-[3] duration-700"></div>
+                  {/* Rasmiy Hover Tepadan tushuvchi chiziq */}
+                  <div className="absolute top-0 left-0 w-full h-1 z-20 transition-all duration-500 bg-blue-600 scale-x-0 group-hover:scale-x-100 origin-left" />
 
-                  <div className="flex justify-between items-start mb-8 relative z-10">
-                    <div className="p-5 bg-slate-50 rounded-[1.5rem] text-slate-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-inner">
+                  {/* Header: Ikonka va File turi */}
+                  <div className="flex justify-between items-start mb-6 relative z-10">
+                    <div className="p-3.5 bg-slate-50 rounded-xl text-slate-400 border border-slate-100 group-hover:bg-[#0a1930] transition-colors duration-300 shadow-sm flex items-center justify-center">
                       {getFileIcon(doc.fileType || "pdf")}
                     </div>
-                    <span className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-100">
-                      <File size={12} /> {doc.fileType || "PDF"}
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-500 text-[10px] font-extrabold uppercase tracking-widest rounded-lg border border-slate-200 shadow-sm">
+                      <FileArchive size={12} /> {doc.fileType || "DOC"}
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-black text-slate-800 mb-6 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-[1.2] italic uppercase tracking-tighter relative z-10">
+                  {/* Hujjat Nomi */}
+                  <h3 className="text-lg font-extrabold text-[#0a1930] mb-6 group-hover:text-blue-600 transition-colors line-clamp-3 leading-snug break-words">
                     {doc.title}
                   </h3>
 
-                  <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between relative z-10">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      <Calendar size={14} className="text-emerald-500" />
+                  {/* Bottom: Sana va Yuklab olish tugmasi */}
+                  <div className="mt-auto flex flex-col gap-4">
+                    <div className="pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                      <Calendar size={14} className="text-amber-500" />
                       <span>
-                        {new Date(doc.createdAt).toLocaleDateString()}
+                        {new Date(doc.createdAt).toLocaleDateString("uz-UZ")}
                       </span>
                     </div>
-                  </div>
 
-                  {/* ⚠️ TO'G'RIDAN TO'G'RI URL ISHLATILMOQDA */}
-                  <a
-                    href={doc.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-8 w-full bg-slate-900 text-white font-black text-[10px] uppercase tracking-[0.2em] py-5 rounded-[1.5rem] flex items-center justify-center gap-3 transition-all hover:bg-emerald-600 shadow-xl shadow-slate-900/10 active:scale-95 relative z-10 italic"
-                  >
-                    <Download size={18} />{" "}
-                    {t("doc_download_btn") || "Yuklab olish"}{" "}
-                    <ArrowRight size={14} className="opacity-50" />
-                  </a>
+                    <a
+                      href={doc.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full bg-slate-50 text-[#0a1930] font-extrabold text-[10px] uppercase tracking-[0.2em] py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-blue-600 hover:text-white border border-slate-200 hover:border-blue-600 shadow-sm group/btn"
+                    >
+                      <Download
+                        size={16}
+                        className="group-hover/btn:-translate-y-0.5 transition-transform"
+                      />{" "}
+                      {t("doc_download_btn", "YUKLAB OLISH")}
+                    </a>
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>
           </motion.div>
         )}
 
+        {/* Empty State (Qidiruv natija bermasa) */}
         {!loading && filteredDocs.length === 0 && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-32 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm max-w-4xl mx-auto flex flex-col items-center"
           >
-            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FileText className="text-slate-200" size={48} />
+            <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner border border-slate-100">
+              <FileText
+                className="text-slate-300"
+                size={40}
+                strokeWidth={1.5}
+              />
             </div>
-            <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tighter italic">
+            <h3 className="text-2xl font-extrabold text-[#0a1930] uppercase tracking-wide mb-2">
               Hujjatlar topilmadi
             </h3>
-            <p className="text-slate-400 mt-2 font-bold uppercase text-[10px] tracking-[0.2em]">
-              Qidiruv shartlarini o'zgartirib ko'ring
+            <p className="text-slate-500 font-medium text-sm">
+              Siz qidirayotgan hujjat bazadan topilmadi. Boshqa so'z bilan
+              qidirib ko'ring yoki filterni tozalang.
             </p>
           </motion.div>
         )}

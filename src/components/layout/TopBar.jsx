@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Phone, Mail, Music, Eye, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const SYMBOLS = {
   flag: "https://president.uz/uz/pages/symbols?menu_id=12",
@@ -17,7 +17,6 @@ const TopBar = () => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef(null);
 
-  // Tanlangan til ma'lumotlari (Ingliz tili bayrog'i uchun 'gb' ishlatiladi)
   const languages = [
     { code: "uz", name: "O'zbekcha", flag: "uz" },
     { code: "ru", name: "Русский", flag: "ru" },
@@ -36,7 +35,7 @@ const TopBar = () => {
     });
   };
 
-  // Qora-oq rejimni yoqish/o'chirish (Tailwind'ning "grayscale" klassi orqali)
+  // Qora-oq rejim
   const toggleGrayscale = () => {
     setIsGrayscale(!isGrayscale);
     if (!isGrayscale) {
@@ -46,7 +45,7 @@ const TopBar = () => {
     }
   };
 
-  // Til menyusini tashqariga bosganda yopish
+  // Tashqariga bosganda til menyusi yopilishi
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (langRef.current && !langRef.current.contains(event.target)) {
@@ -63,144 +62,155 @@ const TopBar = () => {
   };
 
   return (
-    <div className="bg-white border-b border-gray-100 py-1.5 hidden lg:block relative z-[1000] transition-all duration-300">
+    <div className="bg-slate-50 border-b border-slate-200 py-1.5 hidden lg:block relative z-[1000] transition-colors duration-300">
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* CHAP TOMON: Ramzlar va Kontaktlar */}
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-4 pr-4 border-r border-gray-200 h-6">
+          <div className="flex items-center gap-4 pr-5 border-r border-slate-300 h-5">
             <SymbolLink
               href={SYMBOLS.flag}
               img="https://flagcdn.com/w40/uz.png"
-              title={t("flag") || "Davlat bayrog'i"}
+              title={t("flag", "Davlat bayrog'i")}
             />
-            {/* ⚠️ TUZATILDI: Gerbning to'g'ridan-to'g'ri va buzilmaydigan SVG formati */}
             <SymbolLink
               href={SYMBOLS.emblem}
               img="https://upload.wikimedia.org/wikipedia/commons/7/77/Emblem_of_Uzbekistan.svg"
-              title={t("emblem") || "Davlat gerbi"}
+              title={t("emblem", "Davlat gerbi")}
             />
             <a
               href={SYMBOLS.anthem}
               target="_blank"
               rel="noreferrer"
-              title={t("anthem") || "Davlat madhiyasi"}
-              className="group p-1 bg-slate-50 hover:bg-blue-50 rounded-md transition-colors"
+              title={t("anthem", "Davlat madhiyasi")}
+              className="group p-1 bg-white border border-slate-200 hover:bg-blue-50 rounded transition-colors"
             >
               <Music
-                size={14}
-                className="text-blue-500 group-hover:text-blue-700 transition-all duration-300"
+                size={12}
+                className="text-blue-600 group-hover:text-blue-800 transition-colors"
               />
             </a>
           </div>
 
-          <div className="flex items-center gap-5 text-[10px] font-black text-slate-800 uppercase tracking-tighter">
+          <div className="flex items-center gap-5 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
             <a
               href="mailto:info@texnikum.uz"
-              className="flex items-center gap-1.5 hover:text-emerald-600 transition group"
+              className="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
             >
-              <Mail size={13} className="text-emerald-500" /> info@texnikum.uz
+              <Mail size={12} className="text-blue-500" /> info@texnikum.uz
             </a>
             <a
-              href="tel:+998711234567"
-              className="flex items-center gap-1.5 hover:text-emerald-600 transition group"
+              href="tel:+998661234567"
+              className="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
             >
-              <Phone size={13} className="text-emerald-500" /> +998 71 123 45 67
+              <Phone size={12} className="text-blue-500" /> +998 66 123 45 67
             </a>
-            <div className="h-3 w-px bg-gray-200"></div>
 
+            <div className="h-3 w-px bg-slate-300"></div>
+
+            {/* Qabul Linki (Rasmiy Amber/Blue rangda pulsatsiya) */}
             <Link
               to="/qabul"
-              className="flex items-center gap-1 text-rose-600 font-black animate-pulse"
+              className="flex items-center gap-1.5 text-amber-600 font-extrabold group"
             >
-              <span className="relative flex h-2 w-2 mr-1">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
               </span>
-              {t("admission") || "QABUL"}
+              <span className="group-hover:text-blue-600 transition-colors">
+                {t("admission", "QABUL 2025")}
+              </span>
             </Link>
           </div>
         </div>
 
-        {/* O'NG TOMON: Shrift, Ko'z va Til */}
-        <div className="flex items-center gap-6 h-6">
-          <div className="flex items-center gap-3 border-r border-gray-100 pr-5 h-full select-none">
+        {/* O'NG TOMON: Maxsus imkoniyatlar va Til */}
+        <div className="flex items-center gap-5 h-5">
+          {/* Shrift o'lchami */}
+          <div className="flex items-center gap-2 border-r border-slate-300 pr-5 h-full select-none">
             <button
               onClick={() => changeFontSize(-5)}
-              className="text-gray-400 hover:text-emerald-600 font-black text-xs px-1 transition-colors"
+              className="text-slate-400 hover:text-blue-600 font-black text-xs px-1"
               title="Kichraytirish"
             >
               A-
             </button>
-            <span className="text-[10px] text-slate-400 font-bold w-10 text-center bg-slate-50 rounded py-0.5">
+            <span className="text-[10px] text-slate-500 font-extrabold w-10 text-center bg-white border border-slate-200 rounded py-0.5">
               {fontSize}%
             </span>
             <button
               onClick={() => changeFontSize(5)}
-              className="text-slate-800 hover:text-emerald-600 font-black text-xs px-1 transition-colors"
+              className="text-slate-700 hover:text-blue-600 font-black text-xs px-1"
               title="Kattalashtirish"
             >
               A+
             </button>
           </div>
 
-          <div className="flex items-center gap-3 border-r border-gray-100 pr-5 h-full">
+          {/* Qora-Oq Rejim */}
+          <div className="flex items-center border-r border-slate-300 pr-5 h-full">
             <button
               onClick={toggleGrayscale}
               title="Zaif ko'ruvchilar uchun"
-              className={`transition-all duration-300 p-1.5 rounded-lg ${
+              className={`transition-all duration-300 px-2 py-1 rounded flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${
                 isGrayscale
-                  ? "text-white bg-slate-800 shadow-inner"
-                  : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
+                  ? "text-white bg-[#0a1930] shadow-inner"
+                  : "text-slate-500 hover:text-blue-600 hover:bg-white border border-transparent hover:border-slate-200"
               }`}
             >
-              <Eye size={16} />
+              <Eye size={12} /> {isGrayscale ? "O'chirish" : "Maxsus rejim"}
             </button>
           </div>
 
-          {/* TIL TANLASH (Dropdown) */}
+          {/* TIL TANLASH (Smooth Dropdown) */}
           <div className="relative h-full flex items-center" ref={langRef}>
             <button
               onClick={() => setIsLangOpen(!isLangOpen)}
-              className="flex items-center gap-2 h-full px-3 hover:bg-slate-50 rounded-lg transition-all"
+              className="flex items-center gap-2 h-full px-2 hover:bg-white rounded border border-transparent hover:border-slate-200 transition-all"
             >
               <img
                 src={`https://flagcdn.com/w20/${currentLang.flag}.png`}
                 className="w-4 h-2.5 object-cover rounded-sm shadow-sm"
                 alt="flag"
               />
-              <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">
+              <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-widest">
                 {currentLang.name}
               </span>
               <ChevronDown
                 size={12}
-                className={`text-slate-400 transition-transform duration-300 ${
-                  isLangOpen ? "rotate-180" : ""
-                }`}
+                className={`text-slate-400 transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`}
               />
             </button>
 
             <AnimatePresence>
               {isLangOpen && (
-                <div className="absolute top-[120%] right-0 w-40 bg-white border border-slate-100 shadow-xl rounded-2xl py-1.5 overflow-hidden z-[9999] origin-top-right transform transition-all animate-in fade-in zoom-in-95 duration-200">
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-[150%] right-0 w-40 bg-white border border-slate-100 shadow-xl rounded-xl py-1.5 overflow-hidden z-[9999]"
+                >
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
                       onClick={() => changeLanguage(lang.code)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition-colors text-left ${
+                      className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-blue-50 transition-colors text-left ${
                         i18n.language === lang.code
-                          ? "text-emerald-600 bg-emerald-50/50"
+                          ? "text-blue-600 bg-blue-50/50"
                           : "text-slate-600"
                       }`}
                     >
                       <img
                         src={`https://flagcdn.com/w20/${lang.flag}.png`}
-                        className="w-5 h-3 object-cover rounded shadow-sm"
+                        className="w-5 h-3 object-cover rounded shadow-sm border border-slate-100"
                         alt={lang.code}
                       />
-                      <span className="text-[11px] font-bold">{lang.name}</span>
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest">
+                        {lang.name}
+                      </span>
                     </button>
                   ))}
-                </div>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
@@ -218,7 +228,11 @@ const SymbolLink = ({ href, img, title }) => (
     title={title}
     className="block transition-transform hover:scale-110 active:scale-95 duration-200"
   >
-    <img src={img} alt={title} className="w-[18px] h-auto object-contain" />
+    <img
+      src={img}
+      alt={title}
+      className="w-[18px] h-[18px] object-contain drop-shadow-sm"
+    />
   </a>
 );
 

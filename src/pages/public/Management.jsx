@@ -4,14 +4,12 @@ import {
   AnimatePresence,
   useScroll,
   useTransform,
-  useSpring,
-  useMotionValue,
 } from "framer-motion";
 import {
   Phone,
   Clock,
   User,
-  ChevronRight,
+  ArrowRight,
   GraduationCap,
   Award,
   Users,
@@ -21,190 +19,141 @@ import {
   X,
   Loader2,
   Mail,
+  Landmark,
+  Briefcase,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import axiosClient from "../../api/axiosClient";
-import SectionHeader from "../../components/ui/SectionHeader";
 
-const ICON_MAP = { Users, Building2, BadgeCheck, FileText };
+const ICON_MAP = { Users, Building2, BadgeCheck, FileText, Briefcase };
 
-// ⚠️ UNIVERSAL IMAGE HELPER: Barcha ehtimoliy backend maydonlarini tekshiradi
+// UNIVERSAL IMAGE HELPER
 const getLeaderImage = (leader) => {
   if (!leader) return null;
   const url =
     leader.imageUrl || leader.photoUrl || leader.image || leader.photo;
-
-  // Agar URL bo'lsa uni qaytaramiz
   if (url && url.includes("http")) return url;
-
-  // Agar yo'q bo'lsa (yoki kelmasa), avtomatik chiroyli Avatar yasaladi
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(
     leader.name || "User",
-  )}&background=0f172a&color=34d399&size=512`;
+  )}&background=0f172a&color=ffffff&size=512`;
 };
 
-// --- 3D Tilt Card Component ---
-const TiltCard = ({ children, className, onClick }) => {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const handleMouseMove = ({ currentTarget, clientX, clientY }) => {
-    const { left, top, width, height } = currentTarget.getBoundingClientRect();
-    mouseX.set(clientX - left - width / 2);
-    mouseY.set(clientY - top - height / 2);
-  };
-
-  const rotateX = useSpring(useTransform(mouseY, [-300, 300], [5, -5]), {
-    stiffness: 150,
-    damping: 20,
-  });
-  const rotateY = useSpring(useTransform(mouseX, [-300, 300], [-5, 5]), {
-    stiffness: 150,
-    damping: 20,
-  });
-
-  return (
-    <motion.div
-      onClick={onClick}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => {
-        mouseX.set(0);
-        mouseY.set(0);
-      }}
-      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-      className={`relative group cursor-pointer ${className}`}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-// --- Tree Connectors ---
-const OrgConnector = ({ type }) => {
-  if (type === "vertical") {
-    return (
-      <div className="flex justify-center h-24 relative z-0">
-        <div className="w-px h-full bg-gradient-to-b from-emerald-500 via-emerald-400 to-slate-200 opacity-50" />
-      </div>
-    );
-  }
-  if (type === "branch") {
-    return (
-      <div className="hidden lg:block relative h-16 w-full -mt-1 mb-8 z-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-8 bg-slate-200" />
-        <div className="absolute top-8 left-[16%] right-[16%] h-px bg-slate-200" />
-        <div className="absolute top-8 left-[16%] w-px h-8 bg-gradient-to-b from-slate-200 to-transparent" />
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 w-px h-8 bg-gradient-to-b from-slate-200 to-transparent" />
-        <div className="absolute top-8 right-[16%] w-px h-8 bg-gradient-to-b from-slate-200 to-transparent" />
-      </div>
-    );
-  }
-  return null;
-};
-
-// --- Leader Card UI ---
+// --- LEADER CARD (Gorizontal Direktor va Ixcham O'rinbosarlar) ---
 const LeaderCard = ({ leader, variant = "standard", t, onOpen }) => {
   const isMain = variant === "director";
-  const isSmall = variant === "head";
-
   const imageSrc = getLeaderImage(leader);
   const Icon = leader?.iconKey ? ICON_MAP[leader.iconKey] || User : User;
 
-  return (
-    <TiltCard
-      onClick={onOpen}
-      className={`
-        bg-white/95 backdrop-blur-xl border border-white/60 shadow-xl overflow-hidden flex flex-col items-center text-center transition-all duration-300
-        ${
-          isMain
-            ? "rounded-[3rem] p-10 md:p-14 w-full max-w-2xl mx-auto z-20 hover:shadow-emerald-500/30 border-t-emerald-100"
-            : isSmall
-              ? "rounded-[2rem] p-6 hover:border-emerald-300 hover:shadow-lg h-full"
-              : "rounded-[2.5rem] p-8 h-full justify-between hover:border-emerald-400 hover:shadow-2xl"
-        }
-      `}
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-transparent to-slate-50/50 opacity-50" />
+  // DIREKTOR UCHUN MAXSUS GORIZONTAL KARTA (Yon tomonlar ochiq qolmasligi uchun)
+  if (isMain) {
+    return (
+      <motion.div
+        whileHover={{ y: -6, scale: 1.01 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="w-full max-w-5xl mx-auto bg-white border border-slate-200 rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(10,25,48,0.08)] flex flex-col md:flex-row cursor-pointer group relative z-10"
+        onClick={onOpen}
+      >
+        <div className="absolute top-0 left-0 w-full md:w-1.5 h-1.5 md:h-full bg-amber-400 z-20" />
 
-      {/* Avatar */}
-      <div className="relative mb-6 group-hover:scale-105 transition-transform duration-500">
-        <div
-          className={`
-            relative overflow-hidden flex items-center justify-center bg-slate-50
-            ${
-              isMain
-                ? "w-48 h-48 shadow-2xl shadow-emerald-900/10 ring-8 ring-white rounded-[2rem]"
-                : isSmall
-                  ? "w-24 h-24 shadow-lg ring-4 ring-white rounded-[1.2rem]"
-                  : "w-36 h-36 shadow-xl ring-4 ring-white rounded-[1.5rem]"
-            }
-          `}
-        >
+        {/* Rasm qismi (Gorizontal kartaning chap qismi) */}
+        <div className="w-full md:w-2/5 aspect-[4/5] md:aspect-auto relative bg-slate-100 overflow-hidden shrink-0">
           {imageSrc ? (
             <img
               src={imageSrc}
               alt={leader?.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
-              onError={(e) => {
-                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(leader.name || "U")}&background=0f172a&color=34d399`;
-              }}
             />
           ) : (
-            <Icon
-              className="text-slate-300"
-              size={isMain ? 60 : isSmall ? 32 : 48}
-            />
+            <div className="absolute inset-0 flex items-center justify-center text-slate-300 bg-slate-100">
+              <Icon size={64} strokeWidth={1} />
+            </div>
           )}
+        </div>
+
+        {/* Ma'lumot qismi (Gorizontal kartaning o'ng qismi) */}
+        <div className="p-8 md:p-12 flex flex-col justify-center flex-grow bg-white relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-bold uppercase tracking-widest mb-4 w-max">
+            <Award size={14} /> {leader?.position || "Tashkilot Rahbari"}
+          </div>
+
+          <h3 className="font-extrabold text-[#0a1930] text-3xl md:text-4xl leading-tight mb-6">
+            {leader?.name || "Ism Familiya"}
+          </h3>
+
+          {leader?.bio && (
+            <p className="text-slate-500 font-medium leading-relaxed line-clamp-3 mb-8">
+              {leader.bio}
+            </p>
+          )}
+
+          <div className="mt-auto inline-flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-[#0a1930] group-hover:text-amber-500 transition-colors w-max">
+            {t("view_profile", "Batafsil ma'lumotni ko'rish")}
+            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-amber-50 transition-colors">
+              <ArrowRight
+                size={16}
+                className="transition-transform transform group-hover:translate-x-1"
+              />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // O'RINBOSAR VA BO'LIM BOSHLIQLARI UCHUN IXCHAM VERTIKAL KARTA
+  return (
+    <motion.div
+      whileHover={{ y: -6, scale: 1.02 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="bg-white border border-slate-100 rounded-[1.25rem] overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgb(10,25,48,0.08)] flex flex-col h-full group cursor-pointer relative z-10 w-full"
+      onClick={onOpen}
+    >
+      <div className="absolute top-0 left-0 w-full h-1 z-20 transition-all duration-500 bg-blue-600 scale-x-0 group-hover:scale-x-100 origin-left" />
+
+      <div className="relative bg-slate-100/50 aspect-[3/4] overflow-hidden p-3 pb-0">
+        <div className="w-full h-full rounded-t-xl overflow-hidden relative border border-slate-200/50 border-b-0">
+          {imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={leader?.name}
+              className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-slate-300 bg-slate-100">
+              <Icon size={48} strokeWidth={1.5} />
+            </div>
+          )}
+          {/* Gradient qoldiramiz (faqat ism o'qilishi uchun), lekin ism va lavozimni pastga oq fonga oldik */}
         </div>
       </div>
 
-      {/* Text Info */}
-      <div className="relative z-10 w-full">
-        <span
-          className={`block font-black uppercase tracking-widest mb-2 truncate px-2 ${
-            isMain ? "text-emerald-600 text-sm" : "text-emerald-500 text-[10px]"
-          }`}
-        >
+      <div className="p-5 flex flex-col flex-grow bg-white relative z-10">
+        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest leading-relaxed line-clamp-2 mb-2">
           {leader?.position || "Lavozim"}
-        </span>
-
-        <h3
-          className={`
-            font-black text-slate-900 leading-tight mb-6 line-clamp-2
-            ${isMain ? "text-4xl md:text-5xl" : isSmall ? "text-lg" : "text-xl"}
-          `}
-        >
-          {leader?.name || "Ism Familya"}
+        </p>
+        <h3 className="font-extrabold text-[#0a1930] text-base leading-snug line-clamp-2 mb-4">
+          {leader?.name || "Ism Familiya"}
         </h3>
 
-        {/* Action Button */}
-        <div className="inline-flex items-center gap-2 group-hover:gap-4 transition-all duration-300">
-          <span
-            className={`
-              font-black text-[10px] uppercase tracking-widest italic
-              ${
-                isMain
-                  ? "px-8 py-4 bg-slate-900 text-white rounded-[1.5rem] hover:bg-emerald-600 transition-colors shadow-lg"
-                  : "text-slate-500 group-hover:text-emerald-600"
-              }
-            `}
-          >
-            {t("view_profile") || "Profilni ko‘rish"}
+        <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-blue-600 transition-colors">
+            {t("view_profile", "Batafsil")}
           </span>
-          {!isMain && (
-            <ChevronRight
+          <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+            <ArrowRight
               size={14}
-              className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="text-slate-400 group-hover:text-blue-600 transition-transform transform group-hover:translate-x-0.5"
             />
-          )}
+          </div>
         </div>
       </div>
-    </TiltCard>
+    </motion.div>
   );
 };
 
-// --- Advanced Profile Modal ---
+// --- PROFILE MODAL (Rasmlarni yopib qo'ymaydigan toza CV ko'rinishida) ---
 const ProfileModal = ({ leader, onClose }) => {
   if (!leader) return null;
   const imageSrc = getLeaderImage(leader);
@@ -215,134 +164,126 @@ const ProfileModal = ({ leader, onClose }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0a1930]/60 backdrop-blur-md"
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 30 }}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 30 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-5xl h-[90vh] md:h-[80vh] bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col md:flex-row relative"
+        className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative max-h-[90vh] border border-white/20"
       >
-        {/* Left Side: Photo Cover */}
-        <div className="relative w-full md:w-5/12 h-64 md:h-full bg-slate-100 group">
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={leader?.name}
-              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-            />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50">
-              <User size={80} strokeWidth={1.5} />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 rounded-full transition-colors z-20"
+        >
+          <X size={20} />
+        </button>
 
-          <div className="absolute bottom-0 left-0 w-full p-8 md:p-10 text-white z-10">
-            <div className="inline-block px-4 py-1.5 bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 rounded-full text-emerald-300 text-[10px] font-black uppercase tracking-widest mb-4">
-              {leader?.position || "Lavozim"}
-            </div>
-            <h2 className="text-3xl md:text-4xl font-black uppercase italic leading-tight drop-shadow-lg">
-              {leader?.name || "—"}
-            </h2>
+        {/* CHAP TOMON: FAQAT RASM (Yozuvlarsiz) */}
+        <div className="w-full md:w-2/5 h-72 md:h-auto bg-slate-50 relative shrink-0 p-4 md:p-6 pb-0 md:pb-6">
+          <div className="w-full h-full rounded-2xl overflow-hidden relative shadow-inner border border-slate-200/50">
+            {imageSrc ? (
+              <img
+                src={imageSrc}
+                alt={leader?.name}
+                className="w-full h-full object-cover object-top"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-100">
+                <User size={80} strokeWidth={1} />
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right Side: Information */}
-        <div className="flex-1 h-full bg-white flex flex-col relative">
-          <button
-            onClick={onClose}
-            className="absolute top-6 right-6 p-3 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full transition-colors z-20"
-          >
-            <X size={20} />
-          </button>
+        {/* O'NG TOMON: BARCHA MA'LUMOTLAR (Oq fonda, toshib ketmaydi) */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-white">
+          <div className="mb-8 border-b border-slate-100 pb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-bold uppercase tracking-widest mb-4">
+              {leader?.position || "Lavozim"}
+            </div>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#0a1930] leading-tight">
+              {leader?.name || "—"}
+            </h2>
+          </div>
 
-          <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-10 pt-20 md:pt-12 scrollbar-hide">
-            {/* Bio Section */}
+          <div className="space-y-8">
             <div>
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <FileText size={16} className="text-emerald-500" /> Biografiya
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <FileText size={16} className="text-blue-600" /> Biografiya
               </h4>
-              <p className="text-base text-slate-700 leading-[1.8] font-medium text-justify">
+              <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">
                 {leader?.bio ||
-                  "Ushbu rahbar haqida qisqacha ma'lumot kiritilmoqda..."}
+                  "Ushbu xodim haqida qo'shimcha ma'lumot kiritilmagan."}
               </p>
             </div>
 
-            {/* Quick Contact Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-6 bg-slate-50 rounded-[1.5rem] border border-transparent hover:border-emerald-200 transition-colors group">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
-                    <Phone size={18} />
-                  </div>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                    Telefon raqam
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <Phone size={14} className="text-slate-400" />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Telefon
                   </span>
                 </div>
-                <p className="text-lg font-bold text-slate-800">
+                <p className="text-sm font-bold text-[#0a1930]">
                   {leader?.phone || "Kiritilmagan"}
                 </p>
               </div>
-
-              <div className="p-6 bg-slate-50 rounded-[1.5rem] border border-transparent hover:border-blue-200 transition-colors group">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-3 bg-blue-100 text-blue-600 rounded-xl group-hover:scale-110 transition-transform">
-                    <Clock size={18} />
-                  </div>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock size={14} className="text-amber-500" />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Qabul vaqti
                   </span>
                 </div>
-                <p className="text-lg font-bold text-slate-800">
+                <p className="text-sm font-bold text-[#0a1930]">
                   {leader?.reception || "Kiritilmagan"}
                 </p>
               </div>
             </div>
 
-            {/* Detailed Info */}
-            <div className="pt-8 border-t border-slate-100 space-y-8">
-              <div className="flex gap-5">
-                <div className="mt-1 p-3 bg-slate-50 rounded-2xl text-slate-400">
-                  <GraduationCap size={24} />
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex items-start gap-4 hover:bg-slate-50 p-2 -ml-2 rounded-xl transition-colors">
+                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                  <GraduationCap size={20} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                    Ma’lumoti
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">
+                    Ma'lumoti
                   </p>
-                  <p className="text-lg font-bold text-slate-800 leading-snug">
+                  <p className="text-sm font-bold text-slate-900 leading-snug">
                     {leader?.education || "Kiritilmagan"}
                   </p>
                 </div>
               </div>
-
-              <div className="flex gap-5">
-                <div className="mt-1 p-3 bg-slate-50 rounded-2xl text-slate-400">
-                  <Award size={24} />
+              <div className="flex items-start gap-4 hover:bg-slate-50 p-2 -ml-2 rounded-xl transition-colors">
+                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                  <Award size={20} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                    Tajribasi
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">
+                    Mehnat tajribasi
                   </p>
-                  <p className="text-lg font-bold text-slate-800 leading-snug">
+                  <p className="text-sm font-bold text-slate-900 leading-snug">
                     {leader?.experience
                       ? `${leader.experience} yil`
                       : "Kiritilmagan"}
                   </p>
                 </div>
               </div>
-
               {leader?.email && (
-                <div className="flex gap-5">
-                  <div className="mt-1 p-3 bg-slate-50 rounded-2xl text-slate-400">
-                    <Mail size={24} />
+                <div className="flex items-start gap-4 hover:bg-slate-50 p-2 -ml-2 rounded-xl transition-colors">
+                  <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                    <Mail size={20} />
                   </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                      Email manzil
+                  <div className="w-full overflow-hidden">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">
+                      Elektron pochta
                     </p>
-                    <p className="text-lg font-bold text-slate-800 leading-snug">
+                    <p className="text-sm font-bold text-slate-900 leading-snug truncate">
                       {leader.email}
                     </p>
                   </div>
@@ -356,15 +297,12 @@ const ProfileModal = ({ leader, onClose }) => {
   );
 };
 
-// --- Main Page Component ---
+// --- MAIN PAGE ---
 const Management = () => {
   const { t } = useTranslation();
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [data, setData] = useState({ director: null, deputies: [], heads: [] });
   const [loading, setLoading] = useState(true);
-
-  const { scrollY } = useScroll();
-  const yGlow = useTransform(scrollY, [0, 600], [0, 220]);
 
   useEffect(() => {
     let alive = true;
@@ -393,11 +331,11 @@ const Management = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fafbfc]">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="animate-spin text-emerald-500" size={48} />
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-            Jamoa yuklanmoqda...
+          <Loader2 className="animate-spin text-blue-600" size={40} />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Yuklanmoqda...
           </p>
         </div>
       </div>
@@ -405,115 +343,120 @@ const Management = () => {
   }
 
   return (
-    <div className="bg-[#fafbfc] min-h-screen pb-40 relative overflow-hidden">
-      {/* Dynamic Background */}
-      <section className="relative pt-40 pb-64 bg-[#0a1128] overflow-hidden">
-        <motion.div
-          style={{ y: yGlow }}
-          className="absolute top-0 right-0 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"
-        />
-        <div className="container mx-auto px-6 relative z-10 text-center">
-          <SectionHeader
-            badge={t("management_badge") || "RAHBARIYAT"}
-            titlePart1={t("management_title_1") || "BIZNING"}
-            titlePart2={t("management_title_2") || "JAMOAMIZ"}
-            center
-            variant="blue"
+    <div className="bg-slate-50 min-h-screen pb-32 font-sans">
+      {/* Rasmiy va Kinematografik Header Section */}
+      <section className="bg-[#0a1930] pt-32 pb-32 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/40 via-[#0a1930] to-[#0a1930] pointer-events-none" />
+
+        <div className="container mx-auto px-6 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-[10px] font-bold uppercase tracking-widest mb-8 backdrop-blur-sm"
+          >
+            <Landmark size={14} className="text-amber-400" />
+            Samarqand viloyati, Pastdarg'om tumaniga qarashli
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white uppercase tracking-tight leading-tight"
+          >
+            3-SON POLITEXNIKA O'QUV MUASSASASI{" "}
+            <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500">
+              RAHBARIYATI
+            </span>
+          </motion.h1>
+
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 80, opacity: 1 }}
+            transition={{ duration: 1, delay: 0.6, ease: "easeInOut" }}
+            className="h-1.5 bg-blue-600 mx-auto mt-10 rounded-full"
           />
         </div>
       </section>
 
-      <div className="container mx-auto px-6 -mt-48 relative z-10">
-        {/* Level 1: Director */}
+      {/* Content Section */}
+      <div className="container mx-auto px-6 -mt-16 relative z-20">
+        {/* RAHBAR (Direktor) */}
         {data.director && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center"
+            transition={{ duration: 0.6 }}
+            className="mb-24"
           >
-            <div className="w-full">
-              <LeaderCard
-                leader={data.director}
-                variant="director"
-                t={t}
-                onOpen={() => setSelectedLeader(data.director)}
-              />
-            </div>
-            {(data.deputies.length > 0 || data.heads.length > 0) && (
-              <OrgConnector type="vertical" />
-            )}
+            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest text-center mb-8 flex items-center justify-center gap-4">
+              <span className="w-12 h-px bg-slate-300"></span> Tashkilot Rahbari{" "}
+              <span className="w-12 h-px bg-slate-300"></span>
+            </h2>
+            <LeaderCard
+              leader={data.director}
+              variant="director"
+              t={t}
+              onOpen={() => setSelectedLeader(data.director)}
+            />
           </motion.div>
         )}
 
-        {/* Level 2: Deputies */}
+        {/* O'RINBOSARLAR */}
         {data.deputies.length > 0 && (
           <motion.div
-            initial="hidden"
-            whileInView="visible"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "-100px" }}
-            variants={{ visible: { transition: { staggerChildren: 0.15 } } }}
+            className="mb-24"
           >
-            <OrgConnector type="branch" />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest text-center mb-8 flex items-center justify-center gap-4">
+              <span className="w-12 h-px bg-slate-300"></span> Direktor
+              O'rinbosarlari <span className="w-12 h-px bg-slate-300"></span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-center max-w-7xl mx-auto">
               {data.deputies.map((dep) => (
-                <motion.div
+                <LeaderCard
                   key={dep._id}
-                  variants={{
-                    hidden: { opacity: 0, y: 30 },
-                    visible: { opacity: 1, y: 0 },
-                  }}
-                >
-                  <LeaderCard
-                    leader={dep}
-                    variant="standard"
-                    t={t}
-                    onOpen={() => setSelectedLeader(dep)}
-                  />
-                </motion.div>
+                  leader={dep}
+                  variant="standard"
+                  t={t}
+                  onOpen={() => setSelectedLeader(dep)}
+                />
               ))}
             </div>
           </motion.div>
         )}
 
-        {/* Level 3: Department Heads */}
+        {/* BO'LIM BOSHLIQLARI */}
         {data.heads.length > 0 && (
-          <>
-            <div className="py-24 flex items-center justify-center opacity-60">
-              <div className="h-px w-16 bg-slate-300" />
-              <span className="mx-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 text-center">
-                {t("heads_of_departments") || "Bo‘lim boshliqlari"}
-              </span>
-              <div className="h-px w-16 bg-slate-300" />
-            </div>
-
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            >
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+          >
+            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest text-center mb-8 flex items-center justify-center gap-4">
+              <span className="w-12 h-px bg-slate-300"></span> Bo'lim va Markaz
+              Boshliqlari <span className="w-12 h-px bg-slate-300"></span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 max-w-7xl mx-auto">
               {data.heads.map((head) => (
-                <motion.div
+                <LeaderCard
                   key={head._id}
-                  variants={{
-                    hidden: { opacity: 0, scale: 0.9 },
-                    visible: { opacity: 1, scale: 1 },
-                  }}
-                >
-                  <LeaderCard
-                    leader={head}
-                    variant="head"
-                    t={t}
-                    onOpen={() => setSelectedLeader(head)}
-                  />
-                </motion.div>
+                  leader={head}
+                  variant="head"
+                  t={t}
+                  onOpen={() => setSelectedLeader(head)}
+                />
               ))}
-            </motion.div>
-          </>
+            </div>
+          </motion.div>
         )}
       </div>
 
+      {/* Modal */}
       <AnimatePresence>
         {selectedLeader && (
           <ProfileModal
