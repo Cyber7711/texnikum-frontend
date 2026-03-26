@@ -20,7 +20,7 @@ import Partners from "../../components/home/Partners";
 import VideoSection from "../../components/home/VideoSection";
 import Footer from "../../components/home/Footer";
 import SEO from "../../components/common/SEO";
-import footerBg from "../../assets/images/university.jpg";
+import footerBg from "../../assets/images/texnikum.png";
 
 // --- ANIMATSIYA KOMPONENTI ---
 const AnimatedSection = ({ children, className = "", delay = 0 }) => {
