@@ -9,6 +9,8 @@ import {
   useTransform,
 } from "framer-motion";
 
+// Ikonkani import qilishni unutmang (Landmark yoki ShieldCheck ishlatsangiz bo'ladi)
+import { Landmark } from "lucide-react";
 // Importlar
 import Hero from "../../components/home/sections/Hero";
 import NewsSection from "../../components/home/sections/NewsSection";
@@ -197,31 +199,42 @@ const Home = () => {
                     <InfoSection bgImage={footerBg} />
                   </AnimatedSection>
 
-                  {/* Silliq Separator */}
-                  <div className="bg-white py-12 flex flex-col items-center justify-center relative overflow-hidden">
-                    <motion.div
-                      initial={{ height: 0 }}
-                      whileInView={{ height: 60 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.8 }}
-                      className="w-[1px] bg-gradient-to-b from-emerald-500 via-slate-200 to-rgba(255,255,255,0)"
-                    />
-                    <div className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-emerald-500 shadow-lg z-10 relative mt-2">
-                      <Zap
-                        size={20}
-                        fill="currentColor"
-                        className="animate-pulse"
-                      />
-                    </div>
+                  {/* ... qolgan kodlar ... */}
+                  <div className="bg-white py-12 flex flex-col items-center justify-center relative overflow-hidden font-sans">
+                    {/* Yuqoridan pastga chiziladigan To'q-ko'k chiziq */}
                     <motion.div
                       initial={{ height: 0 }}
                       whileInView={{ height: 30 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.2 }}
-                      className="w-[1px] bg-gradient-to-t from-slate-200 to-rgba(255,255,255,0) mt-2"
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      className="w-[2px] bg-gradient-to-b from-blue-600 via-blue-400 to-transparent rounded-full"
+                    />
+
+                    {/* Markaziy Ikonka (Tilla rangda, sokin paydo bo'ladi) */}
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                      className="w-14 h-14 bg-white border border-slate-200 rounded-full flex items-center justify-center text-amber-500 shadow-md z-10 relative mt-2"
+                    >
+                      {/* Chaqmoq o'rniga Ta'lim muassasasi belgisi */}
+                      <Landmark size={24} strokeWidth={1.5} />
+                    </motion.div>
+
+                    {/* Pastga davom etadigan chiziq */}
+                    <motion.div
+                      initial={{ height: 0 }}
+                      whileInView={{ height: 40 }}
+                      viewport={{ once: true }}
+                      transition={{
+                        duration: 0.8,
+                        delay: 0.6,
+                        ease: "easeOut",
+                      }}
+                      className="w-[2px] bg-gradient-to-b from-transparent via-slate-300 to-transparent mt-2 rounded-full"
                     />
                   </div>
-
                   <AnimatedSection>
                     <StatsSection stats={stats} bgImage={footerBg} />
                   </AnimatedSection>

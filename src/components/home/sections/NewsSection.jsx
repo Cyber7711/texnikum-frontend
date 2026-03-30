@@ -1,19 +1,19 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Newspaper, LayoutGrid, Globe } from "lucide-react";
+import { ArrowRight, Newspaper, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import NewsCard from "../../../components/ui/NewsCard";
 
 // Rasmiy va toza Skeleton Loader
 const NewsSkeleton = () => (
-  <div className="bg-white rounded-2xl border border-slate-100 p-5 animate-pulse h-[450px] flex flex-col shadow-sm">
-    <div className="w-full h-56 bg-slate-100 rounded-xl mb-6"></div>
+  <div className="bg-white rounded-2xl border border-slate-200 p-5 animate-pulse h-[420px] flex flex-col shadow-sm">
+    <div className="w-full h-52 bg-slate-100 rounded-xl mb-6 border border-slate-50"></div>
     <div className="space-y-4 px-2">
-      <div className="h-3 bg-slate-100 rounded w-1/4"></div>
-      <div className="h-6 bg-slate-100 rounded w-full"></div>
-      <div className="h-6 bg-slate-100 rounded w-3/4"></div>
+      <div className="h-3 bg-slate-200 rounded w-1/4"></div>
+      <div className="h-5 bg-slate-200 rounded w-full"></div>
+      <div className="h-5 bg-slate-200 rounded w-3/4"></div>
     </div>
-    <div className="mt-auto h-4 bg-slate-100 rounded w-1/3 mx-2 mb-2"></div>
+    <div className="mt-auto h-4 bg-slate-200 rounded w-1/3 mx-2 mb-2"></div>
   </div>
 );
 
@@ -31,11 +31,11 @@ const NewsSection = ({ newsList, loading }) => {
   };
 
   return (
-    <section className="py-24 bg-white relative z-30 -mt-10 border-t border-slate-100 shadow-[0_-20px_40px_-20px_rgba(0,0,0,0.05)]">
-      {/* Orqa fon bezagi (Juda yengil va sezilar-sezilmas) */}
-      <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-b from-slate-50/50 to-transparent pointer-events-none -z-10"></div>
+    <section className="py-24 bg-white relative z-30 border-t border-slate-200 font-sans">
+      {/* Orqa fon bezagi (Juda yengil va rasmiy) */}
+      <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-b from-slate-50 to-transparent pointer-events-none -z-10"></div>
 
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-6 max-w-7xl">
         {/* HEADER QISMI */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
           <motion.div
@@ -44,18 +44,22 @@ const NewsSection = ({ newsList, loading }) => {
             viewport={{ once: true }}
             className="max-w-2xl"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-widest mb-4 shadow-sm">
-              <Globe size={14} className="text-emerald-600" />
-              {t("latest_events") || "SO'NGGI VOQEALAR"}
+            {/* Rasmiy Kichik Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 text-[10px] font-extrabold uppercase tracking-widest mb-6 shadow-sm">
+              <Globe size={14} className="text-blue-600" />
+              {t("latest_events", "SO'NGGI XABARLAR")}
             </div>
 
-            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0a1930] uppercase tracking-tight leading-tight">
-              {t("technical_news_title_1") || "TEXNIKUM"}{" "}
-              <span className="text-emerald-600">
-                {t("technical_news_title_2") || "YANGILIKLARI"}
+            {/* Asosiy Sarlavha */}
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#0a1930] uppercase tracking-tight leading-[1.1]">
+              {t("technical_news_title_1", "MUASSASA")}{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">
+                {t("technical_news_title_2", "YANGILIKLARI")}
               </span>
             </h2>
-            <div className="w-20 h-1.5 bg-amber-400 mt-6 rounded-full"></div>
+
+            {/* O'zbekona tilla chiziq */}
+            <div className="w-16 h-1.5 bg-amber-400 mt-6 rounded-full"></div>
           </motion.div>
 
           <motion.div
@@ -66,9 +70,9 @@ const NewsSection = ({ newsList, loading }) => {
           >
             <Link
               to="/news"
-              className="group flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-[#0a1930] text-white font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all duration-300 shadow-md active:scale-95 w-full md:w-auto"
+              className="group flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-blue-600 text-white font-extrabold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-blue-600/20 active:scale-95 w-full md:w-auto"
             >
-              {t("see_all") || "BARCHA YANGILIKLAR"}
+              {t("see_all", "BARCHA YANGILIKLAR")}
               <ArrowRight
                 size={16}
                 className="group-hover:translate-x-1 transition-transform"
@@ -112,16 +116,16 @@ const NewsSection = ({ newsList, loading }) => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="py-20 text-center bg-slate-50 rounded-3xl border border-slate-200 flex flex-col items-center justify-center"
+            className="py-24 text-center bg-slate-50 rounded-3xl border border-slate-200 flex flex-col items-center justify-center shadow-sm"
           >
-            <div className="w-20 h-20 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 text-slate-300">
-              <Newspaper size={32} strokeWidth={1.5} />
+            <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center mb-6 text-blue-600">
+              <Newspaper size={28} strokeWidth={2} />
             </div>
-            <h3 className="text-lg font-bold text-[#0a1930] uppercase tracking-wide px-6">
-              {t("no_news_available") || "Hozircha yangiliklar kiritilmagan"}
+            <h3 className="text-[#0a1930] font-extrabold text-lg uppercase tracking-wide px-6 mb-2">
+              {t("no_news_available", "HOZIRCHA YANGILIKLAR KIRITILMAGAN")}
             </h3>
-            <p className="text-slate-500 mt-2 text-sm font-medium">
-              Yaqin orada yangi ma'lumotlar qo'shiladi
+            <p className="text-slate-500 text-sm font-medium">
+              Yaqin orada tizimga yangi ma'lumotlar qo'shiladi.
             </p>
           </motion.div>
         )}

@@ -344,8 +344,7 @@ const Teachers = () => {
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white uppercase tracking-tight leading-[1.1] mb-6"
           >
-            3-SON POLITEXNIKA O'QUV MUASSASASI{" "}
-            <br className="hidden md:block" />
+            3-SON TEXNIKUMI O'QUV MUASSASASI <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 drop-shadow-lg">
               PROFESSOR-O'QITUVCHILARI
             </span>

@@ -7,7 +7,7 @@ import {
   CreditCard,
   Briefcase,
   ArrowUpRight,
-  Sparkles,
+  Landmark,
   Info,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -29,88 +29,92 @@ const InfoSection = ({ bgImage }) => {
 
   return (
     <div
-      className="relative bg-fixed bg-center bg-cover py-32 overflow-hidden"
+      className="relative bg-fixed bg-center bg-cover py-32 overflow-hidden font-sans border-t border-slate-800"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
-      {/* Orqa fon qatlami (O'zgarmadi) */}
-      <div className="absolute inset-0 bg-black/75 backdrop--[2px]"></div>
+      {/* Orqa fon qatlami (Siz aytgandek o'zgarmadi) */}
+      <div className="absolute inset-0 bg-black/75"></div>
 
-      <div className="relative z-10 container mx-auto px-6">
+      <div className="relative z-10 container mx-auto px-6 max-w-7xl">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24"
         >
-          {/* ABITURIYENTLARGA BLOKI */}
-          <div className="space-y-12">
+          {/* 1. ABITURIYENTLARGA BLOKI (TILLA RANG) */}
+          <div className="space-y-10">
             <motion.div variants={fadeInUp} className="inline-block relative">
-              <span className="flex items-center gap-2 text-emerald-400 text-[10px] font-black uppercase tracking-[0.4em] mb-4">
-                <Sparkles size={14} className="animate-pulse" />{" "}
-                {t("info_applicants_sub") || "Abituriyentlar uchun"}
+              <span className="flex items-center gap-2 text-amber-400 text-[10px] font-extrabold uppercase tracking-[0.3em] mb-4 bg-amber-400/10 inline-flex px-3 py-1.5 rounded-md border border-amber-400/20 shadow-sm">
+                <Landmark size={14} />
+                {t("info_applicants_sub", "Abituriyentlar uchun")}
               </span>
-              <h3 className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter border-l-8 border-emerald-500 pl-8">
-                {t("info_applicants_title")}
+              <h3 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white uppercase tracking-tight border-l-4 border-amber-400 pl-6 leading-tight">
+                {t("info_applicants_title", "QABUL 2026")}
               </h3>
             </motion.div>
 
-            <div className="grid gap-5">
+            <div className="grid gap-4">
               <InfoItem
-                icon={<HelpCircle size={28} />}
-                title={t("info_faq_title")}
-                desc={t("info_faq_desc")}
-                accentColor="emerald"
+                icon={<HelpCircle size={24} />}
+                title={t("info_faq_title", "Ko'p beriladigan savollar")}
+                desc={t("info_faq_desc", "Qabul jarayoni haqida ma'lumot")}
+                accentColor="amber"
                 onClick={() => navigate("/info?tab=faq")}
               />
               <InfoItem
-                icon={<GraduationCap size={28} />}
-                title={t("info_directions_title")}
-                desc={t("info_directions_desc")}
-                accentColor="emerald"
+                icon={<GraduationCap size={24} />}
+                title={t("info_directions_title", "Ta'lim yo'nalishlari")}
+                desc={t("info_directions_desc", "Mavjud kasb-hunar dasturlari")}
+                accentColor="amber"
                 onClick={() => navigate("/info?tab=directions")}
               />
               <InfoItem
-                icon={<FileText size={28} />}
-                title={t("info_rules_title")}
-                desc={t("info_rules_desc")}
-                accentColor="emerald"
+                icon={<FileText size={24} />}
+                title={t("info_rules_title", "Qabul hujjatlari")}
+                desc={t("info_rules_desc", "Kerakli hujjatlar ro'yxati")}
+                accentColor="amber"
                 onClick={() => navigate("/info?tab=docs")}
               />
             </div>
           </div>
 
-          {/* TALABALARGA BLOKI */}
-          <div className="space-y-12 lg:pt-16">
+          {/* 2. TALABALARGA BLOKI (KO'K RANG) */}
+          <div className="space-y-10 lg:pt-16">
             <motion.div variants={fadeInUp} className="inline-block relative">
-              <span className="flex items-center gap-2 text-sky-400 text-[10px] font-black uppercase tracking-[0.4em] mb-4">
-                <Info size={14} /> {t("info_students_sub") || "Talabalar uchun"}
+              <span className="flex items-center gap-2 text-blue-400 text-[10px] font-extrabold uppercase tracking-[0.3em] mb-4 bg-blue-500/10 inline-flex px-3 py-1.5 rounded-md border border-blue-500/20 shadow-sm">
+                <Info size={14} />
+                {t("info_students_sub", "Talabalar uchun")}
               </span>
-              <h3 className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter border-l-8 border-sky-500 pl-8">
-                {t("info_students_title")}
+              <h3 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white uppercase tracking-tight border-l-4 border-blue-500 pl-6 leading-tight">
+                {t("info_students_title", "O'QUV JARAYONI")}
               </h3>
             </motion.div>
 
-            <div className="grid gap-5">
+            <div className="grid gap-4">
               <InfoItem
-                icon={<Monitor size={28} />}
-                title={t("info_lms_title")}
-                desc={t("info_lms_desc")}
-                accentColor="sky"
+                icon={<Monitor size={24} />}
+                title={t("info_lms_title", "Elektron ta'lim")}
+                desc={t("info_lms_desc", "LMS platformasiga kirish")}
+                accentColor="blue"
                 onClick={() => navigate("/info?tab=lms")}
               />
               <InfoItem
-                icon={<CreditCard size={28} />}
-                title={t("info_finance_title")}
-                desc={t("info_finance_desc")}
-                accentColor="sky"
+                icon={<CreditCard size={24} />}
+                title={t("info_finance_title", "To'lov-shartnoma")}
+                desc={t(
+                  "info_finance_desc",
+                  "Kontrakt narxlari va rekvizitlar",
+                )}
+                accentColor="blue"
                 onClick={() => navigate("/info?tab=finance")}
               />
               <InfoItem
-                icon={<Briefcase size={28} />}
-                title={t("info_career_title")}
-                desc={t("info_career_desc")}
-                accentColor="sky"
+                icon={<Briefcase size={24} />}
+                title={t("info_career_title", "Karyera markazi")}
+                desc={t("info_career_desc", "Amaliyot va ish o'rinlari")}
+                accentColor="blue"
                 onClick={() => navigate("/info?tab=career")}
               />
             </div>
@@ -121,38 +125,48 @@ const InfoSection = ({ bgImage }) => {
   );
 };
 
+// Kartochka komponenti
 const InfoItem = ({ icon, title, desc, accentColor, onClick }) => {
-  const isEmerald = accentColor === "emerald";
+  const isAmber = accentColor === "amber";
 
   return (
     <motion.div
-      whileHover={{ x: 12, scale: 1.02 }}
+      whileHover={{ y: -4 }}
       onClick={onClick}
-      className="group relative flex items-center justify-between p-6 bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-[2rem] hover:bg-white/10 transition-all duration-500 cursor-pointer overflow-hidden"
+      className="group relative flex items-center justify-between p-5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden"
     >
-      <div className="flex gap-6 items-center relative z-10">
+      <div className="flex gap-5 items-center relative z-10">
+        {/* Ikonka bloki */}
         <div
-          className={`p-4 rounded-2xl transition-all duration-500 shadow-2xl ${
-            isEmerald
-              ? "bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white"
-              : "bg-sky-500/10 text-sky-400 group-hover:bg-sky-600 group-hover:text-white"
+          className={`p-3.5 rounded-xl transition-all duration-300 shadow-inner border border-white/5 ${
+            isAmber
+              ? "bg-amber-400/10 text-amber-400 group-hover:bg-amber-400 group-hover:text-[#0a1930]"
+              : "bg-blue-500/10 text-blue-400 group-hover:bg-blue-600 group-hover:text-white"
           }`}
         >
           {icon}
         </div>
 
+        {/* Matn qismi */}
         <div>
-          <h4 className="font-black text-white text-lg tracking-tight mb-1 uppercase italic group-hover:text-emerald-400 transition-colors">
+          <h4
+            className={`font-bold text-white text-base md:text-lg tracking-wide mb-1 transition-colors ${
+              isAmber
+                ? "group-hover:text-amber-400"
+                : "group-hover:text-blue-400"
+            }`}
+          >
             {title}
           </h4>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-relaxed max-w-[240px] group-hover:text-slate-200 transition-colors">
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-relaxed max-w-[240px] transition-colors">
             {desc}
           </p>
         </div>
       </div>
 
-      <div className="p-3 rounded-xl border border-white/5 text-white/10 group-hover:text-white group-hover:border-white/20 transition-all duration-500 bg-white/5">
-        <ArrowUpRight size={20} />
+      {/* O'ng tomondagi tugmacha */}
+      <div className="p-2.5 rounded-lg border border-white/10 text-white/30 group-hover:text-white group-hover:border-white/30 transition-all duration-300 bg-white/5 shrink-0 ml-4">
+        <ArrowUpRight size={18} strokeWidth={2.5} />
       </div>
     </motion.div>
   );

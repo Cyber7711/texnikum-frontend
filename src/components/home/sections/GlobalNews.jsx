@@ -30,18 +30,24 @@ const GlobalNews = ({ isPage = false }) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <div className="w-10 h-10 border-4 border-[#0a1930]/10 border-t-emerald-600 rounded-full animate-spin"></div>
+      <div className="flex justify-center items-center py-20 min-h-[300px]">
+        <div className="w-12 h-12 border-4 border-slate-100 border-t-blue-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    // isPage bo'lsa section va bg-slate-50 ni olib tashlaymiz
     <div
-      className={`${!isPage ? "py-24 bg-slate-50 overflow-hidden relative" : "w-full"}`}
+      className={`${!isPage ? "py-24 bg-slate-50 overflow-hidden relative border-t border-slate-200" : "w-full"}`}
     >
-      <div className={`${!isPage ? "container mx-auto px-6" : "w-full"}`}>
+      {/* BOSH SAHIFA UCHUN ORQA FON BEZAGI */}
+      {!isPage && (
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-slate-100 to-transparent pointer-events-none" />
+      )}
+
+      <div
+        className={`${!isPage ? "container mx-auto px-6 max-w-7xl" : "w-full"}`}
+      >
         {/* HEADER: Sahifada bo'lsa bu qism yashiriladi */}
         {!isPage && (
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 relative z-10">
@@ -50,15 +56,21 @@ const GlobalNews = ({ isPage = false }) => {
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border border-slate-200 text-[#0a1930] text-[10px] font-bold uppercase tracking-widest mb-6 shadow-sm"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 text-[10px] font-extrabold uppercase tracking-widest mb-6 shadow-sm"
               >
-                <Globe size={14} className="text-emerald-600" />
+                <Globe size={14} className="text-blue-600" />
                 DUNYO VA O'ZBEKISTON
               </motion.div>
-              <h2 className="text-3xl md:text-5xl font-extrabold text-[#0a1930] uppercase tracking-tight leading-tight">
-                Tashqi <span className="text-emerald-600">Yangiliklar</span>
+
+              <h2 className="text-3xl md:text-5xl font-extrabold text-[#0a1930] uppercase tracking-tight leading-[1.1]">
+                XALQARO{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">
+                  YANGILIKLAR
+                </span>
               </h2>
-              <div className="h-1 w-20 bg-amber-400 mt-6 rounded-full"></div>
+
+              {/* O'zbekona tilla chiziq */}
+              <div className="h-1.5 w-16 bg-amber-400 mt-6 rounded-full"></div>
             </div>
           </div>
         )}
@@ -75,39 +87,42 @@ const GlobalNews = ({ isPage = false }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="group relative bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col h-full overflow-hidden block"
+              className="group relative bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-2xl hover:border-blue-200 transition-all duration-300 flex flex-col h-full overflow-hidden block"
             >
-              {/* Rasmiy Hover effekti - Tepadan tushadigan yashil chiziq */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-emerald-600 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out" />
+              {/* Rasmiy Hover effekti - Tepadan tushadigan to'q ko'k chiziq */}
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-blue-600 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out" />
 
-              <div className="flex justify-between items-start mb-6 relative z-10">
-                <div className="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 border border-slate-100 group-hover:bg-[#0a1930] group-hover:text-amber-400 group-hover:border-[#0a1930] transition-all duration-500 shadow-sm">
-                  <Newspaper size={22} strokeWidth={1.5} />
+              <div className="flex justify-between items-start mb-8 relative z-10">
+                {/* Ikonka bloki */}
+                <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-blue-600 border border-slate-100 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                  <Newspaper size={20} strokeWidth={2} />
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-500 font-bold text-[10px] uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-md border border-slate-100">
-                  <Clock size={12} className="text-emerald-600" />
+
+                {/* Sana bloki */}
+                <div className="flex items-center gap-1.5 text-slate-500 font-bold text-[10px] uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+                  <Clock size={12} className="text-amber-500" />
                   {new Date(item.pubDate).toLocaleDateString("uz-UZ")}
                 </div>
               </div>
 
-              {/* Sarlavha: Salobatli va aniq (italic olib tashlandi) */}
-              <h3 className="text-lg font-bold text-[#0a1930] leading-snug mb-4 group-hover:text-emerald-600 transition-colors line-clamp-3 relative z-10">
+              {/* Sarlavha: Salobatli va aniq */}
+              <h3 className="text-lg md:text-xl font-extrabold text-[#0a1930] leading-snug mb-4 group-hover:text-blue-600 transition-colors line-clamp-3 relative z-10">
                 {item.title}
               </h3>
 
               {/* Matn: O'qilishi oson font */}
-              <p className="text-slate-600 text-sm font-medium leading-relaxed line-clamp-3 mb-8 relative z-10">
+              <p className="text-slate-500 text-sm font-medium leading-relaxed line-clamp-3 mb-8 relative z-10">
                 {item.description.replace(/<[^>]*>?/gm, "").substring(0, 150)}
                 ...
               </p>
 
-              {/* Tugma qismi */}
+              {/* Tugma qismi (Eng pastda, tekislangan) */}
               <div className="mt-auto flex items-center justify-between pt-6 border-t border-slate-100 relative z-10">
-                <span className="text-[10px] font-bold text-[#0a1930] uppercase tracking-widest group-hover:text-emerald-600 transition-colors">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest group-hover:text-blue-600 transition-colors">
                   BATAFSIL O'QISH
                 </span>
-                <div className="w-8 h-8 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all duration-300 transform group-hover:-translate-y-1 group-hover:translate-x-1">
-                  <ArrowUpRight size={16} strokeWidth={2} />
+                <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-300 transform group-hover:-translate-y-1 group-hover:translate-x-1 shadow-sm">
+                  <ArrowUpRight size={16} strokeWidth={2.5} />
                 </div>
               </div>
             </motion.a>
