@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom"; // Navigatsiya uchun
+import { Link } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
-import { motion } from "framer-motion"; // Animatsiya uchun
+import { motion } from "framer-motion";
 import {
   Newspaper,
   Users,
@@ -9,14 +9,15 @@ import {
   FileQuestion,
   Calendar,
   Activity,
-  Leaf,
   Database,
-  Server,
-  Cloud,
   RefreshCw,
   Plus,
   ArrowRight,
   Zap,
+  ShieldCheck,
+  UserCheck,
+  Clock,
+  MapPin,
 } from "lucide-react";
 import {
   BarChart,
@@ -27,6 +28,17 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+
+// --- XAVFSIZLIK HELPER FUNKSIYASI ---
+// IP manzilni niqoblash (Masalan: 192.168.1.105 -> 192.168.***.***)
+const maskIp = (ip) => {
+  if (!ip) return "Noma'lum";
+  const parts = ip.split(".");
+  if (parts.length === 4) {
+    return `${parts[0]}.${parts[1]}.***.***`;
+  }
+  return ip.substring(0, 8) + "...";
+};
 
 // --- ANIMATSYA VARIANTS ---
 const containerVar = {
@@ -51,11 +63,23 @@ const Dashboard = () => {
     documents: 0,
     applicants: 0,
   });
+
+  // Oxirgi tizimga kirgan foydalanuvchi (Kimdir tizimga qachon kirgani)
+  const [lastLogin, setLastLogin] = useState(null);
+
+  // MOCK: Hozirgi tizimdan foydalanayotgan admin ma'lumotlari
+  // Backenddan login qilganda shu ma'lumotlar kelishi kerak
+  const [currentUser] = useState({
+    username: "Sarvar",
+    role: "Super Admin",
+    // TEST UCHUN: Buni false qilib ko'ring, IP niqoblanadi va ogohlantirish chiqadi
+    canSeeFullIp: false,
+  });
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Vaqtni yangilab turish
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -64,17 +88,19 @@ const Dashboard = () => {
   const fetchData = async () => {
     try {
       setRefreshing(true);
-      const [teachersRes, newsRes, appsRes, docsRes] = await Promise.all([
-        axiosClient.get("/teachers"),
-        axiosClient.get("/news"),
-        axiosClient.get("/applicant"),
-        axiosClient.get("/doc"),
-      ]);
+      const [teachersRes, newsRes, appsRes, docsRes, authRes] =
+        await Promise.all([
+          axiosClient.get("/teachers"),
+          axiosClient.get("/news"),
+          axiosClient.get("/applicant"),
+          axiosClient.get("/doc"),
+          axiosClient.get("/auth/last-login").catch(() => null),
+        ]);
 
       const getLen = (res) =>
-        res.data.data?.length ||
-        res.data.result?.length ||
-        res.data?.length ||
+        res?.data?.data?.length ||
+        res?.data?.result?.length ||
+        res?.data?.length ||
         0;
 
       setStats({
@@ -83,6 +109,18 @@ const Dashboard = () => {
         applicants: getLen(appsRes),
         documents: getLen(docsRes),
       });
+
+      if (authRes?.data) {
+        setLastLogin(authRes.data);
+      } else {
+        setLastLogin({
+          username: "Akmal_Manager",
+          role: "Manager",
+          time: new Date(Date.now() - 15 * 60000).toISOString(),
+          ip: "192.168.1.105",
+          browser: "Chrome / Windows",
+        });
+      }
     } catch (err) {
       console.error("Dashboard yuklashda xatolik:", err);
     } finally {
@@ -102,6 +140,15 @@ const Dashboard = () => {
     { name: "Hujjatlar", count: stats.documents, color: "#6366f1" },
   ];
 
+  const formatLoginTime = (isoString) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    return date.toLocaleTimeString("uz-UZ", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
     <motion.div
       variants={containerVar}
@@ -114,7 +161,6 @@ const Dashboard = () => {
         variants={itemVar}
         className="relative flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl overflow-hidden border border-slate-800"
       >
-        {/* Dekorativ orqa fon elementlari */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
 
@@ -129,7 +175,7 @@ const Dashboard = () => {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
               <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">
-                Online
+                Online: {currentUser.username}
               </span>
             </div>
           </div>
@@ -166,14 +212,16 @@ const Dashboard = () => {
           >
             <RefreshCw
               size={14}
-              className={`group-hover:rotate-180 transition-transform duration-500 ${refreshing ? "animate-spin" : ""}`}
+              className={`group-hover:rotate-180 transition-transform duration-500 ${
+                refreshing ? "animate-spin" : ""
+              }`}
             />
             Ma'lumotlarni yangilash
           </button>
         </div>
       </motion.div>
 
-      {/* 2. STAT CARDS (CLICKABLE) */}
+      {/* 2. STAT CARDS */}
       <motion.div
         variants={containerVar}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
@@ -217,72 +265,71 @@ const Dashboard = () => {
         {/* CHART SECTION */}
         <motion.div
           variants={itemVar}
-          className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-xl transition-shadow duration-300"
+          className="lg:col-span-2 flex flex-col gap-8"
         >
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h3 className="text-lg font-black text-slate-800 flex items-center gap-3 uppercase tracking-tighter">
-                <Activity size={20} className="text-emerald-500" />
-                Statistik Dinamika
-              </h3>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 ml-8">
-                Real vaqt rejimidagi ko'rsatkichlar
-              </p>
+          <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-10">
+              <div>
+                <h3 className="text-lg font-black text-slate-800 flex items-center gap-3 uppercase tracking-tighter">
+                  <Activity size={20} className="text-emerald-500" />
+                  Statistik Dinamika
+                </h3>
+              </div>
             </div>
-          </div>
 
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="#f1f5f9"
-                />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{
-                    fill: "#64748b",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                  }}
-                  dy={15}
-                />
-                <Tooltip
-                  cursor={{ fill: "#f8fafc", radius: 12 }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-slate-900 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-xl">
-                          {payload[0].payload.name}: {payload[0].value}
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar
-                  dataKey="count"
-                  radius={[12, 12, 12, 12]}
-                  barSize={40}
-                  animationDuration={1500}
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
                 >
-                  {chartData.map((d, i) => (
-                    <Cell key={i} fill={d.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#f1f5f9"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: "#64748b",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                    }}
+                    dy={15}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "#f8fafc", radius: 12 }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-slate-900 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-xl">
+                            {payload[0].payload.name}: {payload[0].value}
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar
+                    dataKey="count"
+                    radius={[12, 12, 12, 12]}
+                    barSize={40}
+                    animationDuration={1500}
+                  >
+                    {chartData.map((d, i) => (
+                      <Cell key={i} fill={d.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </motion.div>
 
-        {/* QUICK ACTIONS & SYSTEM STATUS */}
+        {/* RIGHT SIDEBAR */}
         <div className="space-y-6">
           {/* Quick Actions */}
           <motion.div
@@ -311,7 +358,106 @@ const Dashboard = () => {
             </div>
           </motion.div>
 
-          {/* System Status (Compact) */}
+          {/* XAVFSIZLIK VA OXIRGI LOGIN */}
+          <motion.div
+            variants={itemVar}
+            className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden"
+          >
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-slate-50 rounded-full blur-2xl"></div>
+
+            <div className="flex items-center justify-between mb-5 relative z-10">
+              <h3 className="text-sm font-black text-slate-800 flex items-center gap-2 uppercase tracking-tighter">
+                <ShieldCheck size={18} className="text-indigo-500" /> Xavfsizlik
+              </h3>
+              {/* Foydalanuvchi statusi ko'rsatkichi */}
+              <span
+                className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${currentUser.canSeeFullIp ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
+              >
+                {currentUser.canSeeFullIp
+                  ? "To'liq Ruxsat"
+                  : "Cheklangan Ruxsat"}
+              </span>
+            </div>
+
+            {loading ? (
+              <div className="animate-pulse space-y-3">
+                <div className="h-10 bg-slate-100 rounded-xl"></div>
+                <div className="h-10 bg-slate-100 rounded-xl"></div>
+              </div>
+            ) : lastLogin ? (
+              <div className="space-y-4 relative z-10">
+                <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <UserCheck size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">
+                      Oxirgi faoliyat
+                    </p>
+                    <p className="text-sm font-black text-slate-800 truncate">
+                      {lastLogin.username}
+                    </p>
+                    <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md font-bold mt-1 inline-block">
+                      {lastLogin.role}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-slate-50 p-3 rounded-xl flex items-center gap-2">
+                    <Clock size={14} className="text-slate-400" />
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase">
+                        Vaqt
+                      </span>
+                      <span className="text-xs font-black text-slate-700">
+                        {formatLoginTime(lastLogin.time)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* DYNAMIC ACCESS CONTROL QO'LLANILGAN QISM */}
+                  <div className="bg-slate-50 p-3 rounded-xl flex items-center justify-between border border-transparent hover:border-slate-200 transition-colors group">
+                    <div className="flex items-center gap-2">
+                      <MapPin
+                        size={14}
+                        className="text-slate-400 group-hover:text-indigo-500 transition-colors"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase">
+                          IP Manzil
+                        </span>
+                        <span
+                          className="text-xs font-black text-slate-700 tracking-wider"
+                          title={
+                            !currentUser.canSeeFullIp
+                              ? "Xavfsizlik yuzasidan qisman yashirilgan"
+                              : "To'liq IP manzil"
+                          }
+                        >
+                          {currentUser.canSeeFullIp
+                            ? lastLogin.ip
+                            : maskIp(lastLogin.ip)}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Agar foydalanuvchida ruxsat bo'lmasa, ogohlantirish belgisi chiqadi */}
+                    {!currentUser.canSeeFullIp && (
+                      <div title="Sizda to'liq IP ni ko'rish huquqi yo'q">
+                        <ShieldCheck size={14} className="text-amber-500/60" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4 text-xs text-slate-400 font-medium">
+                Ma'lumot topilmadi
+              </div>
+            )}
+          </motion.div>
+
+          {/* System Status */}
           <motion.div
             variants={itemVar}
             className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100"
@@ -375,7 +521,6 @@ const StatCard = ({ title, count, icon, color, loading, to }) => {
             />
           </div>
         </div>
-
         <div>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
             {title}

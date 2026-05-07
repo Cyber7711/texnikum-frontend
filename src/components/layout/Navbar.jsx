@@ -80,15 +80,6 @@ const Navbar = () => {
                 </Link>
               );
             })}
-
-            {/* Login Tugmasi */}
-            <Link
-              to="/login"
-              className="flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-500 transition-all text-xs tracking-widest uppercase shadow-md active:scale-95 ml-4"
-            >
-              <User className="w-4 h-4 mr-2" />
-              {t("nav_login", "TIZIMGA KIRISH")}
-            </Link>
           </div>
 
           {/* MOBILE TOGGLE BUTTON */}

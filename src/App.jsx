@@ -96,7 +96,10 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Route>
 
-          <Route path="/login" element={<Login />} />
+          <Route
+            path={import.meta.env.VITE_ADMIN_SECRET_PATH}
+            element={<Login />}
+          />
           <Route path="/apply" element={<Apply />} />
 
           {/* Admin */}

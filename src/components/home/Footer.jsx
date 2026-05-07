@@ -8,160 +8,117 @@ import {
   Mail,
   Clock,
   ShieldCheck,
-  Landmark,
+  Maximize2, // Mapni kengaytirish belgisi
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../Logo";
 
 const Footer = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  let clickCount = 0;
+  const handleSecretEntry = () => {
+    clickCount++;
+    if (clickCount === 5) {
+      navigate("/portal-v2-auth-gate-99");
+    }
+    setTimeout(() => {
+      clickCount = 0;
+    }, 2000);
+  };
+
+  const googleMapUrl =
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1534.2678976930576!2d66.60365805029866!3d39.72761384494017!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3f4da1230dbe72c9%3A0x2af1ecde46316d06!2sAgro%20sanoat%20kolleji!5e0!3m2!1suz!2s!4v1778125913190!5m2!1suz!2s";
 
   return (
-    <footer className="relative bg-[#0a1930] text-slate-300 pt-20 pb-8 overflow-hidden border-t border-slate-800 font-sans">
-      {/* Orqa fon bezagi - Rasmiy yorug'lik */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent pointer-events-none" />
+    <footer className="relative bg-[#0a1930] text-slate-300 pt-20 pb-8 overflow-hidden border-t border-slate-800/50 font-sans">
+      <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
-          {/* 1-USTUN: LOGO VA IJTIMOIY TARMOQLAR */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
-            <div className="mb-2 w-full flex justify-center lg:justify-start">
-              <Logo />
-            </div>
-
-            <p className="text-sm font-medium leading-relaxed text-slate-400 max-w-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-20">
+          {/* 1-USTUN: BRANDING */}
+          <div className="flex flex-col items-center lg:items-start space-y-8">
+            <Logo />
+            <p className="text-sm font-medium leading-relaxed text-slate-400 text-center lg:text-left max-w-xs">
               Sifatli ta'lim, zamonaviy kasb-hunar va porloq kelajak sari qadam.
-              Biz bilan o'z yo'lingizni toping.
             </p>
-
-            <div className="flex gap-3 pt-2">
-              <SocialLink icon={<Send size={16} />} href="#" label="Telegram" />
-              <SocialLink
-                icon={<Facebook size={16} />}
-                href="#"
-                label="Facebook"
-              />
-              <SocialLink
-                icon={<Instagram size={16} />}
-                href="#"
-                label="Instagram"
-              />
-              <SocialLink
-                icon={<Youtube size={16} />}
-                href="#"
-                label="YouTube"
-              />
+            <div className="flex gap-4">
+              <SocialLink icon={<Send size={18} />} href="#" />
+              <SocialLink icon={<Instagram size={18} />} href="#" />
+              <SocialLink icon={<Facebook size={18} />} href="#" />
             </div>
           </div>
 
-          {/* 2-USTUN: FOYDALI HAVOLALAR */}
-          <div className="flex flex-col items-center lg:items-start lg:pl-8">
-            <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-white mb-6 flex flex-col gap-2">
-              {t("useful_links", "FOYDALI HAVOLALAR")}
-              <span className="w-8 h-1 bg-amber-400 rounded-full"></span>
-            </h4>
+          {/* 2-USTUN: NAVIGATSIYA */}
+          <div className="flex flex-col items-center lg:items-start lg:pl-10">
+            <FooterHeader title="STRUKTURA" />
             <ul className="space-y-4">
-              <li>
-                <FooterLink to="/news">
-                  {t("nav_news", "Yangiliklar va E'lonlar")}
-                </FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/documents">
-                  {t("nav_docs", "Me'yoriy hujjatlar")}
-                </FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/apply">
-                  {t("nav_apply", "Onlayn ariza topshirish")}
-                </FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/teachers">
-                  {t("nav_teachers", "Pedagogik jamoa")}
-                </FooterLink>
-              </li>
-              <li>
-                <FooterLink to="/management">
-                  {t("nav_management", "Rahbariyat")}
-                </FooterLink>
-              </li>
+              <FooterLink to="/news">Yangiliklar</FooterLink>
+              <FooterLink to="/teachers">Pedagogik jamoa</FooterLink>
+              <FooterLink to="/apply">Onlayn ariza</FooterLink>
             </ul>
           </div>
 
-          {/* 3-USTUN: BOG'LANISH */}
+          {/* 3-USTUN: ALOQA */}
           <div className="flex flex-col items-center lg:items-start">
-            <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-white mb-6 flex flex-col gap-2">
-              {t("contact", "BOG'LANISH")}
-              <span className="w-8 h-1 bg-amber-400 rounded-full"></span>
-            </h4>
-            <ul className="space-y-5 w-full max-w-xs">
+            <FooterHeader title="BOG'LANISH" />
+            <div className="space-y-6 w-full">
               <ContactItem
-                icon={<MapPin size={16} />}
-                title="Samarqand viloyati, Pastdarg'om tumani"
+                icon={<MapPin size={18} />}
+                text="Pastdarg'om tumani, Samarqand"
               />
               <ContactItem
-                icon={<Phone size={16} />}
-                title="+998 66 123 45 67"
+                icon={<Phone size={18} />}
+                text="+998 66 123 45 67"
               />
-              <ContactItem icon={<Mail size={16} />} title="info@texnikum.uz" />
-
-              <li className="flex items-start gap-4 pt-2">
-                <div className="p-2.5 bg-white/5 rounded-lg text-amber-400 border border-white/5 shrink-0 mt-1">
+              <div className="p-4 rounded-xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                <div className="flex items-center gap-3 text-amber-400 mb-2">
                   <Clock size={16} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    Ish vaqti
+                  </span>
                 </div>
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">
-                    {t("work_hours", "ISH VAQTI")}
-                  </p>
-                  <p className="text-sm font-bold text-white tracking-wide">
-                    Dush - Juma: 08:30 - 17:00
-                  </p>
-                  <p className="text-slate-400 text-[10px] mt-1">
-                    Shanba va Yakshanba dam olish
-                  </p>
-                </div>
-              </li>
-            </ul>
+                <p className="text-sm font-bold text-white">08:30 - 17:00</p>
+              </div>
+            </div>
           </div>
 
-          {/* 4-USTUN: XARITA */}
+          {/* 4-USTUN: INTERAKTIV MAP */}
           <div className="flex flex-col items-center lg:items-start w-full">
-            <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-white mb-6 flex flex-col gap-2">
-              {t("location", "JOYLASHUV")}
-              <span className="w-8 h-1 bg-amber-400 rounded-full"></span>
-            </h4>
-            <div className="w-full h-48 rounded-xl overflow-hidden shadow-lg border border-slate-800 bg-[#0f2341] relative group">
+            <FooterHeader title="JOYLASHUV" />
+            <div className="relative w-full h-56 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-[#0f2341]">
+              {/* Iframe o'zi interaktiv bo'ladi */}
               <iframe
-                title="TEXNIKUM MAP"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12345.6789!2d66.9!3d39.6!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMznCsDM2JzAwLjAiTiA2NsKwNTQnMDAuMCJF!5e0!3m2!1sen!2suz!4v1600000000000!5m2!1sen!2suz"
-                width="100%"
-                height="100%"
-                style={{
-                  border: 0,
-                  filter: "grayscale(0.8) contrast(1.1) opacity(0.9)", // Map biroz jiddiyroq ko'rinishi uchun
-                }}
+                title="Google Maps Interaktiv"
+                src={googleMapUrl}
+                className="w-full h-full border-0 grayscale-[0.3] contrast-[1.1] hover:grayscale-0 transition-all duration-500"
                 allowFullScreen=""
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               ></iframe>
+
+              {/* Map ustidagi kichik ko'rsatkich (ixtiyoriy) */}
+              <div className="absolute top-3 right-3 p-2 bg-[#0a1930]/80 backdrop-blur-md rounded-lg border border-white/10 pointer-events-none">
+                <Maximize2 size={14} className="text-blue-400" />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* COPYRIGHT SECTION */}
-        <div className="pt-6 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center md:text-left">
-            © {new Date().getFullYear()}{" "}
-            {t("footer_school_name", "3-SON TEXNIKUMI")}.{" "}
-            {t("all_rights_reserved", "BARCHA HUQUQLAR HIMOYALANGAN")}.
+        {/* BOTTOM SECTION */}
+        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p
+            onClick={handleSecretEntry}
+            className="text-[10px] text-slate-500 font-bold uppercase tracking-[2px] cursor-pointer select-none"
+          >
+            © {new Date().getFullYear()} 3-SON TEXNIKUMI
           </p>
-
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
+          <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/5 rounded-full border border-blue-500/10">
             <ShieldCheck size={14} className="text-blue-500" />
-            <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400">
-              DAVLAT TA'LIM MUASSASASI
+            <span className="text-[9px] font-black uppercase tracking-widest text-blue-200/70">
+              Davlat muassasasi
             </span>
           </div>
         </div>
@@ -170,12 +127,20 @@ const Footer = () => {
   );
 };
 
-// Yordamchi komponentlar
-const SocialLink = ({ icon, href, label }) => (
+// Helper komponentlar o'sha-o'sha qoladi (FooterHeader, SocialLink, FooterLink, ContactItem)
+const FooterHeader = ({ title }) => (
+  <div className="mb-8 text-center lg:text-left">
+    <h4 className="text-[11px] font-black uppercase tracking-[3px] text-white mb-2">
+      {title}
+    </h4>
+    <div className="w-10 h-1 bg-gradient-to-r from-blue-600 to-amber-400 rounded-full mx-auto lg:mx-0" />
+  </div>
+);
+
+const SocialLink = ({ icon, href }) => (
   <a
     href={href}
-    title={label}
-    className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 transition-all duration-300 hover:text-white hover:bg-blue-600 hover:border-blue-500 hover:-translate-y-1 shadow-sm"
+    className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-blue-600 transition-all duration-300"
   >
     {icon}
   </a>
@@ -184,22 +149,20 @@ const SocialLink = ({ icon, href, label }) => (
 const FooterLink = ({ to, children }) => (
   <Link
     to={to}
-    className="text-slate-400 hover:text-blue-400 font-bold text-sm transition-colors duration-300 flex items-center gap-2 group"
+    className="text-slate-400 hover:text-blue-400 font-bold text-sm transition-all flex items-center gap-3"
   >
-    <span className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-blue-500 transition-colors"></span>
+    <div className="w-1 h-1 rounded-full bg-blue-600" />
     {children}
   </Link>
 );
 
-const ContactItem = ({ icon, title }) => (
-  <li className="flex items-start gap-4">
-    <div className="p-2.5 bg-white/5 rounded-lg text-blue-400 border border-white/5 shrink-0 mt-0.5">
+const ContactItem = ({ icon, text }) => (
+  <div className="flex items-center gap-4">
+    <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-blue-400">
       {icon}
     </div>
-    <span className="text-sm font-medium text-slate-300 leading-snug pt-1">
-      {title}
-    </span>
-  </li>
+    <span className="text-sm font-semibold text-slate-400">{text}</span>
+  </div>
 );
 
 export default Footer;
